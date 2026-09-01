@@ -1,14 +1,17 @@
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
 
-  --c-bg: #fbfaf8;
+  --c-bg: #ffffff;
   --c-surface: #ffffff;
-  --c-border: #e3ded6;
-  --c-text: #1e1b17;
-  --c-muted: #6d655a;
-  --c-accent: #7a5c2e;
+  /* Surface and page background are both white, so borders do the separating and this
+     is the only fill available for hover states, menus and the active tab. */
+  --c-raised: #f4f7fb;
+  --c-border: #dde3ed;
+  --c-text: #16233f;
+  --c-muted: #5c6b86;
+  --c-accent: #1f3d6e;
   --c-accent-text: #ffffff;
-  --c-danger: #9a3412;
+  --c-danger: #a4232a;
 
   --sp-1: 0.25rem;
   --sp-2: 0.5rem;
@@ -18,22 +21,10 @@
   --sp-8: 2rem;
 
   --radius: 6px;
+  --header-h: 3.25rem;
   --font-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   /* The lexicon renders IPA and ⟨ŋ⟩ / ⟨ʔ⟩; pick stacks with real coverage. */
   --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --c-bg: #17150f;
-    --c-surface: #211e17;
-    --c-border: #37322a;
-    --c-text: #f0ebe2;
-    --c-muted: #a89e8f;
-    --c-accent: #d9b072;
-    --c-accent-text: #1e1b17;
-    --c-danger: #f0a58a;
-  }
 }
 
 * {
@@ -58,10 +49,18 @@ button {
   cursor: pointer;
 }
 
+button:hover:not(:disabled) {
+  background: var(--c-raised);
+}
+
 button[type="submit"] {
   background: var(--c-accent);
   color: var(--c-accent-text);
   border-color: transparent;
+}
+
+button[type="submit"]:hover:not(:disabled) {
+  background: var(--c-text);
 }
 
 button:disabled {
@@ -78,6 +77,12 @@ textarea {
   background: var(--c-surface);
   color: var(--c-text);
   width: 100%;
+}
+
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: -1px;
 }
 
 a {

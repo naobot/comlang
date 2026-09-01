@@ -16,11 +16,13 @@ itself a repo:
 ## What exists, and what deliberately does not
 
 Built: the **access layer** (`projects`, `project_members`, RLS), auth, the dashboard,
-and the project workspace *shell*.
+and the project workspace *shell* — a navy-on-white header with the conlang name and a
+gear menu at the left, section tabs across the middle, and the app name at the right.
 
 Not built, on purpose: the **linguistic core** (phonemes, phonotactics, word classes,
-lexicon, grammar rules). It needs a collaborative design pass first — the nav items in
-`ProjectWorkspaceView.vue` are placeholders, not stubs waiting to be filled in blind.
+lexicon, grammar rules). It needs a collaborative design pass first — the five header
+tabs all render `SectionPlaceholderView.vue`; they are placeholders, not stubs waiting to
+be filled in blind.
 Also deferred: changelog/version history, and any public/private flag on `projects`.
 
 ## Gotchas that will otherwise be rediscovered as bugs
@@ -37,6 +39,17 @@ and UPDATE *are* filtered and RLS-checked; only deletes are the odd ones out.
 collaborator's `update` on a project simply matches zero rows and returns `null`.
 `updateProject` in `src/stores/projects.ts` checks for that and says so, because
 otherwise a denied rename looks identical to a successful one.
+
+**`ProjectWorkspaceView` owns the members fetch, not the Members tab.** `members.isOwner`
+gates the header's gear menu and the settings form, which exist on every tab — fetching
+membership only where the list renders would leave `isOwner` false everywhere else, and
+an owner would lose their own controls by navigating. `ProjectMembers.vue` therefore
+renders and mutates only; it does not subscribe.
+
+**Header tabs are child routes, listed once in `projectTabs`** (`src/router/index.ts`).
+`AppHeader` imports that array rather than filtering `router.getRoutes()`; `members` and
+`settings` are children too but deliberately absent from it, since they hang off the gear
+menu. Adding a linguistic-core section means a child route plus a line in `projectTabs`.
 
 **Subscribe before you fetch.** There is a live window between `SUBSCRIBED` firing and
 the binding actually delivering rows; a change made in it is never delivered, at all.

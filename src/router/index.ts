@@ -2,6 +2,26 @@ import { createRouter, createWebHistory } from "vue-router";
 
 import { useAuthStore } from "@/stores/auth";
 
+/**
+ * The header's tab bar, and the only place the tab list is written down. `AppHeader`
+ * imports this rather than filtering `router.getRoutes()`, so adding a section means
+ * adding a child route below and a line here — not teaching the header a new rule.
+ *
+ * `members` and `settings` are children too, but reached from the gear menu, so they
+ * are deliberately absent.
+ */
+export const projectTabs = [
+  { name: "project-phonemes", label: "Phoneme inventory" },
+  { name: "project-phonotactics", label: "Phonotactics" },
+  { name: "project-word-classes", label: "Word classes" },
+  { name: "project-lexicon", label: "Lexicon" },
+  { name: "project-grammar", label: "Grammar rules" },
+] as const;
+
+// Every tab renders the same placeholder until the linguistic core is designed. The
+// route shape is the point: `/projects/:id/lexicon` is where a real lexicon will live.
+const SectionPlaceholder = () => import("@/views/project/SectionPlaceholderView.vue");
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
@@ -22,6 +42,57 @@ const router = createRouter({
       component: () => import("@/views/ProjectWorkspaceView.vue"),
       meta: { requiresAuth: true },
       props: true,
+      // `props: true` does not cascade, so each child repeats it to get `projectId`.
+      children: [
+        { path: "", redirect: { name: "project-phonemes" } },
+        {
+          path: "phonemes",
+          name: "project-phonemes",
+          component: SectionPlaceholder,
+          props: true,
+          meta: { tab: "Phoneme inventory" },
+        },
+        {
+          path: "phonotactics",
+          name: "project-phonotactics",
+          component: SectionPlaceholder,
+          props: true,
+          meta: { tab: "Phonotactics" },
+        },
+        {
+          path: "word-classes",
+          name: "project-word-classes",
+          component: SectionPlaceholder,
+          props: true,
+          meta: { tab: "Word classes" },
+        },
+        {
+          path: "lexicon",
+          name: "project-lexicon",
+          component: SectionPlaceholder,
+          props: true,
+          meta: { tab: "Lexicon" },
+        },
+        {
+          path: "grammar",
+          name: "project-grammar",
+          component: SectionPlaceholder,
+          props: true,
+          meta: { tab: "Grammar rules" },
+        },
+        {
+          path: "members",
+          name: "project-members",
+          component: () => import("@/views/project/ProjectMembersView.vue"),
+          props: true,
+        },
+        {
+          path: "settings",
+          name: "project-settings",
+          component: () => import("@/views/project/ProjectSettingsView.vue"),
+          props: true,
+        },
+      ],
     },
     {
       path: "/:pathMatch(.*)*",

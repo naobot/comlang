@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, ref } from "vue";
 
 import { useAuthStore } from "@/stores/auth";
 import { useMembersStore } from "@/stores/members";
@@ -11,20 +11,13 @@ const members = useMembersStore();
 
 const email = ref("");
 
-// Ownership is derived in the store so the header's rename controls and this list
-// agree, rather than each recomputing it from the member rows.
+// Ownership is derived in the store so the header's gear menu, the settings form and
+// this list agree, rather than each recomputing it from the member rows.
 const isOwner = computed(() => members.isOwner);
 
-function load(projectId: string) {
-  // Subscribe first, then fetch — the fetch covers the window before the channel is
-  // live. See the note in DashboardView.
-  members.subscribe(projectId);
-  void members.fetchFor(projectId);
-}
-
-onMounted(() => load(props.projectId));
-watch(() => props.projectId, load);
-onUnmounted(() => members.unsubscribeAll());
+// No subscribe/fetch here on purpose: ProjectWorkspaceView loads membership for the
+// whole workspace, because `isOwner` gates chrome that exists on every tab. This
+// component only renders and mutates.
 
 async function onAdd() {
   const value = email.value.trim();
@@ -39,7 +32,7 @@ function label(m: (typeof members.members)[number]) {
 
 <template>
   <section class="members">
-    <h2>Members</h2>
+    <h1>Members</h1>
 
     <p v-if="members.loading && members.members.length === 0" class="muted">Loading…</p>
 
@@ -84,14 +77,12 @@ function label(m: (typeof members.members)[number]) {
 
 <style scoped>
 .members {
-  margin-top: var(--sp-8);
-  padding-top: var(--sp-6);
-  border-top: 1px solid var(--c-border);
+  max-width: 32rem;
 }
 
-h2 {
-  margin: 0 0 var(--sp-4);
-  font-size: 1rem;
+h1 {
+  margin: 0 0 var(--sp-6);
+  font-size: 1.25rem;
 }
 
 .list {

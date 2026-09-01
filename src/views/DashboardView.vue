@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from "vue";
-import { useRouter } from "vue-router";
 
-import { useAuthStore } from "@/stores/auth";
 import { useProjectsStore } from "@/stores/projects";
 
-const auth = useAuthStore();
 const projects = useProjectsStore();
-const router = useRouter();
 
 const newName = ref("");
 const creating = ref(false);
@@ -37,22 +33,11 @@ async function onCreate() {
     creating.value = false;
   }
 }
-
-async function signOut() {
-  await auth.signOut();
-  await router.replace({ name: "login" });
-}
 </script>
 
 <template>
-  <div class="page">
-    <header>
-      <h1>Projects</h1>
-      <div class="who">
-        <span>{{ auth.user?.email }}</span>
-        <button type="button" @click="signOut">Sign out</button>
-      </div>
-    </header>
+  <main class="page">
+    <h1>Your projects</h1>
 
     <form class="create" @submit.prevent="onCreate">
       <input v-model="newName" placeholder="New conlang project" aria-label="Project name" />
@@ -78,7 +63,7 @@ async function signOut() {
         </RouterLink>
       </li>
     </ul>
-  </div>
+  </main>
 </template>
 
 <style scoped>
@@ -88,24 +73,9 @@ async function signOut() {
   padding: var(--sp-8) var(--sp-4);
 }
 
-header {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--sp-4);
-  flex-wrap: wrap;
-}
-
 h1 {
   margin: 0;
-}
-
-.who {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  color: var(--c-muted);
-  font-size: 0.875rem;
+  font-size: 1.25rem;
 }
 
 .create {
@@ -135,6 +105,7 @@ h1 {
 
 .projects a:hover {
   border-color: var(--c-accent);
+  background: var(--c-raised);
 }
 
 .muted {
