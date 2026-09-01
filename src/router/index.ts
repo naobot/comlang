@@ -16,6 +16,7 @@ export const projectTabs = [
   { name: "project-word-classes", label: "Word classes" },
   { name: "project-lexicon", label: "Lexicon" },
   { name: "project-grammar", label: "Grammar rules" },
+  { name: "project-orthography", label: "Orthography" },
 ] as const;
 
 // Every tab renders the same placeholder until the linguistic core is designed. The
@@ -48,7 +49,7 @@ const router = createRouter({
         {
           path: "phonemes",
           name: "project-phonemes",
-          component: SectionPlaceholder,
+          component: () => import("@/views/project/PhonemeInventoryView.vue"),
           props: true,
           meta: { tab: "Phoneme inventory" },
         },
@@ -57,28 +58,35 @@ const router = createRouter({
           name: "project-phonotactics",
           component: SectionPlaceholder,
           props: true,
-          meta: { tab: "Phonotactics" },
+          meta: { tab: "Phonotactics", requires: "phonemes" },
         },
         {
           path: "word-classes",
           name: "project-word-classes",
           component: SectionPlaceholder,
           props: true,
-          meta: { tab: "Word classes" },
+          meta: { tab: "Word classes", requires: "phonemes" },
         },
         {
           path: "lexicon",
           name: "project-lexicon",
           component: SectionPlaceholder,
           props: true,
-          meta: { tab: "Lexicon" },
+          meta: { tab: "Lexicon", requires: "phonemes" },
         },
         {
           path: "grammar",
           name: "project-grammar",
           component: SectionPlaceholder,
           props: true,
-          meta: { tab: "Grammar rules" },
+          meta: { tab: "Grammar rules", requires: "phonemes" },
+        },
+        {
+          path: "orthography",
+          name: "project-orthography",
+          component: SectionPlaceholder,
+          props: true,
+          meta: { tab: "Orthography" },
         },
         {
           path: "members",

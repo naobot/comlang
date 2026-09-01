@@ -39,9 +39,19 @@ export const useAuthStore = defineStore("auth", () => {
       apply(next);
       if (event === "SIGNED_OUT") {
         // Channels opened under the old session are dead, and the cached rows belonged
-        // to a user who is no longer here.
+        // to a user who is no longer here. Every project-scoped store must be cleared,
+        // or signing in as someone else shows the previous user's data — including, for
+        // phonemes, an unsaved draft that would then be saved into their project.
         closeAllProjectChannels();
         useProjectsStore().reset();
+        // Imported here rather than at the top: stores/members.ts imports this module,
+        // so a static import back would be a cycle.
+        void Promise.all([import("@/stores/members"), import("@/stores/phonemes")]).then(
+          ([members, phonemes]) => {
+            members.useMembersStore().reset();
+            phonemes.usePhonemesStore().reset();
+          },
+        );
       }
     });
 

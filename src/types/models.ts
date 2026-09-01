@@ -11,6 +11,10 @@ export type ProjectRole = Enums<"project_role">;
 
 export type Profile = Tables<"profiles">;
 
+/** One segment in a project's phoneme inventory. Symbol and kind only — see 0008. */
+export type Phoneme = Tables<"phonemes">;
+export type PhonemeKind = Enums<"phoneme_kind">;
+
 /** A membership joined to the person it belongs to, as the members list renders it. */
 export type ProjectMemberWithProfile = ProjectMember & {
   profile: Pick<Profile, "id" | "email" | "display_name"> | null;

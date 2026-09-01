@@ -2,12 +2,14 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { useMembersStore } from "@/stores/members";
+import { usePhonemesStore } from "@/stores/phonemes";
 import { useProjectsStore } from "@/stores/projects";
 
 const props = defineProps<{ projectId: string }>();
 
 const projects = useProjectsStore();
 const members = useMembersStore();
+const phonemes = usePhonemesStore();
 const resolving = ref(true);
 
 const project = computed(() => projects.get(props.projectId));
@@ -19,9 +21,17 @@ const project = computed(() => projects.get(props.projectId));
  * every tab. Fetching it only where the member list renders would leave `isOwner`
  * false everywhere else — an owner would lose their own controls by navigating away.
  */
-function loadMembers(projectId: string) {
+/**
+ * The inventory is loaded here for the same reason as membership: sections that do not
+ * own it still need to know whether it exists. `meta.requires` on the phonotactics,
+ * word-class, lexicon and grammar routes is answered from this store, and those pages
+ * would all read "no inventory" if only the phoneme tab ever fetched it.
+ */
+function loadProjectData(projectId: string) {
   members.subscribe(projectId);
   void members.fetchFor(projectId);
+  phonemes.subscribe(projectId);
+  void phonemes.fetchFor(projectId);
 }
 
 onMounted(async () => {
@@ -29,16 +39,17 @@ onMounted(async () => {
   // the note in DashboardView. A deep link lands here with an empty store, so fetch
   // before deciding the project is missing.
   projects.subscribe();
-  loadMembers(props.projectId);
+  loadProjectData(props.projectId);
   if (!project.value) await projects.fetchAll();
   resolving.value = false;
 });
 
-watch(() => props.projectId, loadMembers);
+watch(() => props.projectId, loadProjectData);
 
 onUnmounted(() => {
   projects.unsubscribeAll();
   members.unsubscribeAll();
+  phonemes.unsubscribeAll();
 });
 </script>
 

@@ -24,6 +24,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      phonemes: {
+        Row: {
+          created_at: string
+          id: string
+          ipa: string
+          kind: Database["public"]["Enums"]["phoneme_kind"]
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ipa: string
+          kind: Database["public"]["Enums"]["phoneme_kind"]
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ipa?: string
+          kind?: Database["public"]["Enums"]["phoneme_kind"]
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phonemes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -152,8 +187,26 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      save_phoneme_inventory: {
+        Args: { p_phonemes: Json; p_project_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          ipa: string
+          kind: Database["public"]["Enums"]["phoneme_kind"]
+          project_id: string
+          updated_at: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "phonemes"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
     }
     Enums: {
+      phoneme_kind: "consonant" | "vowel"
       project_role: "owner" | "collaborator"
     }
     CompositeTypes: {
@@ -282,6 +335,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      phoneme_kind: ["consonant", "vowel"],
       project_role: ["owner", "collaborator"],
     },
   },

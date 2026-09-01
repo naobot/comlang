@@ -16,16 +16,49 @@ itself a repo:
 ## What exists, and what deliberately does not
 
 Built: the **access layer** (`projects`, `project_members`, RLS), auth, the dashboard,
-and the project workspace *shell* — a navy-on-white header with the conlang name and a
-gear menu at the left, section tabs across the middle, and the app name at the right.
+the project workspace *shell* — a navy-on-white header with the conlang name and a gear
+menu at the left, section tabs across the middle, and the app name at the right — and
+the first linguistic-core section, the **phoneme inventory**.
 
-Not built, on purpose: the **linguistic core** (phonemes, phonotactics, word classes,
-lexicon, grammar rules). It needs a collaborative design pass first — the five header
-tabs all render `SectionPlaceholderView.vue`; they are placeholders, not stubs waiting to
-be filled in blind.
-Also deferred: changelog/version history, and any public/private flag on `projects`.
+Not built, on purpose: the rest of the **linguistic core** (phonotactics, word classes,
+lexicon, grammar rules, orthography). Each needs its own design pass — those tabs render
+`SectionPlaceholderView.vue`; they are placeholders, not stubs waiting to be filled in
+blind. Also deferred: changelog/version history, and any public/private flag.
 
 ## Gotchas that will otherwise be rediscovered as bugs
+
+**The phoneme inventory inverts the realtime rule: it notifies, it never patches.**
+Every other store applies events to its state. `src/stores/phonemes.ts` does not — the
+page saves explicitly, so a collaborator's insert landing in the draft would rewrite an
+edit in progress and then be written back on Save as if the user had chosen it. Events
+set `changedElsewhere`; the user decides whether to reload. Any future
+explicit-save section should copy this store, not `projects.ts`.
+
+That store also keeps an `ownWrites` id set, because **a writer receives its own events**
+and would otherwise raise "changed by someone else" against its own save. Only ids the
+save actually *changed* go in — putting an unchanged row's id there leaves an entry
+nothing ever consumes, which then swallows a collaborator's later delete of that row.
+
+**The IPA chart is static data, not a table.** `src/data/ipa.ts` is identical for every
+project, so a table would add a join and a fetch for nothing; `phonemes` stores only
+which symbols are selected. Its feature labels (place, manner, voicing) are the IPA's
+own, a way to find a symbol on a grid — **not a claim about the conlang**, whose notes
+deliberately leave voicing and manner underspecified (`conlang/docs/overview.md:10`).
+`phonemes.kind` is denormalized rather than derived so downstream SQL can ask for "the
+vowels" without the module, and so revising the chart cannot change what a stored row
+meant. `src/data/ipa.test.ts` pins the invariants — chiefly no duplicate symbol, since a
+duplicate would silently make two chart cells toggle as one phoneme.
+
+**Sections declare dependencies with `meta.requires`.** Phonotactics, word classes,
+lexicon and grammar all carry `requires: "phonemes"`, and `SectionPlaceholderView`
+renders a "set up the inventory first" notice instead of the generic placeholder when
+the inventory is empty. Soft gate on purpose: the tab stays navigable, so the header
+never shows a dead control. `ProjectWorkspaceView` loads the inventory for the same
+reason it loads membership — pages that don't own the data still have to ask about it.
+
+**Content is member-editable; owner-only is for settings and membership.** The
+`phonemes` policies grant all four verbs to any member. A collaborator who could not
+edit the language would have nothing to collaborate on.
 
 **Realtime deletes are neither filtered nor authorized.** A subscription filtered to
 `project_id=eq.<id>` still receives DELETE events for rows in *every* project, and RLS
@@ -104,6 +137,10 @@ could never pass and an open check would let someone strand an unreadable row. C
 goes through the `create_project()` RPC, which writes the project and its owner
 membership in one transaction.
 
+**Tests import from `vite-plus/test`, not `vitest`.** Vitest is bundled by Vite+ rather
+than being a direct dependency, so `from "vitest"` runs but does not type-check, and the
+`vite-plus/prefer-vite-plus-imports` lint rule exists to catch exactly this.
+
 **`vp check` does not type-check this project.** tsgolint cannot resolve `.vue` modules
 and reports a phantom TS2307 on every SFC import, so `typeAware`/`typeCheck` are off in
 `vite.config.ts`. oxlint's `vue` plugin is script-block only — **there is no template
@@ -142,6 +179,15 @@ anonymous select returns `[]`, anonymous `create_project` is denied, and
 `/rest/v1/rpc/is_project_member` returns 404 because the helpers are not in an exposed
 schema. Realtime was confirmed to deliver a full row on UPDATE and **only `{id}` on
 DELETE**, as the migration comments claim.
+
+What was verified when the phoneme inventory went in (2026-09-01): as a **collaborator**
+(not the owner) `save_phoneme_inventory` inserts, deletes only what was dropped, and
+leaves surviving rows' **ids stable** — later tables will reference those ids, so a save
+that churned them would be a slow-motion data bug. An empty array clears the inventory;
+a non-member is refused with 42501 rather than silently writing nothing; an anonymous
+call is refused at the grant. Over Realtime with two signed-in clients: inserts and
+deletes both arrive, the delete carrying **only the primary key**, and every event id was
+attributable to a save the client had made — which is the premise `ownWrites` rests on.
 
 `auth.users` rows inserted by hand need their token columns set to `''` rather than
 NULL, or sign-in fails with GoTrue's opaque "Database error querying schema".
