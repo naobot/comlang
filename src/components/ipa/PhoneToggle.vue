@@ -24,6 +24,10 @@ defineEmits<{ toggle: [ipa: string] }>();
   /* --font-mono is the stack chosen for IPA coverage; the UI stack drops glyphs. */
   font-family: var(--font-mono);
   font-size: 1rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  /* These are symbols, not labels: uppercasing would rewrite them (ɡ becomes Ɡ). */
+  text-transform: none;
   line-height: 1;
   min-width: 2rem;
   padding: var(--sp-2) var(--sp-1);

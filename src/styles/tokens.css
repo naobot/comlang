@@ -44,7 +44,15 @@ body {
 
 button {
   font: inherit;
-  padding: var(--sp-2) var(--sp-4);
+  /* Compact, uppercase and tracked out: actions read as controls rather than as prose,
+     and stay out of the way of the content they act on. Anything that is a button but
+     is really content — a phone on the IPA chart, a menu item — opts out with
+     `text-transform: none`. */
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: var(--sp-1) var(--sp-3);
   border: 1px solid var(--c-border);
   border-radius: var(--radius);
   background: var(--c-surface);

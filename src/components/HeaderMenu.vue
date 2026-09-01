@@ -99,6 +99,9 @@ function close() {
   background: transparent;
   color: var(--c-text);
   font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
   text-align: left;
   text-decoration: none;
 }
