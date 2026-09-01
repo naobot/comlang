@@ -1,0 +1,85 @@
+:root {
+  color-scheme: light dark;
+
+  --c-bg: #fbfaf8;
+  --c-surface: #ffffff;
+  --c-border: #e3ded6;
+  --c-text: #1e1b17;
+  --c-muted: #6d655a;
+  --c-accent: #7a5c2e;
+  --c-accent-text: #ffffff;
+  --c-danger: #9a3412;
+
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+
+  --radius: 6px;
+  --font-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* The lexicon renders IPA and ⟨ŋ⟩ / ⟨ʔ⟩; pick stacks with real coverage. */
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-bg: #17150f;
+    --c-surface: #211e17;
+    --c-border: #37322a;
+    --c-text: #f0ebe2;
+    --c-muted: #a89e8f;
+    --c-accent: #d9b072;
+    --c-accent-text: #1e1b17;
+    --c-danger: #f0a58a;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--c-bg);
+  color: var(--c-text);
+  font-family: var(--font-ui);
+  line-height: 1.5;
+}
+
+button {
+  font: inherit;
+  padding: var(--sp-2) var(--sp-4);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  color: var(--c-text);
+  cursor: pointer;
+}
+
+button[type="submit"] {
+  background: var(--c-accent);
+  color: var(--c-accent-text);
+  border-color: transparent;
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+input,
+textarea {
+  font: inherit;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  background: var(--c-surface);
+  color: var(--c-text);
+  width: 100%;
+}
+
+a {
+  color: var(--c-accent);
+}
