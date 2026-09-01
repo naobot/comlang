@@ -27,6 +27,13 @@ blind. Also deferred: changelog/version history, and any public/private flag.
 
 ## Gotchas that will otherwise be rediscovered as bugs
 
+**Never `structuredClone` a store draft.** It throws `DataCloneError` on a Vue reactive
+proxy, and `usePhonotacticsStore().save()` cloned as its first statement — so every save
+died before reaching the database, setting no error and showing nothing. Use `cloneDraft`
+(a JSON round-trip, exact for this plain-data shape), and note *why* this went unnoticed:
+the database, the RPC and the pure module were all verified directly, and the store's own
+code path never was. **Exercise the store, not just the layers either side of it.**
+
 **`src/lib/phonotactics.ts` is pure, and that is the whole point of it.** No imports
 from `vue`, `pinia`, or the Supabase client — a future word-generator feature imports it
 unchanged, and the moment it reaches for the database it stops being reusable and becomes
@@ -69,10 +76,18 @@ Class terms keep their foreign key — deleting a class is an explicit act on th
 phonotactics page, where `removeClass` already prunes the rules that used it, so there is
 no silent loss to prevent.
 
-**Class membership still cascades**, so removing a phoneme does drop it from every class.
-`impactOfRemoving` reports that alongside the orphaned rules, and the inventory page shows
-both before Save. Any future table hanging off `phonemes` needs the same decision made
-deliberately: cascade and warn, or store the symbol and flag the orphan.
+**Class membership is IPA text too** (0013), for the same reason. Curating a class is
+work, and losing it silently on a phoneme deletion was the same bug wearing different
+clothes. `orphanedMembers` finds the dangling ones and the class editor strikes them
+through.
+
+**Because a class can now hold a segment the language does not have, `resolveGrammar`
+filters members against the inventory.** Without that filter, removing a phoneme would
+change the chart and nothing else — the generator would go on producing it. That is the
+load-bearing line in the whole orphaning design, and `resolveGrammar`'s tests pin it.
+
+Any future table hanging off `phonemes` needs this decision made deliberately: cascade and
+warn, or store the symbol, flag the orphan, and filter it out of anything generative.
 
 **The phoneme inventory inverts the realtime rule: it notifies, it never patches.**
 Every other store applies events to its state. `src/stores/phonemes.ts` does not — the
@@ -246,9 +261,11 @@ clients: the collaborator's save round-tripped, the pure module generated well-f
 from the read-back grammar with the ŋ-onset constraint holding, and the owner's channel saw
 five events — which is what raises the banner.
 
-After 0012, re-verified live: saving three rules and then removing /ŋ/ from the inventory
-leaves **all three rules present**, exactly one detected as orphaned, and class C reduced
-to `p s`. Before 0012 the same sequence destroyed the rule.
+After 0012 and 0013, re-verified live **through the stores** rather than against the RPC:
+building classes, a template and two rules saves and comes back clean (`dirty` false);
+`discard` works; and then removing /ŋ/ leaves both rules stored, class C still holding
+`p ŋ s`, one orphaned rule and one orphaned member detected, the resolved grammar's C down
+to `p s`, and no generated word containing ŋ.
 
 `auth.users` rows inserted by hand need their token columns set to `''` rather than
 NULL, or sign-in fails with GoTrue's opaque "Database error querying schema".

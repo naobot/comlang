@@ -2,17 +2,9 @@ import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 
 import { subscribeToProjectTable } from "@/composables/useProjectChannel";
-import type {
-  Draft,
-  DraftConstraint,
-  DraftTemplate,
-  Grammar,
-  ResolvedClass,
-  ResolvedConstraint,
-  ResolvedTemplate,
-  SlotRole,
-  Term,
-} from "@/lib/phonotactics";
+import { usePhonemesStore } from "@/stores/phonemes";
+import { canonicalDraft, cloneDraft, resolveGrammar } from "@/lib/phonotactics";
+import type { Draft, DraftConstraint, DraftTemplate, Grammar, SlotRole } from "@/lib/phonotactics";
 import { supabase } from "@/lib/supabase";
 
 // The draft shapes live in the pure module, beside `impactOfRemoving`, which has to
@@ -41,23 +33,14 @@ export type {
 
 const emptyDraft = (): Draft => ({ classes: [], templates: [], constraints: [] });
 
-/** Order-insensitive within a list, so a reorder that changes nothing does not read as
- *  a change, but any real difference does. */
-function canonical(draft: Draft): string {
-  return JSON.stringify({
-    classes: [...draft.classes]
-      .map((c) => ({ ...c, phoneme_ipa: [...c.phoneme_ipa].sort() }))
-      .sort((a, b) => a.symbol.localeCompare(b.symbol)),
-    templates: [...draft.templates]
-      .map((t) => ({ ...t, slots: [...t.slots].sort((a, b) => a.slot_index - b.slot_index) }))
-      .sort((a, b) => a.name.localeCompare(b.name)),
-    constraints: [...draft.constraints].map((c) => JSON.stringify(c)).sort(),
-  });
-}
-
-const clone = (draft: Draft): Draft => structuredClone(draft);
+// Both live in the pure module so they can be tested without this file's Supabase
+// import — which is how `structuredClone` sat here throwing on every save unnoticed.
+const canonical = canonicalDraft;
+const clone = cloneDraft;
 
 export const usePhonotacticsStore = defineStore("phonotactics", () => {
+  const phonemes = usePhonemesStore();
+
   const persisted = ref<Draft>(emptyDraft());
   const draft = ref<Draft>(emptyDraft());
 
@@ -97,20 +80,12 @@ export const usePhonotacticsStore = defineStore("phonotactics", () => {
       return null;
     }
 
-    // Resolve ids back to the symbol/ipa references the draft is written in.
+    // Only classes still need resolving from an id; membership and rule terms are stored
+    // as IPA text precisely so they can outlive the phoneme row.
     const classById = new Map((classes.data ?? []).map((c) => [c.id, c]));
-    const phonemeById = new Map<string, string>();
-    const { data: phonemeRows } = await supabase
-      .from("phonemes")
-      .select("id, ipa")
-      .eq("project_id", projectId);
-    for (const row of phonemeRows ?? []) phonemeById.set(row.id, row.ipa);
 
     const ipaFor = (classId: string) =>
-      (members.data ?? [])
-        .filter((m) => m.class_id === classId)
-        .map((m) => phonemeById.get(m.phoneme_id))
-        .filter((ipa): ipa is string => Boolean(ipa));
+      (members.data ?? []).filter((m) => m.class_id === classId).map((m) => m.ipa);
 
     return {
       classes: (classes.data ?? [])
@@ -365,60 +340,17 @@ export const usePhonotacticsStore = defineStore("phonotactics", () => {
   /**
    * The draft, resolved into what `src/lib/phonotactics.ts` consumes.
    *
-   * Built from the draft rather than from what is saved, so the sample output reflects
-   * an edit before it is committed. This is the only place the two representations meet:
-   * everything past it is pure, and a future word generator enters at exactly this shape.
+   * Built from the draft rather than from what is saved, so the sample output reflects an
+   * edit before it is committed. The inventory is passed in because `resolveGrammar`
+   * filters class members against it — a class may name a segment the language no longer
+   * has, and generating it anyway would make removing a phoneme meaningless.
+   *
+   * This is the only place the two representations meet: everything past it is pure, and
+   * a future word generator enters at exactly this shape.
    */
-  const grammar = computed<Grammar>(() => {
-    const classes: ResolvedClass[] = draft.value.classes.map((c) => ({
-      id: c.symbol, // the symbol is the natural key, and is stable within a draft
-      symbol: c.symbol,
-      label: c.label,
-      ipa: [...c.phoneme_ipa],
-    }));
-    const bySymbol = new Map(classes.map((c) => [c.symbol, c]));
-
-    const templates: ResolvedTemplate[] = draft.value.templates.map((t) => ({
-      id: t.name,
-      name: t.name,
-      weight: t.weight,
-      slots: t.slots
-        .map((s) => {
-          const cls = bySymbol.get(s.class_symbol);
-          return cls ? { role: s.role, optional: s.optional, cls } : null;
-        })
-        .filter((s): s is NonNullable<typeof s> => s !== null),
-    }));
-
-    return {
-      classes,
-      templates,
-      // Annotated, or flatMap infers the whole result from whichever branch it sees
-      // first. A half-specified constraint is dropped rather than guessed at: the
-      // database's kind_shape check would reject it on save anyway, so the generator
-      // should not act on something that cannot be persisted.
-      constraints: draft.value.constraints.flatMap((c): ResolvedConstraint[] => {
-        const term = (classSymbol: string | null, ipa: string | null): Term | null => {
-          if (classSymbol !== null) return { kind: "class", classId: classSymbol };
-          if (ipa !== null) return { kind: "phoneme", ipa };
-          return null;
-        };
-
-        if (c.kind === "no_identical_adjacent") return [{ kind: "no_identical_adjacent" }];
-
-        const a = term(c.a_class_symbol, c.a_phoneme_ipa);
-        if (!a) return [];
-
-        if (c.kind === "forbid_in_role") {
-          return c.role ? [{ kind: "forbid_in_role", role: c.role, a }] : [];
-        }
-
-        const b = term(c.b_class_symbol, c.b_phoneme_ipa);
-        if (!b || !c.seq_position) return [];
-        return [{ kind: "forbid_sequence", position: c.seq_position, a, b }];
-      }),
-    };
-  });
+  const grammar = computed<Grammar>(() =>
+    resolveGrammar(draft.value, new Set(phonemes.inventory.map((p) => p.ipa))),
+  );
 
   return {
     draft,

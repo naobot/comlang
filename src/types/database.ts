@@ -25,22 +25,15 @@ export type Database = {
   public: {
     Tables: {
       phoneme_class_members: {
-        Row: { class_id: string; phoneme_id: string; project_id: string }
-        Insert: { class_id: string; phoneme_id: string; project_id: string }
-        Update: { class_id?: string; phoneme_id?: string; project_id?: string }
+        Row: { class_id: string; ipa: string; project_id: string }
+        Insert: { class_id: string; ipa: string; project_id: string }
+        Update: { class_id?: string; ipa?: string; project_id?: string }
         Relationships: [
           {
             foreignKeyName: "phoneme_class_members_class_id_fkey"
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "phoneme_classes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "phoneme_class_members_phoneme_id_fkey"
-            columns: ["phoneme_id"]
-            isOneToOne: false
-            referencedRelation: "phonemes"
             referencedColumns: ["id"]
           },
           {

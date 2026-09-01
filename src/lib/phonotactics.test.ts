@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vite-plus/test";
+import { reactive, ref } from "vue";
 
 // `?raw` rather than node:fs — this file is type-checked by the DOM tsconfig, which
 // deliberately has no Node types, and Vite resolves the raw import in both.
@@ -10,11 +11,15 @@ import {
   type ResolvedTemplate,
   type Draft,
   type DraftConstraint,
+  canonicalDraft,
+  cloneDraft,
   generateWord,
   generateWords,
   impactOfRemoving,
   orphanedConstraints,
+  orphanedMembers,
   orphanedTerms,
+  resolveGrammar,
   seededRng,
   templateNotation,
   violation,
@@ -350,5 +355,190 @@ describe("orphaned rules", () => {
     const broken = orphanedConstraints(draft, inventory);
     expect(broken).toHaveLength(2);
     expect(broken.map((b) => b.missing)).toEqual([["ŋ"], ["s"]]);
+  });
+});
+
+describe("cloneDraft", () => {
+  const draft: Draft = {
+    classes: [{ symbol: "C", label: null, sort_order: 0, phoneme_ipa: ["p", "t"] }],
+    templates: [
+      {
+        name: "basic",
+        weight: 1,
+        sort_order: 0,
+        notes: null,
+        slots: [{ slot_index: 0, role: "nucleus", optional: false, class_symbol: "C" }],
+      },
+    ],
+    constraints: [],
+  };
+
+  it("copies deeply rather than sharing nested arrays", () => {
+    const copy = cloneDraft(draft);
+    copy.classes[0]?.phoneme_ipa.push("k");
+    expect(draft.classes[0]?.phoneme_ipa).toEqual(["p", "t"]);
+  });
+
+  // The regression. `structuredClone` throws DataCloneError on a Vue reactive proxy, and
+  // the store clones as the first thing `save()` does — so every save died before
+  // reaching the database, with nothing shown to the user.
+  it("survives a Vue reactive proxy", () => {
+    expect(() => cloneDraft(reactive(structuredClone(draft)))).not.toThrow();
+    expect(() => cloneDraft(ref(structuredClone(draft)).value)).not.toThrow();
+  });
+
+  it("produces a plain object a reactive source can be compared against", () => {
+    const live = ref(structuredClone(draft));
+    expect(canonicalDraft(cloneDraft(live.value))).toBe(canonicalDraft(draft));
+  });
+});
+
+describe("canonicalDraft", () => {
+  const base: Draft = {
+    classes: [
+      { symbol: "V", label: null, sort_order: 1, phoneme_ipa: ["a", "i"] },
+      { symbol: "C", label: null, sort_order: 0, phoneme_ipa: ["p"] },
+    ],
+    templates: [],
+    constraints: [],
+  };
+
+  it("ignores the order of classes and of members within them", () => {
+    const shuffled: Draft = {
+      ...base,
+      classes: [
+        { symbol: "C", label: null, sort_order: 0, phoneme_ipa: ["p"] },
+        { symbol: "V", label: null, sort_order: 1, phoneme_ipa: ["i", "a"] },
+      ],
+    };
+    expect(canonicalDraft(shuffled)).toBe(canonicalDraft(base));
+  });
+
+  it("still notices a real change", () => {
+    const changed = cloneDraft(base);
+    changed.classes[0]?.phoneme_ipa.push("u");
+    expect(canonicalDraft(changed)).not.toBe(canonicalDraft(base));
+  });
+
+  // Slot order is meaningful — (C)V is not V(C) — so it must survive canonicalisation.
+  it("does not flatten slot order", () => {
+    const one: Draft = {
+      ...base,
+      templates: [
+        {
+          name: "t",
+          weight: 1,
+          sort_order: 0,
+          notes: null,
+          slots: [
+            { slot_index: 0, role: "onset", optional: true, class_symbol: "C" },
+            { slot_index: 1, role: "nucleus", optional: false, class_symbol: "V" },
+          ],
+        },
+      ],
+    };
+    const two = cloneDraft(one);
+    const slots = two.templates[0]?.slots;
+    if (slots?.[0] && slots[1]) {
+      slots[0].class_symbol = "V";
+      slots[1].class_symbol = "C";
+    }
+    expect(canonicalDraft(two)).not.toBe(canonicalDraft(one));
+  });
+});
+
+describe("resolveGrammar", () => {
+  const draft: Draft = {
+    classes: [
+      { symbol: "C", label: null, sort_order: 0, phoneme_ipa: ["p", "ŋ"] },
+      { symbol: "V", label: null, sort_order: 1, phoneme_ipa: ["a"] },
+    ],
+    templates: [
+      {
+        name: "basic",
+        weight: 1,
+        sort_order: 0,
+        notes: null,
+        slots: [
+          { slot_index: 0, role: "onset", optional: true, class_symbol: "C" },
+          { slot_index: 1, role: "nucleus", optional: false, class_symbol: "V" },
+        ],
+      },
+    ],
+    constraints: [],
+  };
+
+  // The load-bearing one. A class may name a segment the inventory no longer has, and if
+  // the generator kept producing it then removing a phoneme would change nothing at all.
+  it("drops class members the inventory does not have", () => {
+    const g = resolveGrammar(draft, new Set(["p", "a"]));
+    expect(g.classes.find((c) => c.symbol === "C")?.ipa).toEqual(["p"]);
+  });
+
+  it("never generates a segment that has left the inventory", () => {
+    const g = resolveGrammar(draft, new Set(["p", "a"]));
+    for (const result of generateWords(g, {}, seededRng(4), 200)) {
+      if (!result.ok) continue;
+      expect(result.ipa).not.toContain("ŋ");
+    }
+  });
+
+  it("keeps everything when the inventory still has it", () => {
+    const g = resolveGrammar(draft, new Set(["p", "ŋ", "a"]));
+    expect(g.classes.find((c) => c.symbol === "C")?.ipa).toEqual(["p", "ŋ"]);
+  });
+
+  it("drops a slot whose class does not exist rather than emitting a hole", () => {
+    const broken: Draft = {
+      ...draft,
+      templates: [
+        {
+          ...draft.templates[0]!,
+          slots: [
+            { slot_index: 0, role: "onset", optional: true, class_symbol: "GONE" },
+            { slot_index: 1, role: "nucleus", optional: false, class_symbol: "V" },
+          ],
+        },
+      ],
+    };
+    expect(resolveGrammar(broken, new Set(["a"])).templates[0]?.slots).toHaveLength(1);
+  });
+
+  it("drops a half-specified rule the database would refuse anyway", () => {
+    const halfRule: Draft = {
+      ...draft,
+      constraints: [
+        {
+          kind: "forbid_sequence",
+          role: null,
+          seq_position: "anywhere",
+          a_class_symbol: "C",
+          a_phoneme_ipa: null,
+          b_class_symbol: null,
+          b_phoneme_ipa: null,
+          note: null,
+        },
+      ],
+    };
+    expect(resolveGrammar(halfRule, new Set(["p", "a"])).constraints).toEqual([]);
+  });
+});
+
+describe("orphanedMembers", () => {
+  const draft: Draft = {
+    classes: [
+      { symbol: "C", label: null, sort_order: 0, phoneme_ipa: ["p", "ŋ"] },
+      { symbol: "V", label: null, sort_order: 1, phoneme_ipa: ["a"] },
+    ],
+    templates: [],
+    constraints: [],
+  };
+
+  it("names the class and the segments it can no longer use", () => {
+    expect(orphanedMembers(draft, new Set(["p", "a"]))).toEqual([{ symbol: "C", missing: ["ŋ"] }]);
+  });
+
+  it("says nothing when every member is in the inventory", () => {
+    expect(orphanedMembers(draft, new Set(["p", "ŋ", "a"]))).toEqual([]);
   });
 });

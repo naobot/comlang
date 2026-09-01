@@ -58,13 +58,14 @@ async function save() {
   // the panel is not, so a long chart can put them on different screens.
   if (destructive.value) {
     const n = impact.value.orphaned.length;
+    const c = impact.value.classes.length;
     const bits = [
-      n ? `stop ${n} phonotactic rule${n === 1 ? "" : "s"} from applying` : null,
-      impact.value.classes.length
-        ? `change ${impact.value.classes.length} phoneme class${impact.value.classes.length === 1 ? "" : "es"}`
-        : null,
+      n ? `${n} phonotactic rule${n === 1 ? "" : "s"}` : null,
+      c ? `${c} phoneme class${c === 1 ? "" : "es"}` : null,
     ].filter(Boolean);
-    if (!window.confirm(`This will also ${bits.join(" and ")}. Continue?`)) return;
+    // Nothing is destroyed — both sides keep their reference — but they stop having any
+    // effect, and silently inert is the failure worth interrupting for.
+    if (!window.confirm(`This will stop ${bits.join(" and ")} from applying. Continue?`)) return;
   }
   await phonemes.save(props.projectId);
   // The cascade already happened in the database; re-read so the phonotactics page is
@@ -110,7 +111,10 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
     <!-- Deliberately above the action bar rather than inside it: the specifics matter
          more than the summary, and they do not fit on one sticky line. -->
     <div v-if="destructive" class="impact" role="alert">
-      <p class="impact-head">Removing these will change the phonotactics.</p>
+      <p class="impact-head">
+        Removing these will stop parts of the phonotactics from applying. Nothing is deleted — it
+        comes back if you put the segment back.
+      </p>
       <ul>
         <li v-if="impact.orphaned.length">
           <strong>
@@ -123,9 +127,9 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
           <em> — kept, but no longer enforced until the segment comes back.</em>
         </li>
         <li v-for="cls in impact.classes" :key="cls.symbol">
-          class <code>{{ cls.symbol }}</code> loses
+          class <code>{{ cls.symbol }}</code> can no longer use
           <span v-for="ipa in cls.ipa" :key="ipa" class="rule">{{ ipa }}</span>
-          <em v-if="impact.emptied.includes(cls.symbol)"> — leaving it empty</em>
+          <em v-if="impact.emptied.includes(cls.symbol)"> — leaving nothing it can fill</em>
         </li>
         <li v-if="impact.templates.length">
           <strong>

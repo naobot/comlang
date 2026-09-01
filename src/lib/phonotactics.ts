@@ -312,6 +312,41 @@ export type Draft = {
   constraints: DraftConstraint[];
 };
 
+/**
+ * Deep copy of a draft.
+ *
+ * **Not `structuredClone`.** A draft held in a Vue `ref` is a reactive Proxy, and
+ * `structuredClone` throws `DataCloneError: #<Object> could not be cloned` on one. That
+ * failed silently: the store's `save()` cloned before doing anything else, so the throw
+ * escaped before any error state was set and the button simply did nothing.
+ *
+ * A JSON round-trip reads through the proxy and is exact here, because a Draft is only
+ * strings, numbers, booleans, nulls and arrays.
+ */
+export function cloneDraft(draft: Draft): Draft {
+  return JSON.parse(JSON.stringify(draft)) as Draft;
+}
+
+/**
+ * A stable string for comparing two drafts, used for both the dirty check and for
+ * telling a collaborator's save apart from the echo of our own.
+ *
+ * Order-insensitive within each list, so re-ordering something that has no meaningful
+ * order does not read as a change — while slot order, which *is* meaningful, is
+ * preserved by sorting on `slot_index` rather than discarding it.
+ */
+export function canonicalDraft(draft: Draft): string {
+  return JSON.stringify({
+    classes: [...draft.classes]
+      .map((c) => ({ ...c, phoneme_ipa: [...c.phoneme_ipa].sort() }))
+      .sort((a, b) => a.symbol.localeCompare(b.symbol)),
+    templates: [...draft.templates]
+      .map((t) => ({ ...t, slots: [...t.slots].sort((a, b) => a.slot_index - b.slot_index) }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
+    constraints: [...draft.constraints].map((c) => JSON.stringify(c)).sort(),
+  });
+}
+
 export type RemovalImpact = {
   /** Classes that lose members, and which. */
   classes: { symbol: string; ipa: string[] }[];
@@ -342,6 +377,75 @@ export function orphanedTerms(
   return out;
 }
 
+/** Class members naming a segment the inventory no longer has. */
+export function orphanedMembers(
+  draft: Draft,
+  inventory: ReadonlySet<string>,
+): { symbol: string; missing: string[] }[] {
+  return draft.classes
+    .map((c) => ({ symbol: c.symbol, missing: c.phoneme_ipa.filter((ipa) => !inventory.has(ipa)) }))
+    .filter((entry) => entry.missing.length > 0);
+}
+
+/**
+ * The draft resolved into what the sampler consumes, with class membership **filtered
+ * against the inventory**.
+ *
+ * That filter is not a detail. Since 0013 a class may hold a segment the language no
+ * longer has, and without this the generator would keep producing it — removing a phoneme
+ * would change the chart and nothing else. The inventory is what the language *has*; a
+ * class is only a name for part of it.
+ */
+export function resolveGrammar(draft: Draft, inventory: ReadonlySet<string>): Grammar {
+  const classes: ResolvedClass[] = draft.classes.map((c) => ({
+    // The symbol is the natural key and is unique within a draft, so it serves as the id
+    // without needing the database's uuid.
+    id: c.symbol,
+    symbol: c.symbol,
+    label: c.label,
+    ipa: c.phoneme_ipa.filter((ipa) => inventory.has(ipa)),
+  }));
+  const bySymbol = new Map(classes.map((c) => [c.symbol, c]));
+
+  const templates: ResolvedTemplate[] = draft.templates.map((t) => ({
+    id: t.name,
+    name: t.name,
+    weight: t.weight,
+    slots: t.slots
+      .map((slot) => {
+        const cls = bySymbol.get(slot.class_symbol);
+        return cls ? { role: slot.role, optional: slot.optional, cls } : null;
+      })
+      .filter((slot): slot is ResolvedSlot => slot !== null),
+  }));
+
+  const term = (classSymbol: string | null, ipa: string | null): Term | null => {
+    if (classSymbol !== null) return { kind: "class", classId: classSymbol };
+    if (ipa !== null) return { kind: "phoneme", ipa };
+    return null;
+  };
+
+  // A half-specified rule is dropped rather than guessed at: the database's kind_shape
+  // check would refuse it on save, so the generator must not act on something that
+  // cannot be persisted.
+  const constraints = draft.constraints.flatMap((c): ResolvedConstraint[] => {
+    if (c.kind === "no_identical_adjacent") return [{ kind: "no_identical_adjacent" }];
+
+    const a = term(c.a_class_symbol, c.a_phoneme_ipa);
+    if (!a) return [];
+
+    if (c.kind === "forbid_in_role") {
+      return c.role ? [{ kind: "forbid_in_role", role: c.role, a }] : [];
+    }
+
+    const b = term(c.b_class_symbol, c.b_phoneme_ipa);
+    if (!b || !c.seq_position) return [];
+    return [{ kind: "forbid_sequence", position: c.seq_position, a, b }];
+  });
+
+  return { classes, templates, constraints };
+}
+
 /** Every rule in the draft with at least one dangling segment reference. */
 export function orphanedConstraints(
   draft: Draft,
@@ -355,14 +459,11 @@ export function orphanedConstraints(
 /**
  * What removing these segments from the inventory would do to the phonotactics.
  *
- * This exists because the damage is invisible at the point it is caused.
- * `phoneme_class_members` loses the membership by cascade, and rules naming the segment
- * are left orphaned — still there, but no longer enforced, since nothing generated can
- * carry a symbol the inventory does not have.
- *
- * They used to be deleted outright, which was worse: a rule someone deliberately wrote
- * vanished with nothing left to reconstruct it from. Migration 0012 traded the foreign
- * key for plain IPA text so the rule survives and can be shown as broken instead.
+ * Nothing is destroyed any more — since 0012 and 0013 both rules and class membership
+ * survive the segment leaving, holding a reference that no longer resolves. But they stop
+ * having any effect, because `resolveGrammar` filters class members against the inventory
+ * and a rule can only fire on a segment that can be generated. Silently inert is a quieter
+ * failure than deleted, so it still has to be said out loud before the save.
  */
 export function impactOfRemoving(draft: Draft, removing: ReadonlySet<string>): RemovalImpact {
   if (removing.size === 0) return { classes: [], emptied: [], orphaned: [], templates: [] };
@@ -371,6 +472,8 @@ export function impactOfRemoving(draft: Draft, removing: ReadonlySet<string>): R
     .map((c) => ({ symbol: c.symbol, ipa: c.phoneme_ipa.filter((ipa) => removing.has(ipa)) }))
     .filter((c) => c.ipa.length > 0);
 
+  // "Emptied" means nothing *usable* is left. The members stay in the class since 0013,
+  // but the generator ignores what the inventory does not have, so the effect is the same.
   const emptied = draft.classes
     .filter((c) => c.phoneme_ipa.length > 0 && c.phoneme_ipa.every((ipa) => removing.has(ipa)))
     .map((c) => c.symbol);

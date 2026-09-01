@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 
 import PhoneToggle from "@/components/ipa/PhoneToggle.vue";
 import { FEATURES_BY_IPA, MANNERS, PHONE_BY_IPA } from "@/data/ipa";
+import { orphanedTerms } from "@/lib/phonotactics";
 import { usePhonemesStore } from "@/stores/phonemes";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
 
@@ -27,6 +28,14 @@ function add() {
 function fill(symbol: string, predicate: (ipa: string) => boolean) {
   phonotactics.setMembers(symbol, available.value.map((p) => p.ipa).filter(predicate));
 }
+
+const inventoryIpa = computed(() => new Set(available.value.map((p) => p.ipa)));
+
+// Since 0013 a class keeps a member whose phoneme has left the inventory, rather than
+// losing it silently. It is not usable — the generator filters against the inventory —
+// so it is shown struck through and named, not quietly hidden.
+const isOrphan = (ipa: string) => !inventoryIpa.value.has(ipa);
+const missingIn = (ipa: string[]) => ipa.filter(isOrphan);
 
 const isVowel = (ipa: string) => PHONE_BY_IPA.get(ipa)?.kind === "vowel";
 const byManner = (manner: string) => (ipa: string) => FEATURES_BY_IPA.get(ipa)?.manner === manner;
@@ -69,9 +78,22 @@ const availableManners = computed(() =>
         </div>
 
         <p v-if="cls.phoneme_ipa.length" class="members">
-          <span v-for="ipa in cls.phoneme_ipa" :key="ipa">{{ ipa }}</span>
+          <span v-for="ipa in cls.phoneme_ipa" :key="ipa" :class="{ orphan: isOrphan(ipa) }">
+            {{ ipa }}
+          </span>
         </p>
         <p v-else class="warn">Empty. A required slot using this class can never be filled.</p>
+
+        <p v-if="missingIn(cls.phoneme_ipa).length" class="warn">
+          {{
+            missingIn(cls.phoneme_ipa)
+              .map((ipa) => `/${ipa}/`)
+              .join(", ")
+          }}
+          {{ missingIn(cls.phoneme_ipa).length === 1 ? "is" : "are" }} no longer in the inventory,
+          so {{ missingIn(cls.phoneme_ipa).length === 1 ? "it is" : "they are" }}
+          kept here but never generated.
+        </p>
 
         <div v-if="open === cls.symbol" class="picker">
           <div class="quick">
@@ -86,6 +108,18 @@ const availableManners = computed(() =>
               @click="fill(cls.symbol, byManner(manner))"
             >
               {{ manner }}s
+            </button>
+            <button
+              v-if="missingIn(cls.phoneme_ipa).length"
+              type="button"
+              @click="
+                phonotactics.setMembers(
+                  cls.symbol,
+                  cls.phoneme_ipa.filter((i) => !isOrphan(i)),
+                )
+              "
+            >
+              Drop missing
             </button>
             <button type="button" @click="phonotactics.setMembers(cls.symbol, [])">Clear</button>
           </div>
@@ -184,6 +218,13 @@ h2 {
   margin: var(--sp-2) 0 0;
   color: var(--c-danger);
   font-size: 0.8125rem;
+}
+
+/* Kept but unusable. Struck through rather than removed: it is still someone's choice,
+   and it comes back the moment the segment does. */
+.members .orphan {
+  color: var(--c-danger);
+  text-decoration: line-through;
 }
 
 .picker {
