@@ -39,6 +39,19 @@ export const usePhonemesStore = defineStore("phonemes", () => {
   /** Non-empty once the inventory has been saved — what downstream pages gate on. */
   const count = computed(() => persisted.value.size);
 
+  /**
+   * The *saved* inventory, rows and all, in chart order.
+   *
+   * `selected` is the draft and is bare symbols; anything that needs a real
+   * `phoneme_id` foreign key — phoneme class membership, for one — has to read this
+   * instead, and must see only what is actually persisted.
+   */
+  const inventory = computed(() =>
+    [...persisted.value.values()].sort(
+      (a, b) => (PHONE_ORDER.get(a.ipa) ?? 0) - (PHONE_ORDER.get(b.ipa) ?? 0),
+    ),
+  );
+
   const dirty = computed(() => {
     if (draft.value.size !== persisted.value.size) return true;
     for (const ipa of draft.value) if (!persisted.value.has(ipa)) return true;
@@ -188,6 +201,7 @@ export const usePhonemesStore = defineStore("phonemes", () => {
     consonants,
     vowels,
     count,
+    inventory,
     dirty,
     loading,
     saving,

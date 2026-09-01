@@ -17,15 +17,45 @@ itself a repo:
 
 Built: the **access layer** (`projects`, `project_members`, RLS), auth, the dashboard,
 the project workspace *shell* — a navy-on-white header with the conlang name and a gear
-menu at the left, section tabs across the middle, and the app name at the right — and
-the first linguistic-core section, the **phoneme inventory**.
+menu at the left, section tabs across the middle, and the app name at the right — and the
+first two linguistic-core sections, the **phoneme inventory** and **phonotactics**.
 
-Not built, on purpose: the rest of the **linguistic core** (phonotactics, word classes,
-lexicon, grammar rules, orthography). Each needs its own design pass — those tabs render
+Not built, on purpose: the rest of the **linguistic core** (word classes, lexicon,
+grammar rules, orthography). Each needs its own design pass — those tabs render
 `SectionPlaceholderView.vue`; they are placeholders, not stubs waiting to be filled in
 blind. Also deferred: changelog/version history, and any public/private flag.
 
 ## Gotchas that will otherwise be rediscovered as bugs
+
+**`src/lib/phonotactics.ts` is pure, and that is the whole point of it.** No imports
+from `vue`, `pinia`, or the Supabase client — a future word-generator feature imports it
+unchanged, and the moment it reaches for the database it stops being reusable and becomes
+this page's internals. `phonotactics.test.ts` asserts the import list is empty rather than
+trusting the comment; that guard was checked to actually fail when violated.
+
+**Its attempt cap is load-bearing.** An over-constrained grammar — a constraint forbidding
+the only nucleus class — has no satisfying word, and an unbounded resample would hang the
+tab. `generateWord` returns `{ ok: false, reason }` instead. Keep failure as data.
+
+**Two different echo-detection strategies, deliberately.** `phonemes.ts` tracks the ids it
+wrote (`ownWrites`); `phonotactics.ts` debounces a re-fetch and *compares* against what it
+holds. The second is provably right rather than approximately right, and it exists because
+one phonotactics save writes across five tables at once, where id bookkeeping would be
+fragile. Copy the comparison approach for any future multi-table page.
+
+**`save_phonotactics` clears slots before it deletes classes.** `syllable_slots.class_id`
+is `on delete restrict` so a class cannot vanish from under a live template — which also
+means a legitimate "remove the class and the slots using it" save has to empty the slots
+first or it trips its own guard. The ordering inside that function is not incidental.
+
+**Class and template ids survive a save**, because the RPC upserts on the natural key
+(`symbol`, `name`) rather than recreating. Slots and constraints reference class ids, so
+delete-and-recreate would churn every foreign key on every save. Verified directly.
+
+**Deleting a phoneme from the inventory silently empties it out of every class.** That is
+`phoneme_class_members.phoneme_id on delete cascade` doing what it should, but there is no
+warning on the inventory page — observed going from 3 members to 1. The class editor
+flags an empty class in red, which is the only signal.
 
 **The phoneme inventory inverts the realtime rule: it notifies, it never patches.**
 Every other store applies events to its state. `src/stores/phonemes.ts` does not — the
@@ -188,6 +218,16 @@ a non-member is refused with 42501 rather than silently writing nothing; an anon
 call is refused at the grant. Over Realtime with two signed-in clients: inserts and
 deletes both arrive, the delete carrying **only the primary key**, and every event id was
 attributable to a save the client had made — which is the premise `ownWrites` rests on.
+
+What was verified when phonotactics went in (2026-09-01): as a **collaborator**,
+`save_phonotactics` writes all five tables in one call; a re-save that relabels a class and
+drops another keeps the surviving classes' **ids stable**; a class still referenced by a
+slot cannot be deleted directly (`on delete restrict`) while the save that removes both
+together succeeds; `kind_shape` rejects a `forbid_sequence` carrying one term; a class
+member that is not in the inventory is refused by name. Over PostgREST with two signed-in
+clients: the collaborator's save round-tripped, the pure module generated well-formed words
+from the read-back grammar with the ŋ-onset constraint holding, and the owner's channel saw
+five events — which is what raises the banner.
 
 `auth.users` rows inserted by hand need their token columns set to `''` rather than
 NULL, or sign-in fails with GoTrue's opaque "Database error querying schema".

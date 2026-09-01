@@ -24,6 +24,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      phoneme_class_members: {
+        Row: { class_id: string; phoneme_id: string; project_id: string }
+        Insert: { class_id: string; phoneme_id: string; project_id: string }
+        Update: { class_id?: string; phoneme_id?: string; project_id?: string }
+        Relationships: [
+          {
+            foreignKeyName: "phoneme_class_members_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "phoneme_classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phoneme_class_members_phoneme_id_fkey"
+            columns: ["phoneme_id"]
+            isOneToOne: false
+            referencedRelation: "phonemes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phoneme_class_members_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      phoneme_classes: {
+        Row: {
+          created_at: string
+          id: string
+          label: string | null
+          project_id: string
+          sort_order: number
+          symbol: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          project_id: string
+          sort_order?: number
+          symbol: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          project_id?: string
+          sort_order?: number
+          symbol?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phoneme_classes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       phonemes: {
         Row: {
           created_at: string
@@ -52,6 +118,84 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "phonemes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      phonotactic_constraints: {
+        Row: {
+          a_class_id: string | null
+          a_phoneme_id: string | null
+          b_class_id: string | null
+          b_phoneme_id: string | null
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["constraint_kind"]
+          note: string | null
+          project_id: string
+          role: Database["public"]["Enums"]["slot_role"] | null
+          seq_position: Database["public"]["Enums"]["sequence_position"] | null
+        }
+        Insert: {
+          a_class_id?: string | null
+          a_phoneme_id?: string | null
+          b_class_id?: string | null
+          b_phoneme_id?: string | null
+          created_at?: string
+          id?: string
+          kind: Database["public"]["Enums"]["constraint_kind"]
+          note?: string | null
+          project_id: string
+          role?: Database["public"]["Enums"]["slot_role"] | null
+          seq_position?: Database["public"]["Enums"]["sequence_position"] | null
+        }
+        Update: {
+          a_class_id?: string | null
+          a_phoneme_id?: string | null
+          b_class_id?: string | null
+          b_phoneme_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["constraint_kind"]
+          note?: string | null
+          project_id?: string
+          role?: Database["public"]["Enums"]["slot_role"] | null
+          seq_position?: Database["public"]["Enums"]["sequence_position"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phonotactic_constraints_a_class_id_fkey"
+            columns: ["a_class_id"]
+            isOneToOne: false
+            referencedRelation: "phoneme_classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phonotactic_constraints_a_phoneme_id_fkey"
+            columns: ["a_phoneme_id"]
+            isOneToOne: false
+            referencedRelation: "phonemes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phonotactic_constraints_b_class_id_fkey"
+            columns: ["b_class_id"]
+            isOneToOne: false
+            referencedRelation: "phoneme_classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phonotactic_constraints_b_phoneme_id_fkey"
+            columns: ["b_phoneme_id"]
+            isOneToOne: false
+            referencedRelation: "phonemes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "phonotactic_constraints_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -146,6 +290,99 @@ export type Database = {
         }
         Relationships: []
       }
+      syllable_slots: {
+        Row: {
+          class_id: string
+          id: string
+          optional: boolean
+          project_id: string
+          role: Database["public"]["Enums"]["slot_role"]
+          slot_index: number
+          template_id: string
+        }
+        Insert: {
+          class_id: string
+          id?: string
+          optional?: boolean
+          project_id: string
+          role: Database["public"]["Enums"]["slot_role"]
+          slot_index: number
+          template_id: string
+        }
+        Update: {
+          class_id?: string
+          id?: string
+          optional?: boolean
+          project_id?: string
+          role?: Database["public"]["Enums"]["slot_role"]
+          slot_index?: number
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "syllable_slots_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "phoneme_classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "syllable_slots_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "syllable_slots_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "syllable_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      syllable_templates: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          notes: string | null
+          project_id: string
+          sort_order: number
+          updated_at: string
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          notes?: string | null
+          project_id: string
+          sort_order?: number
+          updated_at?: string
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          project_id?: string
+          sort_order?: number
+          updated_at?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "syllable_templates_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -204,10 +441,20 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      save_phonotactics: {
+        Args: { p_payload: Json; p_project_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
+      constraint_kind:
+        | "forbid_in_role"
+        | "forbid_sequence"
+        | "no_identical_adjacent"
       phoneme_kind: "consonant" | "vowel"
       project_role: "owner" | "collaborator"
+      sequence_position: "anywhere" | "word_initial" | "word_final"
+      slot_role: "onset" | "nucleus" | "coda"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -335,8 +582,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      constraint_kind: [
+        "forbid_in_role",
+        "forbid_sequence",
+        "no_identical_adjacent",
+      ],
       phoneme_kind: ["consonant", "vowel"],
       project_role: ["owner", "collaborator"],
+      sequence_position: ["anywhere", "word_initial", "word_final"],
+      slot_role: ["onset", "nucleus", "coda"],
     },
   },
 } as const

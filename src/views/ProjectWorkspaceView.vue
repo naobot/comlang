@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
 import { useMembersStore } from "@/stores/members";
 import { usePhonemesStore } from "@/stores/phonemes";
+import { usePhonotacticsStore } from "@/stores/phonotactics";
 import { useProjectsStore } from "@/stores/projects";
 
 const props = defineProps<{ projectId: string }>();
@@ -10,6 +11,7 @@ const props = defineProps<{ projectId: string }>();
 const projects = useProjectsStore();
 const members = useMembersStore();
 const phonemes = usePhonemesStore();
+const phonotactics = usePhonotacticsStore();
 const resolving = ref(true);
 
 const project = computed(() => projects.get(props.projectId));
@@ -32,6 +34,8 @@ function loadProjectData(projectId: string) {
   void members.fetchFor(projectId);
   phonemes.subscribe(projectId);
   void phonemes.fetchFor(projectId);
+  phonotactics.subscribe(projectId);
+  void phonotactics.fetchFor(projectId);
 }
 
 onMounted(async () => {
@@ -50,6 +54,7 @@ onUnmounted(() => {
   projects.unsubscribeAll();
   members.unsubscribeAll();
   phonemes.unsubscribeAll();
+  phonotactics.unsubscribeAll();
 });
 </script>
 

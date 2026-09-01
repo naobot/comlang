@@ -363,6 +363,30 @@ function collect(): Phone[] {
   return out;
 }
 
+/**
+ * Place, manner and voicing per pulmonic symbol.
+ *
+ * `Phone.name` already carries this, but as prose ("voiced velar nasal"). The class
+ * editor's quick-fill ("all nasals", "all plosives") needs it queryable, and parsing it
+ * back out of the label would be a silent dependency on that string's wording.
+ *
+ * Non-pulmonic and "other symbols" entries are absent by design: they have no cell on
+ * the grid, so there is no place/manner pair to record.
+ */
+export type PhoneFeatures = { place: Place; manner: Manner; voiced: boolean };
+
+export const FEATURES_BY_IPA: Map<string, PhoneFeatures> = new Map(
+  PULMONIC_ROWS.flatMap((row) =>
+    row.cells.flatMap((cell) => {
+      const out: [string, PhoneFeatures][] = [];
+      const { place, manner } = cell;
+      if (cell.voiceless) out.push([cell.voiceless.ipa, { place, manner, voiced: false }]);
+      if (cell.voiced) out.push([cell.voiced.ipa, { place, manner, voiced: true }]);
+      return out;
+    }),
+  ),
+);
+
 /** Every phone on the chart, in reading order. */
 export const ALL_PHONES: Phone[] = collect();
 

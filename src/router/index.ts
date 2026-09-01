@@ -56,8 +56,10 @@ const router = createRouter({
         {
           path: "phonotactics",
           name: "project-phonotactics",
-          component: SectionPlaceholder,
+          component: () => import("@/views/project/PhonotacticsView.vue"),
           props: true,
+          // The view renders the dependency notice itself; `requires` stays so the
+          // meta reads the same across sections.
           meta: { tab: "Phonotactics", requires: "phonemes" },
         },
         {

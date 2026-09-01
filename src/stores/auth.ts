@@ -46,12 +46,15 @@ export const useAuthStore = defineStore("auth", () => {
         useProjectsStore().reset();
         // Imported here rather than at the top: stores/members.ts imports this module,
         // so a static import back would be a cycle.
-        void Promise.all([import("@/stores/members"), import("@/stores/phonemes")]).then(
-          ([members, phonemes]) => {
-            members.useMembersStore().reset();
-            phonemes.usePhonemesStore().reset();
-          },
-        );
+        void Promise.all([
+          import("@/stores/members"),
+          import("@/stores/phonemes"),
+          import("@/stores/phonotactics"),
+        ]).then(([members, phonemes, phonotactics]) => {
+          members.useMembersStore().reset();
+          phonemes.usePhonemesStore().reset();
+          phonotactics.usePhonotacticsStore().reset();
+        });
       }
     });
 

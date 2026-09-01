@@ -15,6 +15,16 @@ export type Profile = Tables<"profiles">;
 export type Phoneme = Tables<"phonemes">;
 export type PhonemeKind = Enums<"phoneme_kind">;
 
+/** Phonotactics: named segment classes, syllable templates, and their constraints. */
+export type PhonemeClass = Tables<"phoneme_classes">;
+export type PhonemeClassMember = Tables<"phoneme_class_members">;
+export type SyllableTemplate = Tables<"syllable_templates">;
+export type SyllableSlot = Tables<"syllable_slots">;
+export type PhonotacticConstraint = Tables<"phonotactic_constraints">;
+export type SlotRole = Enums<"slot_role">;
+export type ConstraintKind = Enums<"constraint_kind">;
+export type SequencePosition = Enums<"sequence_position">;
+
 /** A membership joined to the person it belongs to, as the members list renders it. */
 export type ProjectMemberWithProfile = ProjectMember & {
   profile: Pick<Profile, "id" | "email" | "display_name"> | null;
