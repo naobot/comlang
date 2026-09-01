@@ -72,7 +72,7 @@ const router = createRouter({
         {
           path: "lexicon",
           name: "project-lexicon",
-          component: SectionPlaceholder,
+          component: () => import("@/views/project/LexiconView.vue"),
           props: true,
           meta: { tab: "Lexicon", requires: "phonemes" },
         },

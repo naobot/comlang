@@ -50,10 +50,12 @@ export const useAuthStore = defineStore("auth", () => {
           import("@/stores/members"),
           import("@/stores/phonemes"),
           import("@/stores/phonotactics"),
-        ]).then(([members, phonemes, phonotactics]) => {
+          import("@/stores/lexicon"),
+        ]).then(([members, phonemes, phonotactics, lexicon]) => {
           members.useMembersStore().reset();
           phonemes.usePhonemesStore().reset();
           phonotactics.usePhonotacticsStore().reset();
+          lexicon.useLexiconStore().reset();
         });
       }
     });

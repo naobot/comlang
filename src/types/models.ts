@@ -25,6 +25,12 @@ export type SlotRole = Enums<"slot_role">;
 export type ConstraintKind = Enums<"constraint_kind">;
 export type SequencePosition = Enums<"sequence_position">;
 
+/**
+ * One dictionary entry. `word_class` is free text on purpose — the word-classes design is
+ * tabled, and a foreign key would have to invent the table it points at. See 0014.
+ */
+export type LexiconEntry = Tables<"lexicon_entries">;
+
 /** A membership joined to the person it belongs to, as the members list renders it. */
 export type ProjectMemberWithProfile = ProjectMember & {
   profile: Pick<Profile, "id" | "email" | "display_name"> | null;

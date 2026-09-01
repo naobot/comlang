@@ -18,14 +18,42 @@ itself a repo:
 Built: the **access layer** (`projects`, `project_members`, RLS), auth, the dashboard,
 the project workspace *shell* — a navy-on-white header with the conlang name and a gear
 menu at the left, section tabs across the middle, and the app name at the right — and the
-first two linguistic-core sections, the **phoneme inventory** and **phonotactics**.
+first three linguistic-core sections: the **phoneme inventory**, **phonotactics**, and the
+**lexicon** (seeded with the 60 entries from `grammar.yaml`).
 
-Not built, on purpose: the rest of the **linguistic core** (word classes, lexicon,
-grammar rules, orthography). Each needs its own design pass — those tabs render
+Not built, on purpose: **word classes**, **grammar rules** and **orthography**. Word
+classes was designed and then tabled: the source resists a slot model in five places
+(`phonological_word` splits a template across word boundaries, `semantic_particle` shares
+the case slot, plural is reduplication, evidentiality is a coda rather than a morpheme, and
+`categories` does not line up with `closed_class`). None of that had to be settled to start
+writing words down, which is why the lexicon jumped the queue. Each needs its own design pass — those tabs render
 `SectionPlaceholderView.vue`; they are placeholders, not stubs waiting to be filled in
 blind. Also deferred: changelog/version history, and any public/private flag.
 
 ## Gotchas that will otherwise be rediscovered as bugs
+
+**A draft and its baseline must never be the same object.** The lexicon store held two
+`EntryDraft`s and, on adopting a collaborator's version, assigned one object to both — so
+every later keystroke mutated the baseline too, `dirty` was pinned to false, and the open
+entry silently accepted an overwrite. `baseline` is now the **row**, not a second draft:
+different types cannot alias. Watch for this anywhere a store keeps "what I have" beside
+"what I started from".
+
+**The lexicon is the one section whose realtime patches the list.** A collaborator adding a
+word just appears — a dictionary you must reload is a worse dictionary. Only the entry open
+in the editor is held still, and only while it is dirty; a clean draft adopts theirs
+silently, and a delete says so rather than blanking the pane. Echo detection needs no
+bookkeeping here because `baseline` makes "is this actually different?" answerable directly.
+
+**`lexicon_entries` has no unique constraint on `lemma`, deliberately.** The language has
+homographs — `gwan` is both "meaning" (noun) and "become" (verb) in the imported data, and
+`exceptions` in grammar.yaml carries "homograph" as a sentinel. Uniqueness is on
+`(project_id, entry_key)` and only `where entry_key is not null`.
+
+**`word_class` is free text on purpose.** It becomes a foreign key when word classes is
+designed; a key now would have to invent the table it points at. The editor offers a
+`datalist` of values already in use rather than a `<select>`, for the same reason. Don't
+"fix" this in passing.
 
 **Never `structuredClone` a store draft.** It throws `DataCloneError` on a Vue reactive
 proxy, and `usePhonotacticsStore().save()` cloned as its first statement — so every save
@@ -266,6 +294,20 @@ building classes, a template and two rules saves and comes back clean (`dirty` f
 `discard` works; and then removing /ŋ/ leaves both rules stored, class C still holding
 `p ŋ s`, one orphaned rule and one orphaned member detected, the resolved grammar's C down
 to `p s`, and no generated word containing ŋ.
+
+The lexicon seed is generated: `pnpm import:lexicon` reads the harness repo's
+`grammar.yaml` and writes `supabase/seed/lexicon.json` (60 entries). It emits a file rather
+than writing to the database so the output is reviewable and diffable against upstream and
+the script needs no credentials; load it with a one-off insert. `compound_of` and
+`lexicalised` are folded into `notes` as prose — a compound is a real relation and deserves
+a real column, which this round deliberately did not decide.
+
+What was verified when the lexicon went in (2026-09-01), **through the store rather than
+against the RPC**: create, update, delete, a homograph saving, a duplicate key refused with
+a readable message. Over realtime with two clients: the list grows live, a clean draft
+adopts a collaborator's edit silently, a **dirty draft is held** and banners instead, one's
+own save raises no banner, and a delete elsewhere announces itself while keeping the typed
+text.
 
 `auth.users` rows inserted by hand need their token columns set to `''` rather than
 NULL, or sign-in fails with GoTrue's opaque "Database error querying schema".

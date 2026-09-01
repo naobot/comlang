@@ -1,0 +1,422 @@
+[
+  {
+    "entry_key": "v_cop",
+    "lemma": "ya",
+    "gloss": "be (copula)",
+    "word_class": "predicate",
+    "notes": null
+  },
+  {
+    "entry_key": "v_exist",
+    "lemma": "ga",
+    "gloss": "exist, there is",
+    "word_class": "predicate",
+    "notes": null
+  },
+  {
+    "entry_key": "archival_v",
+    "lemma": "da",
+    "gloss": "(archival — development only)",
+    "word_class": "predicate",
+    "notes": null
+  },
+  {
+    "entry_key": "n_null",
+    "lemma": "din",
+    "gloss": "(null/dummy nominal)",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_speech",
+    "lemma": "tjan",
+    "gloss": "speech",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_thought",
+    "lemma": "mjoŋ",
+    "gloss": "thought",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_belief",
+    "lemma": "mwon",
+    "gloss": "belief",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_meaning",
+    "lemma": "gwan",
+    "gloss": "meaning",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_question",
+    "lemma": "mi",
+    "gloss": "question",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_desire",
+    "lemma": "nwan",
+    "gloss": "desire",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_appearance",
+    "lemma": "hot",
+    "gloss": "appearance",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_action",
+    "lemma": "swom",
+    "gloss": "action",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_body",
+    "lemma": "pwa",
+    "gloss": "body",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_head",
+    "lemma": "pam",
+    "gloss": "head",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_arm",
+    "lemma": "lwim",
+    "gloss": "arm",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_hand",
+    "lemma": "nwit",
+    "gloss": "hand",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_leg",
+    "lemma": "ʔo",
+    "gloss": "leg",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_foot",
+    "lemma": "sje",
+    "gloss": "foot",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_hair",
+    "lemma": "bwanzwet",
+    "gloss": "hair",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_joint",
+    "lemma": "ŋwathoŋ",
+    "gloss": "joint",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_digit",
+    "lemma": "twetkun",
+    "gloss": "digit",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_chair",
+    "lemma": "pjatlum",
+    "gloss": "chair",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_book",
+    "lemma": "miŋgwem",
+    "gloss": "book",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_bed",
+    "lemma": "tondja",
+    "gloss": "bed",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_pen",
+    "lemma": "dwotten",
+    "gloss": "pen",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_friend",
+    "lemma": "tenŋwi",
+    "gloss": "friend",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_student",
+    "lemma": "rjaŋjiŋ",
+    "gloss": "student",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_student_a",
+    "lemma": "menʔat",
+    "gloss": "student (undifferentiated from n_student)",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_neck",
+    "lemma": "pamŋwathoŋ",
+    "gloss": "neck",
+    "word_class": "noun",
+    "notes": "Compound of pam + ŋwathoŋ. Lexicalised: stored as-is, phonological rules are not re-applied."
+  },
+  {
+    "entry_key": "n_elbow",
+    "lemma": "lwimŋwathoŋ",
+    "gloss": "elbow",
+    "word_class": "noun",
+    "notes": "Compound of lwim + ŋwathoŋ. Lexicalised: stored as-is, phonological rules are not re-applied."
+  },
+  {
+    "entry_key": "n_wrist",
+    "lemma": "nwitŋwathoŋ",
+    "gloss": "wrist",
+    "word_class": "noun",
+    "notes": "Compound of nwit + ŋwathoŋ. Lexicalised: stored as-is, phonological rules are not re-applied."
+  },
+  {
+    "entry_key": "n_knee",
+    "lemma": "ʔoŋwathoŋ",
+    "gloss": "knee",
+    "word_class": "noun",
+    "notes": "Compound of ʔo + ŋwathoŋ. Lexicalised: stored as-is, phonological rules are not re-applied."
+  },
+  {
+    "entry_key": "n_ankle",
+    "lemma": "sjeŋwathoŋ",
+    "gloss": "ankle",
+    "word_class": "noun",
+    "notes": "Compound of sje + ŋwathoŋ. Lexicalised: stored as-is, phonological rules are not re-applied."
+  },
+  {
+    "entry_key": "n_finger",
+    "lemma": "nwittwetkun",
+    "gloss": "finger",
+    "word_class": "noun",
+    "notes": "Compound of nwit + twetkun. Lexicalised: stored as-is, phonological rules are not re-applied."
+  },
+  {
+    "entry_key": "n_toe",
+    "lemma": "sjetwetkun",
+    "gloss": "toe",
+    "word_class": "noun",
+    "notes": "Compound of sje + twetkun. Lexicalised: stored as-is, phonological rules are not re-applied."
+  },
+  {
+    "entry_key": "v_do",
+    "lemma": "ŋwom",
+    "gloss": "do",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_go",
+    "lemma": "hjon",
+    "gloss": "go",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_come",
+    "lemma": "bwit",
+    "gloss": "come",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_give",
+    "lemma": "tjet",
+    "gloss": "give",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_receive",
+    "lemma": "mwet",
+    "gloss": "receive",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_become",
+    "lemma": "gwan",
+    "gloss": "become",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_see",
+    "lemma": "ŋeŋ",
+    "gloss": "see",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_sleep",
+    "lemma": "ŋa",
+    "gloss": "sleep",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_eat",
+    "lemma": "jen",
+    "gloss": "eat",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_sit",
+    "lemma": "mjem",
+    "gloss": "sit",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_buy",
+    "lemma": "wot",
+    "gloss": "buy",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_sell",
+    "lemma": "jot",
+    "gloss": "sell",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_trim",
+    "lemma": "swomjom",
+    "gloss": "trim",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_like",
+    "lemma": "ŋumzin",
+    "gloss": "like",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_read",
+    "lemma": "tuŋgeŋ",
+    "gloss": "read",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_bring",
+    "lemma": "jekja",
+    "gloss": "bring",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "a_black",
+    "lemma": "ljaŋ",
+    "gloss": "black",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_white",
+    "lemma": "zjan",
+    "gloss": "white",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_red",
+    "lemma": "bwo",
+    "gloss": "red",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_big",
+    "lemma": "ŋja",
+    "gloss": "big",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_small",
+    "lemma": "gat",
+    "gloss": "small",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_hot",
+    "lemma": "rom",
+    "gloss": "hot",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_cold",
+    "lemma": "dwom",
+    "gloss": "cold",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_good",
+    "lemma": "kit",
+    "gloss": "good",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_bad",
+    "lemma": "diŋ",
+    "gloss": "bad",
+    "word_class": "adjective",
+    "notes": null
+  }
+]

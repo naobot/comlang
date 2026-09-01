@@ -182,6 +182,50 @@ export type Database = {
           },
         ]
       }
+      lexicon_entries: {
+        Row: {
+          created_at: string
+          entry_key: string | null
+          gloss: string | null
+          id: string
+          lemma: string
+          notes: string | null
+          project_id: string
+          updated_at: string
+          word_class: string | null
+        }
+        Insert: {
+          created_at?: string
+          entry_key?: string | null
+          gloss?: string | null
+          id?: string
+          lemma: string
+          notes?: string | null
+          project_id: string
+          updated_at?: string
+          word_class?: string | null
+        }
+        Update: {
+          created_at?: string
+          entry_key?: string | null
+          gloss?: string | null
+          id?: string
+          lemma?: string
+          notes?: string | null
+          project_id?: string
+          updated_at?: string
+          word_class?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lexicon_entries_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
