@@ -8,8 +8,10 @@ import {
   type Grammar,
   type ResolvedClass,
   type ResolvedTemplate,
+  type Draft,
   generateWord,
   generateWords,
+  impactOfRemoving,
   seededRng,
   templateNotation,
   violation,
@@ -210,5 +212,94 @@ describe("purity", () => {
   it("imports nothing from vue, pinia, or supabase", () => {
     const imports = [...source.matchAll(/from\s+"([^"]+)"/g)].map((m) => m[1]);
     expect(imports.filter((i) => i !== undefined && !i.startsWith("."))).toEqual([]);
+  });
+});
+
+describe("impactOfRemoving", () => {
+  const draft: Draft = {
+    classes: [
+      { symbol: "C", label: null, sort_order: 0, phoneme_ipa: ["p", "t", "ŋ"] },
+      { symbol: "G", label: null, sort_order: 1, phoneme_ipa: ["j", "w"] },
+      { symbol: "V", label: null, sort_order: 2, phoneme_ipa: ["a", "i"] },
+    ],
+    templates: [
+      {
+        name: "heavy",
+        weight: 1,
+        sort_order: 0,
+        notes: null,
+        slots: [
+          { slot_index: 0, role: "onset", optional: true, class_symbol: "C" },
+          { slot_index: 1, role: "onset", optional: false, class_symbol: "G" },
+          { slot_index: 2, role: "nucleus", optional: false, class_symbol: "V" },
+        ],
+      },
+    ],
+    constraints: [
+      {
+        kind: "forbid_in_role",
+        role: "onset",
+        seq_position: null,
+        a_class_symbol: null,
+        a_phoneme_ipa: "ŋ",
+        b_class_symbol: null,
+        b_phoneme_ipa: null,
+        note: null,
+      },
+      {
+        kind: "no_identical_adjacent",
+        role: null,
+        seq_position: null,
+        a_class_symbol: null,
+        a_phoneme_ipa: null,
+        b_class_symbol: null,
+        b_phoneme_ipa: null,
+        note: null,
+      },
+    ],
+  };
+
+  it("reports nothing when nothing is being removed", () => {
+    expect(impactOfRemoving(draft, new Set())).toEqual({
+      classes: [],
+      emptied: [],
+      constraints: [],
+      templates: [],
+    });
+  });
+
+  it("names the classes that lose members, and which members", () => {
+    const impact = impactOfRemoving(draft, new Set(["p", "j"]));
+    expect(impact.classes).toEqual([
+      { symbol: "C", ipa: ["p"] },
+      { symbol: "G", ipa: ["j"] },
+    ]);
+    expect(impact.emptied).toEqual([]);
+  });
+
+  // The destructive one: a constraint naming a phoneme is deleted outright by the
+  // cascade, not merely weakened.
+  it("reports a constraint that would be deleted outright", () => {
+    const impact = impactOfRemoving(draft, new Set(["ŋ"]));
+    expect(impact.constraints).toHaveLength(1);
+    expect(impact.constraints[0]?.a_phoneme_ipa).toBe("ŋ");
+  });
+
+  it("leaves constraints that name no phoneme alone", () => {
+    const impact = impactOfRemoving(draft, new Set(["p", "t", "ŋ"]));
+    expect(impact.constraints.every((c) => c.kind !== "no_identical_adjacent")).toBe(true);
+  });
+
+  it("flags a class emptied completely, and the template it breaks", () => {
+    const impact = impactOfRemoving(draft, new Set(["j", "w"]));
+    expect(impact.emptied).toEqual(["G"]);
+    // G fills a required slot, so `heavy` stops generating entirely.
+    expect(impact.templates).toEqual(["heavy"]);
+  });
+
+  it("does not blame a template whose emptied class only fills an optional slot", () => {
+    const impact = impactOfRemoving(draft, new Set(["p", "t", "ŋ"]));
+    expect(impact.emptied).toEqual(["C"]);
+    expect(impact.templates).toEqual([]);
   });
 });

@@ -52,10 +52,16 @@ first or it trips its own guard. The ordering inside that function is not incide
 (`symbol`, `name`) rather than recreating. Slots and constraints reference class ids, so
 delete-and-recreate would churn every foreign key on every save. Verified directly.
 
-**Deleting a phoneme from the inventory silently empties it out of every class.** That is
-`phoneme_class_members.phoneme_id on delete cascade` doing what it should, but there is no
-warning on the inventory page — observed going from 3 members to 1. The class editor
-flags an empty class in red, which is the only signal.
+**Deleting a phoneme from the inventory reaches into the phonotactics, and the worst of
+it is invisible.** `phoneme_class_members` loses the membership, but
+`phonotactic_constraints` rows naming the segment are **deleted outright** —
+`a_phoneme_id`/`b_phoneme_id` are `on delete cascade`, so a rule like "ŋ cannot be an
+onset" simply disappears. Verified: dropping /ŋ/ took a two-constraint set down to one.
+
+`impactOfRemoving` in `src/lib/phonotactics.ts` computes that damage and the inventory
+page shows it before Save, measured against the **saved** phonotactics rather than its
+draft, because saved rows are what the database will actually drop. Any future table
+hanging off `phonemes` needs the same treatment or the same warning.
 
 **The phoneme inventory inverts the realtime rule: it notifies, it never patches.**
 Every other store applies events to its state. `src/stores/phonemes.ts` does not — the

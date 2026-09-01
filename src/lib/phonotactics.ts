@@ -15,6 +15,7 @@
 
 export type SlotRole = "onset" | "nucleus" | "coda";
 export type SequencePosition = "anywhere" | "word_initial" | "word_final";
+export type ConstraintKind = "forbid_in_role" | "forbid_sequence" | "no_identical_adjacent";
 
 /** One side of a constraint: a whole class, or a single segment. */
 export type Term = { kind: "class"; classId: string } | { kind: "phoneme"; ipa: string };
@@ -260,4 +261,101 @@ export function seededRng(seed: number): Rng {
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
+}
+
+// The stored shape ------------------------------------------------------------------
+//
+// These mirror what `save_phonotactics` takes and what the store holds. They live here
+// rather than in the store because they are plain data with no I/O, and because
+// `impactOfRemoving` below has to reason over them — a store-side helper would drag the
+// Supabase client into anything that wanted to test it.
+//
+// Classes and phonemes are referenced by `symbol` and `ipa` rather than by id, so a
+// draft can name rows that do not exist yet.
+
+export type DraftClass = {
+  symbol: string;
+  label: string | null;
+  sort_order: number;
+  phoneme_ipa: string[];
+};
+
+export type DraftSlot = {
+  slot_index: number;
+  role: SlotRole;
+  optional: boolean;
+  class_symbol: string;
+};
+
+export type DraftTemplate = {
+  name: string;
+  weight: number;
+  sort_order: number;
+  notes: string | null;
+  slots: DraftSlot[];
+};
+
+export type DraftConstraint = {
+  kind: ConstraintKind;
+  role: SlotRole | null;
+  seq_position: SequencePosition | null;
+  a_class_symbol: string | null;
+  a_phoneme_ipa: string | null;
+  b_class_symbol: string | null;
+  b_phoneme_ipa: string | null;
+  note: string | null;
+};
+
+export type Draft = {
+  classes: DraftClass[];
+  templates: DraftTemplate[];
+  constraints: DraftConstraint[];
+};
+
+export type RemovalImpact = {
+  /** Classes that lose members, and which. */
+  classes: { symbol: string; ipa: string[] }[];
+  /** Classes that would be left with nothing in them. */
+  emptied: string[];
+  /** Constraints that would be deleted outright. */
+  constraints: DraftConstraint[];
+  /** Templates with a required slot whose class would be emptied — these stop generating. */
+  templates: string[];
+};
+
+/**
+ * What removing these segments from the inventory would do to the phonotactics.
+ *
+ * This exists because the damage is invisible at the point it is caused. Deleting a
+ * phoneme cascades: `phoneme_class_members` loses the membership, and — more
+ * destructively — `phonotactic_constraints` rows referencing it are **deleted entirely**,
+ * because `a_phoneme_id`/`b_phoneme_id` are `on delete cascade`. A rule like "ŋ cannot be
+ * an onset" simply disappears when ŋ leaves the inventory, with nothing to show it ever
+ * existed.
+ */
+export function impactOfRemoving(draft: Draft, removing: ReadonlySet<string>): RemovalImpact {
+  if (removing.size === 0) return { classes: [], emptied: [], constraints: [], templates: [] };
+
+  const classes = draft.classes
+    .map((c) => ({ symbol: c.symbol, ipa: c.phoneme_ipa.filter((ipa) => removing.has(ipa)) }))
+    .filter((c) => c.ipa.length > 0);
+
+  const emptied = draft.classes
+    .filter((c) => c.phoneme_ipa.length > 0 && c.phoneme_ipa.every((ipa) => removing.has(ipa)))
+    .map((c) => c.symbol);
+
+  const constraints = draft.constraints.filter(
+    (c) =>
+      (c.a_phoneme_ipa !== null && removing.has(c.a_phoneme_ipa)) ||
+      (c.b_phoneme_ipa !== null && removing.has(c.b_phoneme_ipa)),
+  );
+
+  // A required slot whose class is empty makes the whole template unusable — see
+  // `buildSyllable`. Worth naming separately: an emptied class is recoverable, a
+  // template that can no longer generate is the visible symptom.
+  const templates = draft.templates
+    .filter((t) => t.slots.some((s) => !s.optional && emptied.includes(s.class_symbol)))
+    .map((t) => t.name);
+
+  return { classes, emptied, constraints, templates };
 }

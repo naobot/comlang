@@ -2,15 +2,28 @@ import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 
 import { subscribeToProjectTable } from "@/composables/useProjectChannel";
-import type { ConstraintKind, SequencePosition, SlotRole } from "@/types/models";
 import type {
+  Draft,
+  DraftConstraint,
+  DraftTemplate,
   Grammar,
   ResolvedClass,
   ResolvedConstraint,
   ResolvedTemplate,
+  SlotRole,
   Term,
 } from "@/lib/phonotactics";
 import { supabase } from "@/lib/supabase";
+
+// The draft shapes live in the pure module, beside `impactOfRemoving`, which has to
+// reason over them. Re-exported here because this is where callers expect them.
+export type {
+  Draft,
+  DraftClass,
+  DraftConstraint,
+  DraftSlot,
+  DraftTemplate,
+} from "@/lib/phonotactics";
 
 /**
  * Phonotactics: phoneme classes, syllable templates and constraints.
@@ -25,44 +38,6 @@ import { supabase } from "@/lib/supabase";
  * Different means someone else wrote; identical means it was our own echo. That is
  * provably right rather than approximately right, at the cost of one small query.
  */
-
-// The draft shape, which is also the RPC payload. Classes and phonemes are referenced by
-// `symbol` and `ipa` rather than by id, so the client never has to invent ids for rows
-// it has only just created; the RPC resolves them.
-export type DraftClass = {
-  symbol: string;
-  label: string | null;
-  sort_order: number;
-  phoneme_ipa: string[];
-};
-export type DraftSlot = {
-  slot_index: number;
-  role: SlotRole;
-  optional: boolean;
-  class_symbol: string;
-};
-export type DraftTemplate = {
-  name: string;
-  weight: number;
-  sort_order: number;
-  notes: string | null;
-  slots: DraftSlot[];
-};
-export type DraftConstraint = {
-  kind: ConstraintKind;
-  role: SlotRole | null;
-  seq_position: SequencePosition | null;
-  a_class_symbol: string | null;
-  a_phoneme_ipa: string | null;
-  b_class_symbol: string | null;
-  b_phoneme_ipa: string | null;
-  note: string | null;
-};
-export type Draft = {
-  classes: DraftClass[];
-  templates: DraftTemplate[];
-  constraints: DraftConstraint[];
-};
 
 const emptyDraft = (): Draft => ({ classes: [], templates: [], constraints: [] });
 
@@ -445,6 +420,7 @@ export const usePhonotacticsStore = defineStore("phonotactics", () => {
 
   return {
     draft,
+    persisted,
     loading,
     saving,
     error,
