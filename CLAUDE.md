@@ -33,6 +33,11 @@ record carries **only the primary key**. So `onDelete` in
 stay "drop this id if I hold it," and an unknown id must remain a silent no-op. INSERT
 and UPDATE *are* filtered and RLS-checked; only deletes are the odd ones out.
 
+**A blocked write is not an error.** RLS filters rows, it does not raise: a
+collaborator's `update` on a project simply matches zero rows and returns `null`.
+`updateProject` in `src/stores/projects.ts` checks for that and says so, because
+otherwise a denied rename looks identical to a successful one.
+
 **Subscribe before you fetch.** There is a live window between `SUBSCRIBED` firing and
 the binding actually delivering rows; a change made in it is never delivered, at all.
 Subscribing first means the follow-up fetch covers that window. Fetching first leaves a

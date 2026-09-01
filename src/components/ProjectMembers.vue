@@ -11,9 +11,9 @@ const members = useMembersStore();
 
 const email = ref("");
 
-const isOwner = computed(
-  () => members.members.find((m) => m.user_id === auth.user?.id)?.role === "owner",
-);
+// Ownership is derived in the store so the header's rename controls and this list
+// agree, rather than each recomputing it from the member rows.
+const isOwner = computed(() => members.isOwner);
 
 function load(projectId: string) {
   // Subscribe first, then fetch — the fetch covers the window before the channel is

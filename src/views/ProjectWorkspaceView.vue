@@ -2,12 +2,43 @@
 import { computed, onMounted, onUnmounted, ref } from "vue";
 
 import ProjectMembers from "@/components/ProjectMembers.vue";
+import { useMembersStore } from "@/stores/members";
 import { useProjectsStore } from "@/stores/projects";
 
 const props = defineProps<{ projectId: string }>();
 
 const projects = useProjectsStore();
+const members = useMembersStore();
 const resolving = ref(true);
+
+// Renaming is owner-only in RLS, so only an owner is offered the control. The policy
+// is the real boundary; this just avoids showing a button that would always fail.
+const editing = ref(false);
+const saving = ref(false);
+const draftName = ref("");
+const draftDescription = ref("");
+
+function startEdit() {
+  draftName.value = project.value?.name ?? "";
+  draftDescription.value = project.value?.description ?? "";
+  editing.value = true;
+}
+
+async function save() {
+  const name = draftName.value.trim();
+  if (!name) return;
+
+  saving.value = true;
+  try {
+    const ok = await projects.updateProject(props.projectId, {
+      name,
+      description: draftDescription.value.trim() || null,
+    });
+    if (ok) editing.value = false;
+  } finally {
+    saving.value = false;
+  }
+}
 
 const project = computed(() => projects.get(props.projectId));
 
@@ -43,8 +74,31 @@ const sections = ["Phoneme inventory", "Phonotactics", "Word classes", "Lexicon"
     <template v-else>
       <header>
         <RouterLink :to="{ name: 'dashboard' }" class="back">← Projects</RouterLink>
-        <h1>{{ project.name }}</h1>
-        <p v-if="project.description" class="muted">{{ project.description }}</p>
+
+        <form v-if="editing" class="edit" @submit.prevent="save">
+          <input v-model="draftName" aria-label="Project name" required />
+          <input
+            v-model="draftDescription"
+            aria-label="Project description"
+            placeholder="Description (optional)"
+          />
+          <div class="actions">
+            <button type="submit" :disabled="saving || !draftName.trim()">
+              {{ saving ? "Saving…" : "Save" }}
+            </button>
+            <button type="button" @click="editing = false">Cancel</button>
+          </div>
+        </form>
+
+        <template v-else>
+          <div class="title">
+            <h1>{{ project.name }}</h1>
+            <button v-if="members.isOwner" type="button" @click="startEdit">Rename</button>
+          </div>
+          <p v-if="project.description" class="muted">{{ project.description }}</p>
+        </template>
+
+        <p v-if="projects.error" class="error" role="alert">{{ projects.error }}</p>
       </header>
 
       <nav>
@@ -103,7 +157,30 @@ nav em {
   font-style: normal;
 }
 
+.title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+
+.edit {
+  display: grid;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+  max-width: 32rem;
+}
+
+.edit .actions {
+  display: flex;
+  gap: var(--sp-2);
+}
+
 .muted {
   color: var(--c-muted);
+}
+
+.error {
+  color: var(--c-danger);
 }
 </style>

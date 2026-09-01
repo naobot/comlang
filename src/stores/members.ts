@@ -3,6 +3,7 @@ import { computed, ref } from "vue";
 
 import { subscribeToProjectTable } from "@/composables/useProjectChannel";
 import { supabase } from "@/lib/supabase";
+import { useAuthStore } from "@/stores/auth";
 import type { ProjectMember, ProjectMemberWithProfile } from "@/types/models";
 
 // project_members has a composite primary key, so its rows have no `id` the realtime
@@ -15,6 +16,8 @@ export const useMembersStore = defineStore("members", () => {
   const error = ref<string | null>(null);
   const adding = ref(false);
 
+  const auth = useAuthStore();
+
   const members = computed(() =>
     [...byKey.value.values()].sort((a, b) => {
       // Owners first, then alphabetical, so the list doesn't reshuffle on every change.
@@ -22,6 +25,12 @@ export const useMembersStore = defineStore("members", () => {
       return (a.profile?.email ?? "").localeCompare(b.profile?.email ?? "");
     }),
   );
+
+  /** The signed-in user's role in whichever project is currently loaded. */
+  const currentRole = computed(
+    () => members.value.find((m) => m.user_id === auth.user?.id)?.role ?? null,
+  );
+  const isOwner = computed(() => currentRole.value === "owner");
 
   async function fetchFor(projectId: string) {
     loading.value = true;
@@ -120,6 +129,8 @@ export const useMembersStore = defineStore("members", () => {
 
   return {
     members,
+    currentRole,
+    isOwner,
     loading,
     adding,
     error,

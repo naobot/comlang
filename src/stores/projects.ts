@@ -68,6 +68,29 @@ export const useProjectsStore = defineStore("projects", () => {
     return byId.value.get(id) ?? null;
   }
 
+  async function updateProject(id: string, patch: { name?: string; description?: string | null }) {
+    error.value = null;
+    const { data, error: updateError } = await supabase
+      .from("projects")
+      .update(patch)
+      .eq("id", id)
+      .select()
+      .maybeSingle();
+
+    if (updateError) {
+      error.value = updateError.message;
+      return false;
+    }
+    // RLS restricts UPDATE to owners, and a blocked update is not an error — it simply
+    // matches no rows and returns null. Say so rather than reporting a silent success.
+    if (!data) {
+      error.value = "Only the project owner can change this.";
+      return false;
+    }
+    upsert(data);
+    return true;
+  }
+
   // The store owns the subscription, not the components — so the dashboard and the
   // workspace header read the same rows without opening two channels.
   //
@@ -101,6 +124,7 @@ export const useProjectsStore = defineStore("projects", () => {
     error,
     fetchAll,
     createProject,
+    updateProject,
     get,
     subscribe,
     unsubscribeAll,
