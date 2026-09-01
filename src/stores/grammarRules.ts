@@ -205,6 +205,7 @@ export const useGrammarRulesStore = defineStore("grammarRules", () => {
 
   return {
     draft,
+    persisted,
     count,
     dirty,
     loading,

@@ -3,26 +3,60 @@ import { computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import HeaderMenu from "@/components/HeaderMenu.vue";
+import { useProjectExport } from "@/composables/useProjectExport";
 import { projectTabs } from "@/router";
 import { useAuthStore } from "@/stores/auth";
+import { useMembersStore } from "@/stores/members";
 import { useProjectsStore } from "@/stores/projects";
 
 const auth = useAuthStore();
 const projects = useProjectsStore();
+const members = useMembersStore();
 const route = useRoute();
 const router = useRouter();
 
-// The bar is contextual rather than two components: the right-hand side and the
-// account menu are identical everywhere, and only the left and centre vary.
 const projectId = computed(() =>
   typeof route.params.projectId === "string" ? route.params.projectId : null,
 );
 const project = computed(() => (projectId.value ? projects.get(projectId.value) : undefined));
 
+const exporter = useProjectExport(() => projectId.value);
+
 async function signOut() {
   await auth.signOut();
   await router.replace({ name: "login" });
 }
+
+// Last updated ------------------------------------------------------------------------
+
+/**
+ * Resolved from the members already loaded for this project rather than a fresh query:
+ * whoever last touched it is essentially always a member, and `profiles` is only readable
+ * for people you share a project with anyway.
+ */
+const lastBy = computed(() => {
+  const id = project.value?.last_activity_by;
+  if (!id) return null;
+  if (id === auth.user?.id) return "you";
+  const member = members.members.find((m) => m.user_id === id);
+  const profile = member?.profile;
+  if (!profile) return "someone"; // they may have left the project since
+  return profile.display_name || profile.email.split("@")[0] || "someone";
+});
+
+const lastAt = computed(() => {
+  const at = project.value?.last_activity_at;
+  if (!at) return null;
+  const date = new Date(at);
+  const sameYear = date.getFullYear() === new Date().getFullYear();
+  return new Intl.DateTimeFormat(undefined, {
+    day: "numeric",
+    month: "short",
+    ...(sameYear ? {} : { year: "numeric" }),
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+});
 </script>
 
 <template>
@@ -30,25 +64,42 @@ async function signOut() {
     <div class="left">
       <template v-if="projectId">
         <RouterLink :to="{ name: 'dashboard' }" class="home" title="All projects">←</RouterLink>
-        <span class="project">{{ project?.name ?? "…" }}</span>
-      </template>
-      <RouterLink v-else :to="{ name: 'dashboard' }" class="project plain">Projects</RouterLink>
 
-      <HeaderMenu>
-        <template #trigger>
-          <span class="sr-only">Project menu</span>
-          <!-- Inline, because one gear does not justify an icon dependency. -->
-          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              fill="currentColor"
-              d="M12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Zm7.4-2.6.1-.9-.1-.9 1.9-1.5-1.9-3.3-2.3.9a7 7 0 0 0-1.6-.9L15.1 4H10.9l-.4 2.4a7 7 0 0 0-1.6.9l-2.3-.9-1.9 3.3 1.9 1.5-.1.9.1.9-1.9 1.5 1.9 3.3 2.3-.9c.5.4 1 .7 1.6.9l.4 2.4h4.2l.4-2.4c.6-.2 1.1-.5 1.6-.9l2.3.9 1.9-3.3-1.9-1.5Z"
-            />
-          </svg>
-        </template>
+        <!-- The whole name is the menu trigger. A caret rather than a gear: the name is
+             already the obvious thing to reach for, and a gear implies settings only. -->
+        <HeaderMenu>
+          <template #trigger>
+            <span class="project">{{ project?.name ?? "…" }}</span>
+            <span class="caret" aria-hidden="true">▾</span>
+          </template>
 
-        <p class="label">{{ auth.user?.email }}</p>
-        <hr />
-        <template v-if="projectId">
+          <p class="label">{{ auth.user?.email }}</p>
+          <hr />
+          <button
+            type="button"
+            role="menuitem"
+            :disabled="!exporter.hasAnything.value"
+            @click="exporter.exportGrammarYaml()"
+          >
+            Export grammar.yaml
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            :disabled="!exporter.hasAnything.value"
+            @click="exporter.exportLexiconCsv()"
+          >
+            Export lexicon.csv
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            :disabled="!exporter.hasAnything.value"
+            @click="exporter.exportLexiconCsvFull()"
+          >
+            Export lexicon.csv (full)
+          </button>
+          <hr />
           <RouterLink :to="{ name: 'project-members', params: { projectId } }" role="menuitem">
             Members
           </RouterLink>
@@ -56,9 +107,22 @@ async function signOut() {
             Settings
           </RouterLink>
           <hr />
-        </template>
-        <button type="button" role="menuitem" @click="signOut">Sign out</button>
-      </HeaderMenu>
+          <button type="button" role="menuitem" @click="signOut">Sign out</button>
+        </HeaderMenu>
+      </template>
+
+      <template v-else>
+        <RouterLink :to="{ name: 'dashboard' }" class="project plain">Projects</RouterLink>
+        <HeaderMenu>
+          <template #trigger>
+            <span class="sr-only">Account menu</span>
+            <span class="caret" aria-hidden="true">▾</span>
+          </template>
+          <p class="label">{{ auth.user?.email }}</p>
+          <hr />
+          <button type="button" role="menuitem" @click="signOut">Sign out</button>
+        </HeaderMenu>
+      </template>
     </div>
 
     <nav v-if="projectId" class="tabs" aria-label="Conlang sections">
@@ -71,6 +135,8 @@ async function signOut() {
       </RouterLink>
     </nav>
     <div v-else class="tabs" />
+
+    <p v-if="projectId && lastAt" class="activity">Last updated by {{ lastBy }} at {{ lastAt }}</p>
 
     <span class="brand">comlang</span>
   </header>
@@ -116,8 +182,11 @@ async function signOut() {
   text-decoration: none;
 }
 
-/* The tabs take the middle and are the only part allowed to scroll: five labels this
-   long overflow a narrow window, and the page body must never scroll sideways. */
+.caret {
+  color: var(--c-muted);
+  font-size: 0.625rem;
+}
+
 .tabs {
   flex: 1;
   min-width: 0;
@@ -147,11 +216,20 @@ async function signOut() {
   color: var(--c-text);
 }
 
-/* Active state comes from vue-router's own class, not a hand-rolled route comparison. */
 .tabs a.router-link-active {
   border-bottom-color: var(--c-accent);
   color: var(--c-text);
   font-weight: 600;
+}
+
+/* Sits left of the brand so the app name still anchors the far right, as it has since the
+   header was built. Hidden on narrow screens: the tabs need the room more. */
+.activity {
+  flex: none;
+  margin: 0;
+  color: var(--c-muted);
+  font-size: 0.6875rem;
+  white-space: nowrap;
 }
 
 .brand {
@@ -168,5 +246,11 @@ async function signOut() {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+@media (max-width: 60rem) {
+  .activity {
+    display: none;
+  }
 }
 </style>

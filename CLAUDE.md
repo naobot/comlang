@@ -41,6 +41,24 @@ blind. Also deferred: changelog/version history, and any public/private flag.
 
 ## Gotchas that will otherwise be rediscovered as bugs
 
+**The YAML exporter emits by hand, and flow context is where it bites.** `yaml` is a
+devDependency — it must not reach the browser bundle — so `src/lib/exporters.ts` writes
+YAML itself. Inside `{...}` or `[...]` a comma is a *separator*, so a gloss like
+"exist, there is" emitted bare parses **without error** into a mapping with a spurious
+`there is:` key. Silent corruption, and it survived the first round of unit tests because
+the fixture had no commas; exporting the real project found it in seconds. `yamlScalar`
+takes a `flow` flag for exactly this, and the tests round-trip through the real parser
+rather than asserting on substrings.
+
+**The export is built from what is saved, never from a draft.** An archive of half-typed
+edits is worse than making someone press Save first.
+
+**"Last updated by" is stamped by `security definer` triggers, and that is required.**
+`projects` has an owner-only UPDATE policy, so a collaborator editing the lexicon could not
+otherwise stamp the project — the trigger would silently update zero rows. Per 0007 the
+EXECUTE grant is revoked so a trigger function is not also an RPC endpoint. The header
+resolves the user from the already-loaded members rather than querying `profiles` again.
+
 **`grammar_rules.rule_order` is meaning, not presentation.** grammar.yaml's `rule_order`
 is a feeding pipeline — plural_reduplication feeds onset_simplification, vowel_harmony
 feeds u_lowering — so position is data. It is a column rather than a later migration
@@ -327,6 +345,12 @@ a readable message. Over realtime with two clients: the list grows live, a clean
 adopts a collaborator's edit silently, a **dirty draft is held** and banners instead, one's
 own save raises no banner, and a delete elsewhere announces itself while keeping the typed
 text.
+
+What was verified for export and activity (2026-09-01): a collaborator's write stamps
+`projects.last_activity_by` even though they cannot update `projects` directly, and a
+delete stamps it too. The exporter was run against the real project's 18 phonemes and 60
+lexicon entries and the output re-parsed — which is how the flow-context comma bug was
+found.
 
 What was verified when grammar rules went in (2026-09-01), through the store: create,
 whole-page save, **reorder persisting across a re-fetch**, ids stable across a save that
