@@ -317,24 +317,55 @@ export type RemovalImpact = {
   classes: { symbol: string; ipa: string[] }[];
   /** Classes that would be left with nothing in them. */
   emptied: string[];
-  /** Constraints that would be deleted outright. */
-  constraints: DraftConstraint[];
+  /** Rules left naming a segment the inventory no longer has. Kept, not deleted. */
+  orphaned: DraftConstraint[];
   /** Templates with a required slot whose class would be emptied — these stop generating. */
   templates: string[];
 };
 
 /**
+ * Which of a rule's segment terms are not in the inventory.
+ *
+ * The database cannot answer this any more, and that is on purpose: a constraint's
+ * phoneme terms are plain IPA text rather than foreign keys, precisely so that removing a
+ * segment leaves the rule standing instead of cascading it away (migration 0012). The
+ * cost of keeping the rule is that the dangling reference has to be found here.
+ */
+export function orphanedTerms(
+  constraint: DraftConstraint,
+  inventory: ReadonlySet<string>,
+): string[] {
+  const out: string[] = [];
+  const { a_phoneme_ipa: a, b_phoneme_ipa: b } = constraint;
+  if (a !== null && !inventory.has(a)) out.push(a);
+  if (b !== null && !inventory.has(b) && b !== a) out.push(b);
+  return out;
+}
+
+/** Every rule in the draft with at least one dangling segment reference. */
+export function orphanedConstraints(
+  draft: Draft,
+  inventory: ReadonlySet<string>,
+): { constraint: DraftConstraint; missing: string[] }[] {
+  return draft.constraints
+    .map((constraint) => ({ constraint, missing: orphanedTerms(constraint, inventory) }))
+    .filter((entry) => entry.missing.length > 0);
+}
+
+/**
  * What removing these segments from the inventory would do to the phonotactics.
  *
- * This exists because the damage is invisible at the point it is caused. Deleting a
- * phoneme cascades: `phoneme_class_members` loses the membership, and — more
- * destructively — `phonotactic_constraints` rows referencing it are **deleted entirely**,
- * because `a_phoneme_id`/`b_phoneme_id` are `on delete cascade`. A rule like "ŋ cannot be
- * an onset" simply disappears when ŋ leaves the inventory, with nothing to show it ever
- * existed.
+ * This exists because the damage is invisible at the point it is caused.
+ * `phoneme_class_members` loses the membership by cascade, and rules naming the segment
+ * are left orphaned — still there, but no longer enforced, since nothing generated can
+ * carry a symbol the inventory does not have.
+ *
+ * They used to be deleted outright, which was worse: a rule someone deliberately wrote
+ * vanished with nothing left to reconstruct it from. Migration 0012 traded the foreign
+ * key for plain IPA text so the rule survives and can be shown as broken instead.
  */
 export function impactOfRemoving(draft: Draft, removing: ReadonlySet<string>): RemovalImpact {
-  if (removing.size === 0) return { classes: [], emptied: [], constraints: [], templates: [] };
+  if (removing.size === 0) return { classes: [], emptied: [], orphaned: [], templates: [] };
 
   const classes = draft.classes
     .map((c) => ({ symbol: c.symbol, ipa: c.phoneme_ipa.filter((ipa) => removing.has(ipa)) }))
@@ -344,7 +375,9 @@ export function impactOfRemoving(draft: Draft, removing: ReadonlySet<string>): R
     .filter((c) => c.phoneme_ipa.length > 0 && c.phoneme_ipa.every((ipa) => removing.has(ipa)))
     .map((c) => c.symbol);
 
-  const constraints = draft.constraints.filter(
+  // Not deleted — kept, and left pointing at something that is gone. They stop being
+  // enforced, which is a quieter failure than disappearing and so still worth saying.
+  const orphaned = draft.constraints.filter(
     (c) =>
       (c.a_phoneme_ipa !== null && removing.has(c.a_phoneme_ipa)) ||
       (c.b_phoneme_ipa !== null && removing.has(c.b_phoneme_ipa)),
@@ -357,5 +390,5 @@ export function impactOfRemoving(draft: Draft, removing: ReadonlySet<string>): R
     .filter((t) => t.slots.some((s) => !s.optional && emptied.includes(s.class_symbol)))
     .map((t) => t.name);
 
-  return { classes, emptied, constraints, templates };
+  return { classes, emptied, orphaned, templates };
 }

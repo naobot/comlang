@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { useEventListener } from "@vueuse/core";
+import { computed } from "vue";
 import { onBeforeRouteLeave } from "vue-router";
 
 import ClassEditor from "@/components/phonotactics/ClassEditor.vue";
 import ConstraintEditor from "@/components/phonotactics/ConstraintEditor.vue";
 import SampleOutput from "@/components/phonotactics/SampleOutput.vue";
 import TemplateEditor from "@/components/phonotactics/TemplateEditor.vue";
+import { orphanedConstraints } from "@/lib/phonotactics";
 import { usePhonemesStore } from "@/stores/phonemes";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
 
@@ -13,6 +15,14 @@ const props = defineProps<{ projectId: string }>();
 
 const phonemes = usePhonemesStore();
 const phonotactics = usePhonotacticsStore();
+
+// Rules kept alive past the segment they name. They are not enforced, so the language is
+// quietly looser than it reads — worth saying at the top rather than only in the list.
+const broken = computed(() =>
+  orphanedConstraints(phonotactics.draft, new Set(phonemes.inventory.map((p) => p.ipa))),
+);
+
+const missingSegments = computed(() => [...new Set(broken.value.flatMap((b) => b.missing))]);
 
 async function save() {
   await phonotactics.save(props.projectId);
@@ -57,6 +67,19 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
       <p v-if="phonotactics.changedElsewhere" class="notice" role="status">
         Someone else changed the phonotactics. Your draft is untouched.
         <button type="button" @click="phonotactics.acceptIncoming()">Load their version</button>
+      </p>
+
+      <p v-if="broken.length" class="broken-banner" role="alert">
+        <strong>
+          {{ broken.length }} rule{{ broken.length === 1 ? "" : "s" }} below
+          {{ broken.length === 1 ? "names a segment" : "name segments" }} the inventory no longer
+          has ({{ missingSegments.map((ipa) => `/${ipa}/`).join(", ") }}).
+        </strong>
+        {{ broken.length === 1 ? "It is" : "They are" }} kept, but not enforced. Put the segment
+        back on the
+        <RouterLink :to="{ name: 'project-phonemes', params: { projectId } }">
+          phoneme inventory </RouterLink
+        >, or remove the rule.
       </p>
 
       <p v-if="phonotactics.error" class="error" role="alert">{{ phonotactics.error }}</p>
@@ -154,6 +177,19 @@ header p {
   border-radius: var(--radius);
   background: var(--c-raised);
   font-size: 0.875rem;
+}
+
+.broken-banner {
+  margin: var(--sp-4) 0 0;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--c-danger);
+  border-left-width: 3px;
+  border-radius: var(--radius);
+  font-size: 0.875rem;
+}
+
+.broken-banner strong {
+  color: var(--c-danger);
 }
 
 .muted {

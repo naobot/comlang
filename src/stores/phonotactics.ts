@@ -143,9 +143,11 @@ export const usePhonotacticsStore = defineStore("phonotactics", () => {
         role: c.role,
         seq_position: c.seq_position,
         a_class_symbol: c.a_class_id ? (classById.get(c.a_class_id)?.symbol ?? null) : null,
-        a_phoneme_ipa: c.a_phoneme_id ? (phonemeById.get(c.a_phoneme_id) ?? null) : null,
+        // Read straight through: a rule may name a segment the inventory no longer has,
+        // and that is the state the editor renders in red rather than an error.
+        a_phoneme_ipa: c.a_phoneme_ipa,
         b_class_symbol: c.b_class_id ? (classById.get(c.b_class_id)?.symbol ?? null) : null,
-        b_phoneme_ipa: c.b_phoneme_id ? (phonemeById.get(c.b_phoneme_id) ?? null) : null,
+        b_phoneme_ipa: c.b_phoneme_ipa,
         note: c.note,
       })),
     };

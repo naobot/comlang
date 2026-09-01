@@ -41,11 +41,11 @@ const impact = computed(() => impactOfRemoving(phonotactics.persisted, removing.
 const destructive = computed(
   () =>
     impact.value.classes.length > 0 ||
-    impact.value.constraints.length > 0 ||
+    impact.value.orphaned.length > 0 ||
     impact.value.templates.length > 0,
 );
 
-function describeConstraint(c: (typeof impact.value.constraints)[number]) {
+function describeConstraint(c: (typeof impact.value.orphaned)[number]) {
   const term = (cls: string | null, ipa: string | null) => cls ?? (ipa ? `/${ipa}/` : "?");
   if (c.kind === "forbid_in_role") {
     return `${term(c.a_class_symbol, c.a_phoneme_ipa)} cannot be a ${c.role}`;
@@ -57,10 +57,9 @@ async function save() {
   // The panel above the button already spells this out, but the button is sticky and
   // the panel is not, so a long chart can put them on different screens.
   if (destructive.value) {
+    const n = impact.value.orphaned.length;
     const bits = [
-      impact.value.constraints.length
-        ? `delete ${impact.value.constraints.length} phonotactic rule${impact.value.constraints.length === 1 ? "" : "s"}`
-        : null,
+      n ? `stop ${n} phonotactic rule${n === 1 ? "" : "s"} from applying` : null,
       impact.value.classes.length
         ? `change ${impact.value.classes.length} phoneme class${impact.value.classes.length === 1 ? "" : "es"}`
         : null,
@@ -113,16 +112,15 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
     <div v-if="destructive" class="impact" role="alert">
       <p class="impact-head">Removing these will change the phonotactics.</p>
       <ul>
-        <li v-if="impact.constraints.length">
-          <strong
-            >{{ impact.constraints.length }} rule{{
-              impact.constraints.length === 1 ? "" : "s"
-            }}
-            deleted:</strong
-          >
-          <span v-for="(c, i) in impact.constraints" :key="i" class="rule">
+        <li v-if="impact.orphaned.length">
+          <strong>
+            {{ impact.orphaned.length }} rule{{ impact.orphaned.length === 1 ? "" : "s" }} left
+            broken:
+          </strong>
+          <span v-for="(c, i) in impact.orphaned" :key="i" class="rule">
             {{ describeConstraint(c) }}
           </span>
+          <em> — kept, but no longer enforced until the segment comes back.</em>
         </li>
         <li v-for="cls in impact.classes" :key="cls.symbol">
           class <code>{{ cls.symbol }}</code> loses

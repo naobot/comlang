@@ -52,16 +52,27 @@ first or it trips its own guard. The ordering inside that function is not incide
 (`symbol`, `name`) rather than recreating. Slots and constraints reference class ids, so
 delete-and-recreate would churn every foreign key on every save. Verified directly.
 
-**Deleting a phoneme from the inventory reaches into the phonotactics, and the worst of
-it is invisible.** `phoneme_class_members` loses the membership, but
-`phonotactic_constraints` rows naming the segment are **deleted outright** —
-`a_phoneme_id`/`b_phoneme_id` are `on delete cascade`, so a rule like "ŋ cannot be an
-onset" simply disappears. Verified: dropping /ŋ/ took a two-constraint set down to one.
+**A rule's phoneme terms are IPA text, not foreign keys, and that is deliberate.**
+0010 made them `references phonemes(id) on delete cascade`, so removing /ŋ/ *deleted* the
+rule "ŋ cannot be an onset" — something a person deliberately wrote, gone with nothing to
+reconstruct it from. 0012 traded the foreign key for text so the reference is allowed to
+dangle, because a dangling reference is what lets the UI show the rule in red rather than
+lose it. The database therefore no longer guarantees a rule names a segment that exists;
+it cannot, if the rule is to survive. `orphanedTerms` / `orphanedConstraints` in
+`src/lib/phonotactics.ts` do that check instead, against the **saved** inventory.
 
-`impactOfRemoving` in `src/lib/phonotactics.ts` computes that damage and the inventory
-page shows it before Save, measured against the **saved** phonotactics rather than its
-draft, because saved rows are what the database will actually drop. Any future table
-hanging off `phonemes` needs the same treatment or the same warning.
+An orphaned rule is inert rather than wrong: the segment is gone from every class too, so
+nothing generated can carry it. Inert is a quieter failure than deleted, which is why the
+phonotactics page banners it and the constraint list outlines it in red.
+
+Class terms keep their foreign key — deleting a class is an explicit act on the
+phonotactics page, where `removeClass` already prunes the rules that used it, so there is
+no silent loss to prevent.
+
+**Class membership still cascades**, so removing a phoneme does drop it from every class.
+`impactOfRemoving` reports that alongside the orphaned rules, and the inventory page shows
+both before Save. Any future table hanging off `phonemes` needs the same decision made
+deliberately: cascade and warn, or store the symbol and flag the orphan.
 
 **The phoneme inventory inverts the realtime rule: it notifies, it never patches.**
 Every other store applies events to its state. `src/stores/phonemes.ts` does not — the
@@ -234,6 +245,10 @@ member that is not in the inventory is refused by name. Over PostgREST with two 
 clients: the collaborator's save round-tripped, the pure module generated well-formed words
 from the read-back grammar with the ŋ-onset constraint holding, and the owner's channel saw
 five events — which is what raises the banner.
+
+After 0012, re-verified live: saving three rules and then removing /ŋ/ from the inventory
+leaves **all three rules present**, exactly one detected as orphaned, and class C reduced
+to `p s`. Before 0012 the same sequence destroyed the rule.
 
 `auth.users` rows inserted by hand need their token columns set to `''` rather than
 NULL, or sign-in fails with GoTrue's opaque "Database error querying schema".

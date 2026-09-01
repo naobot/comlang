@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
+import { orphanedTerms } from "@/lib/phonotactics";
 import { usePhonemesStore } from "@/stores/phonemes";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
 import type { DraftConstraint } from "@/stores/phonotactics";
@@ -58,6 +59,12 @@ function add() {
   b.value = "";
 }
 
+// Against the saved inventory, because that is what the rule will be measured by; the
+// unsaved chart selection has not happened yet.
+const inventoryIpa = computed(() => new Set(phonemes.inventory.map((p) => p.ipa)));
+
+const missingFor = (c: DraftConstraint) => orphanedTerms(c, inventoryIpa.value);
+
 function describe(c: DraftConstraint) {
   const term = (cls: string | null, ipa: string | null) => cls ?? (ipa ? `/${ipa}/` : "?");
   if (c.kind === "no_identical_adjacent") return "no identical adjacent segments";
@@ -78,8 +85,23 @@ function describe(c: DraftConstraint) {
     </p>
 
     <ul v-if="phonotactics.draft.constraints.length" class="list">
-      <li v-for="(c, i) in phonotactics.draft.constraints" :key="i">
-        <span>{{ describe(c) }}</span>
+      <li
+        v-for="(c, i) in phonotactics.draft.constraints"
+        :key="i"
+        :class="{ broken: missingFor(c).length }"
+      >
+        <span class="what">
+          {{ describe(c) }}
+          <em v-if="missingFor(c).length">
+            — not applied:
+            {{
+              missingFor(c)
+                .map((ipa) => `/${ipa}/`)
+                .join(" and ")
+            }}
+            {{ missingFor(c).length === 1 ? "is" : "are" }} no longer in the inventory
+          </em>
+        </span>
         <button type="button" @click="phonotactics.removeConstraint(i)">Remove</button>
       </li>
     </ul>
@@ -156,6 +178,22 @@ h2 {
   border: 1px solid var(--c-border);
   border-radius: var(--radius);
   font-size: 0.875rem;
+}
+
+/* Kept, not enforced. The rule is still someone's decision, so it stays legible rather
+   than being greyed out — it is broken, not disabled. */
+.list li.broken {
+  border-color: var(--c-danger);
+  border-left-width: 3px;
+}
+
+.what {
+  min-width: 0;
+}
+
+.list li.broken em {
+  font-style: normal;
+  color: var(--c-danger);
 }
 
 .add {

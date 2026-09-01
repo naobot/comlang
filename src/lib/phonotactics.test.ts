@@ -9,9 +9,12 @@ import {
   type ResolvedClass,
   type ResolvedTemplate,
   type Draft,
+  type DraftConstraint,
   generateWord,
   generateWords,
   impactOfRemoving,
+  orphanedConstraints,
+  orphanedTerms,
   seededRng,
   templateNotation,
   violation,
@@ -263,7 +266,7 @@ describe("impactOfRemoving", () => {
     expect(impactOfRemoving(draft, new Set())).toEqual({
       classes: [],
       emptied: [],
-      constraints: [],
+      orphaned: [],
       templates: [],
     });
   });
@@ -277,17 +280,16 @@ describe("impactOfRemoving", () => {
     expect(impact.emptied).toEqual([]);
   });
 
-  // The destructive one: a constraint naming a phoneme is deleted outright by the
-  // cascade, not merely weakened.
-  it("reports a constraint that would be deleted outright", () => {
+  // The rule survives the segment leaving — it is reported as orphaned, not deleted.
+  it("reports a rule that would be left orphaned", () => {
     const impact = impactOfRemoving(draft, new Set(["ŋ"]));
-    expect(impact.constraints).toHaveLength(1);
-    expect(impact.constraints[0]?.a_phoneme_ipa).toBe("ŋ");
+    expect(impact.orphaned).toHaveLength(1);
+    expect(impact.orphaned[0]?.a_phoneme_ipa).toBe("ŋ");
   });
 
-  it("leaves constraints that name no phoneme alone", () => {
+  it("leaves rules that name no phoneme alone", () => {
     const impact = impactOfRemoving(draft, new Set(["p", "t", "ŋ"]));
-    expect(impact.constraints.every((c) => c.kind !== "no_identical_adjacent")).toBe(true);
+    expect(impact.orphaned.every((c) => c.kind !== "no_identical_adjacent")).toBe(true);
   });
 
   it("flags a class emptied completely, and the template it breaks", () => {
@@ -301,5 +303,52 @@ describe("impactOfRemoving", () => {
     const impact = impactOfRemoving(draft, new Set(["p", "t", "ŋ"]));
     expect(impact.emptied).toEqual(["C"]);
     expect(impact.templates).toEqual([]);
+  });
+});
+
+describe("orphaned rules", () => {
+  const rule = (a: string | null, b: string | null): DraftConstraint => ({
+    kind: b === null ? "forbid_in_role" : "forbid_sequence",
+    role: b === null ? "onset" : null,
+    seq_position: b === null ? null : "anywhere",
+    a_class_symbol: null,
+    a_phoneme_ipa: a,
+    b_class_symbol: null,
+    b_phoneme_ipa: b,
+    note: null,
+  });
+
+  const inventory = new Set(["p", "a"]);
+
+  it("finds a term the inventory no longer has", () => {
+    expect(orphanedTerms(rule("ŋ", null), inventory)).toEqual(["ŋ"]);
+  });
+
+  it("says nothing about a rule whose terms all exist", () => {
+    expect(orphanedTerms(rule("p", "a"), inventory)).toEqual([]);
+  });
+
+  it("reports both sides of a sequence rule", () => {
+    expect(orphanedTerms(rule("ŋ", "s"), inventory)).toEqual(["ŋ", "s"]);
+  });
+
+  it("does not report the same missing segment twice", () => {
+    expect(orphanedTerms(rule("ŋ", "ŋ"), inventory)).toEqual(["ŋ"]);
+  });
+
+  it("ignores class terms, which are still foreign keys", () => {
+    const byClass: DraftConstraint = { ...rule(null, null), a_class_symbol: "C" };
+    expect(orphanedTerms(byClass, inventory)).toEqual([]);
+  });
+
+  it("collects every broken rule in a draft", () => {
+    const draft: Draft = {
+      classes: [],
+      templates: [],
+      constraints: [rule("p", null), rule("ŋ", null), rule("s", "p")],
+    };
+    const broken = orphanedConstraints(draft, inventory);
+    expect(broken).toHaveLength(2);
+    expect(broken.map((b) => b.missing)).toEqual([["ŋ"], ["s"]]);
   });
 });

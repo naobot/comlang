@@ -128,9 +128,9 @@ export type Database = {
       phonotactic_constraints: {
         Row: {
           a_class_id: string | null
-          a_phoneme_id: string | null
+          a_phoneme_ipa: string | null
           b_class_id: string | null
-          b_phoneme_id: string | null
+          b_phoneme_ipa: string | null
           created_at: string
           id: string
           kind: Database["public"]["Enums"]["constraint_kind"]
@@ -141,9 +141,9 @@ export type Database = {
         }
         Insert: {
           a_class_id?: string | null
-          a_phoneme_id?: string | null
+          a_phoneme_ipa?: string | null
           b_class_id?: string | null
-          b_phoneme_id?: string | null
+          b_phoneme_ipa?: string | null
           created_at?: string
           id?: string
           kind: Database["public"]["Enums"]["constraint_kind"]
@@ -154,9 +154,9 @@ export type Database = {
         }
         Update: {
           a_class_id?: string | null
-          a_phoneme_id?: string | null
+          a_phoneme_ipa?: string | null
           b_class_id?: string | null
-          b_phoneme_id?: string | null
+          b_phoneme_ipa?: string | null
           created_at?: string
           id?: string
           kind?: Database["public"]["Enums"]["constraint_kind"]
@@ -174,24 +174,10 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "phonotactic_constraints_a_phoneme_id_fkey"
-            columns: ["a_phoneme_id"]
-            isOneToOne: false
-            referencedRelation: "phonemes"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "phonotactic_constraints_b_class_id_fkey"
             columns: ["b_class_id"]
             isOneToOne: false
             referencedRelation: "phoneme_classes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "phonotactic_constraints_b_phoneme_id_fkey"
-            columns: ["b_phoneme_id"]
-            isOneToOne: false
-            referencedRelation: "phonemes"
             referencedColumns: ["id"]
           },
           {
