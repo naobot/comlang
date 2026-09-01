@@ -9,9 +9,11 @@ export default defineConfig({
   staged: {
     "*": "vp check --fix",
   },
-  // The generated Supabase types and the SQL migrations are not ours to format.
+  // Generated Supabase types and hand-written SQL are not ours to reformat, and the
+  // Markdown is hand-wrapped for reading — reflowing it makes every prose edit a diff
+  // against the formatter instead of against the text.
   fmt: {
-    ignorePatterns: ["dist/**", "supabase/**", "src/types/database.ts"],
+    ignorePatterns: ["dist/**", "supabase/**", "src/types/database.ts", "**/*.md"],
   },
   lint: {
     // oxlint's `vue` plugin covers the <script> block only — there is no template rule
