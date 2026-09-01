@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from "vue";
 
+import ProjectMembers from "@/components/ProjectMembers.vue";
 import { useProjectsStore } from "@/stores/projects";
 
 const props = defineProps<{ projectId: string }>();
@@ -54,6 +55,8 @@ const sections = ["Phoneme inventory", "Phonotactics", "Word classes", "Lexicon"
           </li>
         </ul>
       </nav>
+
+      <ProjectMembers :project-id="projectId" />
 
       <RouterView />
     </template>

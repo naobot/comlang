@@ -59,6 +59,28 @@ function that is reachable that way. `create_project` stays in `public` because 
 meant to be called over RPC, and its advisor warning is expected. Note that migration
 0002 predates this move — copy the policy pattern from 0004.
 
+**`profiles` is the only readable mirror of `auth.users`.** The client cannot query
+`auth.users`, so without it there is no way to turn an email into a user id or show a
+member list as anything but UUIDs. A trigger keeps it in sync on signup and on email
+change. It is **not a directory**: the select policy exposes your own row plus people
+you already share a project with, via `private.shares_project_with()`.
+
+`project_members.user_id` carries a second foreign key to `profiles` purely so PostgREST
+can embed it — `select("*, profile:profiles(...)")` fails with "could not find the
+relation" without it, and the generated types catch that at compile time.
+
+**Adding a member goes through `add_project_member(project_id, email, role)`**, which is
+security-definer and checks ownership itself, because the caller cannot see the profile
+of someone they do not yet share a project with — which is exactly everyone they are
+about to invite. It resolves only existing accounts; there is no invite email. Note it
+does let an owner discover whether an email has an account.
+
+**Trigger functions must not be grantable.** `sync_profile_from_auth_user` and
+`touch_updated_at` had EXECUTE for `anon`/`authenticated`, which published them as RPC
+endpoints; 0007 revokes it. Triggers fire as the table owner, so this does not break
+them — confirmed by signing a user up afterwards. Do the same for any future trigger
+function.
+
 **`projects` has no INSERT policy.** A new project has no members, so a member check
 could never pass and an open check would let someone strand an unreadable row. Creation
 goes through the `create_project()` RPC, which writes the project and its owner

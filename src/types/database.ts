@@ -24,6 +24,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email: string
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       project_members: {
         Row: {
           created_at: string
@@ -49,6 +73,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_members_user_id_profiles_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -85,6 +116,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_project_member: {
+        Args: {
+          p_email: string
+          p_project_id: string
+          p_role?: Database["public"]["Enums"]["project_role"]
+        }
+        Returns: {
+          created_at: string
+          project_id: string
+          role: Database["public"]["Enums"]["project_role"]
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "project_members"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_project: {
         Args: { p_description?: string; p_name: string }
         Returns: {

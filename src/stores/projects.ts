@@ -20,9 +20,10 @@ export const useProjectsStore = defineStore("projects", () => {
     byId.value.set(row.id, row);
   }
 
-  function remove(id: string) {
-    // May be an id from a project we never held — deletes arrive unfiltered.
-    byId.value.delete(id);
+  function remove(key: Partial<Project>) {
+    // Only the primary key is present, and the event may be for a project we never
+    // held — deletes arrive unfiltered and unauthorized.
+    if (key.id) byId.value.delete(key.id);
   }
 
   async function fetchAll() {

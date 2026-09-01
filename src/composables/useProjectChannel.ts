@@ -6,17 +6,20 @@ export type RowHandlers<T> = {
   onInsert: (row: T) => void;
   onUpdate: (row: T) => void;
   /**
-   * Receives a bare primary key, off a stream that is NOT filtered.
+   * Receives the deleted row's PRIMARY KEY ONLY, off a stream that is NOT filtered.
    *
-   * Two Postgres Changes behaviours combine here:
-   *   - DELETE events ignore the subscription filter entirely, so ids for rows outside
-   *     the filter arrive too.
-   *   - RLS is not applied to DELETE, and under RLS the `old` record carries only the
-   *     primary key, so there is nothing else to check the id against.
+   * Three Postgres Changes behaviours combine here:
+   *   - DELETE events ignore the subscription filter entirely, so rows outside the
+   *     filter arrive too.
+   *   - RLS is not applied to DELETE, so there is no authorization check either.
+   *   - Under RLS the `old` record carries only the primary key — every other column
+   *     is absent, whatever `replica identity full` suggests.
    *
-   * Implement it as "drop this id if I hold it". An unknown id is normal, not an error.
+   * So this is a partial row, not a T: for `projects` that is `{ id }`, and for a
+   * composite key like `project_members` it is `{ project_id, user_id }` with no `id`
+   * at all. Implement it as "drop this if I hold it"; an unrecognised key is normal.
    */
-  onDelete: (id: string) => void;
+  onDelete: (key: Partial<T>) => void;
 };
 
 type Entry = { channel: RealtimeChannel; refs: number };
@@ -36,7 +39,7 @@ const channels = new Map<string, Entry>();
  * Returns an unsubscribe function. Channels are reference-counted, so callers may
  * subscribe freely and must release exactly once.
  */
-export function subscribeToTable<T extends { id: string }>(
+export function subscribeToTable<T extends object>(
   table: string,
   filter: string | null,
   handlers: RowHandlers<T>,
@@ -64,10 +67,7 @@ export function subscribeToTable<T extends { id: string }>(
       // passing one invites the reader to believe these are scoped. They are not.
       "postgres_changes",
       { event: "DELETE", schema: "public", table },
-      (payload) => {
-        const id = (payload.old as Partial<T>).id;
-        if (id) handlers.onDelete(id);
-      },
+      (payload) => handlers.onDelete(payload.old as Partial<T>),
     )
     .subscribe();
 
@@ -76,7 +76,7 @@ export function subscribeToTable<T extends { id: string }>(
 }
 
 /** Convenience wrapper for the many tables that hang off a project_id. */
-export function subscribeToProjectTable<T extends { id: string }>(
+export function subscribeToProjectTable<T extends object>(
   table: string,
   projectId: string,
   handlers: RowHandlers<T>,
