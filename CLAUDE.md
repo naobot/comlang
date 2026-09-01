@@ -18,19 +18,38 @@ itself a repo:
 Built: the **access layer** (`projects`, `project_members`, RLS), auth, the dashboard,
 the project workspace *shell* — a navy-on-white header with the conlang name and a gear
 menu at the left, section tabs across the middle, and the app name at the right — and the
-first three linguistic-core sections: the **phoneme inventory**, **phonotactics**, and the
-**lexicon** (seeded with the 60 entries from `grammar.yaml`).
+first four linguistic-core sections: the **phoneme inventory**, **phonotactics**, the
+**lexicon** (seeded with the 60 entries from `grammar.yaml`), and **grammar rules**.
 
-Not built, on purpose: **word classes**, **grammar rules** and **orthography**. Word
-classes was designed and then tabled: the source resists a slot model in five places
+**Word classes and Orthography are hidden from the header** — dropped from `projectTabs`
+in `src/router/index.ts` while their routes stay live, so a saved link still resolves and
+re-showing either is one line. Word classes was designed and then tabled: the source
+resists a slot model in five places
 (`phonological_word` splits a template across word boundaries, `semantic_particle` shares
 the case slot, plural is reduplication, evidentiality is a coda rather than a morpheme, and
 `categories` does not line up with `closed_class`). None of that had to be settled to start
-writing words down, which is why the lexicon jumped the queue. Each needs its own design pass — those tabs render
+writing words down, which is why the lexicon jumped the queue. Orthography is where
+romanization goes once there is one; upstream has none.
+
+**Grammar rules is free text apart from `name` and `rule_order`.** The field names match
+grammar.yaml's own (`effect`, `environment`, `examples`, `notes`) so tightening later is a
+rename rather than a re-parse. Not modelled yet: the SPE-style `formal_source`, and the
+provenance split across `inferred` / `confirmed_by` / `fitted_to` / `attested` /
+`contradicted_by` — two distinct evidence relations that want their own table. Each needs its own design pass — those tabs render
 `SectionPlaceholderView.vue`; they are placeholders, not stubs waiting to be filled in
 blind. Also deferred: changelog/version history, and any public/private flag.
 
 ## Gotchas that will otherwise be rediscovered as bugs
+
+**`grammar_rules.rule_order` is meaning, not presentation.** grammar.yaml's `rule_order`
+is a feeding pipeline — plural_reduplication feeds onset_simplification, vowel_harmony
+feeds u_lowering — so position is data. It is a column rather than a later migration
+because order is cheap to store and unrecoverable once thrown away, and the store's
+`canonical()` is order-**sensitive** here where the phonotactics one is not.
+
+That is also why this page saves whole-page rather than per entry like the lexicon:
+reordering is inherently multi-row, and a per-rule save could leave the pipeline
+half-permuted.
 
 **A draft and its baseline must never be the same object.** The lexicon store held two
 `EntryDraft`s and, on adopting a collaborator's version, assigned one object to both — so
@@ -308,6 +327,12 @@ a readable message. Over realtime with two clients: the list grows live, a clean
 adopts a collaborator's edit silently, a **dirty draft is held** and banners instead, one's
 own save raises no banner, and a delete elsewhere announces itself while keeping the typed
 text.
+
+What was verified when grammar rules went in (2026-09-01), through the store: create,
+whole-page save, **reorder persisting across a re-fetch**, ids stable across a save that
+reorders and adds and deletes, duplicate and unnamed rules refused with messages a user can
+act on, and realtime notifying without touching the draft while one's own save raises no
+banner.
 
 `auth.users` rows inserted by hand need their token columns set to `''` rather than
 NULL, or sign-in fails with GoTrue's opaque "Database error querying schema".

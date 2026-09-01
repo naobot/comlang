@@ -182,6 +182,53 @@ export type Database = {
           },
         ]
       }
+      grammar_rules: {
+        Row: {
+          created_at: string
+          effect: string | null
+          environment: string | null
+          examples: string | null
+          id: string
+          name: string
+          notes: string | null
+          project_id: string
+          rule_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          effect?: string | null
+          environment?: string | null
+          examples?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          project_id: string
+          rule_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          effect?: string | null
+          environment?: string | null
+          examples?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          project_id?: string
+          rule_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grammar_rules_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lexicon_entries: {
         Row: {
           created_at: string
@@ -446,6 +493,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      save_grammar_rules: {
+        Args: { p_project_id: string; p_rules: Json }
+        Returns: undefined
       }
       save_phoneme_inventory: {
         Args: { p_phonemes: Json; p_project_id: string }

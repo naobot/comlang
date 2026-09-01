@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
+import { useGrammarRulesStore } from "@/stores/grammarRules";
 import { useLexiconStore } from "@/stores/lexicon";
 import { useMembersStore } from "@/stores/members";
 import { usePhonemesStore } from "@/stores/phonemes";
@@ -12,6 +13,7 @@ const props = defineProps<{ projectId: string }>();
 const projects = useProjectsStore();
 const members = useMembersStore();
 const lexicon = useLexiconStore();
+const grammarRules = useGrammarRulesStore();
 const phonemes = usePhonemesStore();
 const phonotactics = usePhonotacticsStore();
 const resolving = ref(true);
@@ -40,6 +42,8 @@ function loadProjectData(projectId: string) {
   void phonotactics.fetchFor(projectId);
   lexicon.subscribe(projectId);
   void lexicon.fetchFor(projectId);
+  grammarRules.subscribe(projectId);
+  void grammarRules.fetchFor(projectId);
 }
 
 onMounted(async () => {
@@ -60,6 +64,7 @@ onUnmounted(() => {
   phonemes.unsubscribeAll();
   phonotactics.unsubscribeAll();
   lexicon.unsubscribeAll();
+  grammarRules.unsubscribeAll();
 });
 </script>
 

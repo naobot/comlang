@@ -51,11 +51,13 @@ export const useAuthStore = defineStore("auth", () => {
           import("@/stores/phonemes"),
           import("@/stores/phonotactics"),
           import("@/stores/lexicon"),
-        ]).then(([members, phonemes, phonotactics, lexicon]) => {
+          import("@/stores/grammarRules"),
+        ]).then(([members, phonemes, phonotactics, lexicon, grammarRules]) => {
           members.useMembersStore().reset();
           phonemes.usePhonemesStore().reset();
           phonotactics.usePhonotacticsStore().reset();
           lexicon.useLexiconStore().reset();
+          grammarRules.useGrammarRulesStore().reset();
         });
       }
     });

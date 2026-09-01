@@ -31,6 +31,12 @@ export type SequencePosition = Enums<"sequence_position">;
  */
 export type LexiconEntry = Tables<"lexicon_entries">;
 
+/**
+ * One grammar rule. Every field but the name is free text this round; `rule_order` is
+ * not — the source's rule_order is a feeding pipeline, not a display preference.
+ */
+export type GrammarRule = Tables<"grammar_rules">;
+
 /** A membership joined to the person it belongs to, as the members list renders it. */
 export type ProjectMemberWithProfile = ProjectMember & {
   profile: Pick<Profile, "id" | "email" | "display_name"> | null;
