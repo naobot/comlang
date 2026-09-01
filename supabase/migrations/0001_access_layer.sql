@@ -30,6 +30,7 @@ create index project_members_user_id_idx on public.project_members (user_id);
 create or replace function public.touch_updated_at()
 returns trigger
 language plpgsql
+set search_path = pg_catalog
 as $$
 begin
   new.updated_at := now();

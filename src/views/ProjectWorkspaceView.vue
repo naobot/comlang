@@ -11,9 +11,11 @@ const resolving = ref(true);
 const project = computed(() => projects.get(props.projectId));
 
 onMounted(async () => {
-  // A deep link lands here with an empty store, so fetch before deciding it is missing.
-  if (!project.value) await projects.fetchAll();
+  // Subscribe first so the fetch covers the window before the channel is live — see
+  // the note in DashboardView. A deep link lands here with an empty store, so fetch
+  // before deciding the project is missing.
   projects.subscribe();
+  if (!project.value) await projects.fetchAll();
   resolving.value = false;
 });
 

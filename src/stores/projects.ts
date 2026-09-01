@@ -3,7 +3,7 @@ import { computed, ref } from "vue";
 
 import { subscribeToTable } from "@/composables/useProjectChannel";
 import { supabase } from "@/lib/supabase";
-import type { Project } from "@/types/database";
+import type { Project } from "@/types/models";
 
 export const useProjectsStore = defineStore("projects", () => {
   // Keyed by id so realtime events and fetches converge on the same row rather than
@@ -43,13 +43,16 @@ export const useProjectsStore = defineStore("projects", () => {
     }
   }
 
-  async function createProject(name: string, description: string | null = null) {
+  async function createProject(name: string, description?: string) {
     error.value = null;
     // Goes through the RPC, not a plain insert: projects has no INSERT policy, because
     // the project and its owner membership have to be written in one transaction.
+    //
+    // p_description is an optional arg with a SQL default, so it must be omitted rather
+    // than passed as null — the generated Args type is `p_description?: string`.
     const { data, error: rpcError } = await supabase.rpc("create_project", {
       p_name: name,
-      p_description: description,
+      ...(description ? { p_description: description } : {}),
     });
 
     if (rpcError) {

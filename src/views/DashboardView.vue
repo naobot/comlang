@@ -13,8 +13,12 @@ const newName = ref("");
 const creating = ref(false);
 
 onMounted(async () => {
-  await projects.fetchAll();
+  // Subscribe BEFORE fetching, not after. There is a window between a channel going
+  // live and the first row landing, and anything changed in it is simply never
+  // delivered. Fetching second means the fetch covers that window; fetching first
+  // leaves a permanent hole between the query returning and the channel attaching.
   projects.subscribe();
+  await projects.fetchAll();
 });
 
 // The store owns the channel, so leaving the dashboard releases its reference rather

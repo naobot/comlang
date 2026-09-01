@@ -1,5 +1,9 @@
 -- RLS for the access layer.
 --
+-- SUPERSEDED IN PART by 0004, which moves the two helpers into the `private` schema so
+-- PostgREST stops publishing them as RPC endpoints. Copy the pattern from 0004, not
+-- from here. Kept as written because migrations are a history, not a current picture.
+--
 -- The helpers below exist to break policy recursion: a policy on projects that reads
 -- project_members, while project_members' own policy also reads project_members, sends
 -- Postgres into infinite recursion. `security definer` runs the lookup as the function
