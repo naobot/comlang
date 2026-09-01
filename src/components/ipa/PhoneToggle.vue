@@ -29,11 +29,14 @@ defineEmits<{ toggle: [ipa: string] }>();
   padding: var(--sp-2) var(--sp-1);
   border-color: transparent;
   background: transparent;
-  color: var(--c-text);
+  /* Unselected symbols recede: most of the chart is not in any given language, and at
+     full contrast the few that are get lost in it. */
+  color: var(--c-faint);
 }
 
 .phone:hover:not(:disabled) {
   background: var(--c-raised);
+  color: var(--c-text);
 }
 
 .phone.on {
@@ -42,7 +45,10 @@ defineEmits<{ toggle: [ipa: string] }>();
   font-weight: 600;
 }
 
+/* Lighter than the resting fill, not darker — hover should lift a selected symbol
+   rather than push it toward black. */
 .phone.on:hover:not(:disabled) {
-  background: var(--c-text);
+  background: var(--c-accent-soft);
+  color: var(--c-accent-text);
 }
 </style>

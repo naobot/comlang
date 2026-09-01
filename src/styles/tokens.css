@@ -10,7 +10,12 @@
   --c-text: #16233f;
   --c-muted: #5c6b86;
   --c-accent: #1f3d6e;
+  /* A step up from --c-accent, for hovering something already filled with it. */
+  --c-accent-soft: #35598f;
   --c-accent-text: #ffffff;
+  /* Lighter than --c-muted: for text that should recede until it is wanted, like an
+     unselected symbol on the IPA chart. */
+  --c-faint: #9aa8bf;
   --c-danger: #a4232a;
 
   --sp-1: 0.25rem;
