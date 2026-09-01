@@ -76,10 +76,6 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
       </div>
     </div>
 
-    <p v-if="phonemes.selected.length" class="selection">
-      <span v-for="ipa in phonemes.selected" :key="ipa" class="chip">{{ ipa }}</span>
-    </p>
-
     <ConsonantChart :is-selected="isSelected" @toggle="phonemes.toggle" />
     <VowelChart :is-selected="isSelected" @toggle="phonemes.toggle" />
   </section>
@@ -122,21 +118,6 @@ header p {
   font-style: normal;
   color: var(--c-accent);
   font-weight: 600;
-}
-
-.selection {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-1);
-  margin: 0 0 var(--sp-6);
-}
-
-.chip {
-  padding: var(--sp-1) var(--sp-2);
-  border-radius: var(--radius);
-  background: var(--c-raised);
-  font-family: var(--font-mono);
-  font-size: 0.875rem;
 }
 
 .notice {

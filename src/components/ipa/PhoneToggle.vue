@@ -39,16 +39,15 @@ defineEmits<{ toggle: [ipa: string] }>();
   color: var(--c-text);
 }
 
+/* Selection reads as weight and contrast, not as a fill: the chart is dense, and a
+   grid of filled cells competes with the symbols it is meant to be showing. */
 .phone.on {
-  background: var(--c-accent);
-  color: var(--c-accent-text);
-  font-weight: 600;
+  background: transparent;
+  color: var(--c-text);
+  font-weight: 700;
 }
 
-/* Lighter than the resting fill, not darker — hover should lift a selected symbol
-   rather than push it toward black. */
 .phone.on:hover:not(:disabled) {
-  background: var(--c-accent-soft);
-  color: var(--c-accent-text);
+  background: var(--c-raised);
 }
 </style>
