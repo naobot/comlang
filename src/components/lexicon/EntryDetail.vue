@@ -197,6 +197,9 @@ h2 {
 form {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* A form field wider than this is harder to read, not easier — the page's extra width
+     goes to the lemma list and the notes box instead. */
+  max-width: 64rem;
   gap: var(--sp-4);
 }
 

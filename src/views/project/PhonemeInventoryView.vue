@@ -90,7 +90,10 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
   <section>
     <header>
       <div>
-        <h1>Phoneme inventory</h1>
+        <!-- Visually hidden, not deleted: the tab already names the page, so showing it
+           twice is noise — but a page with no h1 leaves a screen reader with nothing to
+           announce it by. -->
+        <h1 class="sr-only">Phoneme inventory</h1>
         <p class="muted">
           Toggle the segments this language uses. Everything downstream — phonotactics, the lexicon,
           grammar rules — is built from what you pick here.
@@ -163,9 +166,14 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
 </template>
 
 <style scoped>
-h1 {
-  margin: 0 0 var(--sp-2);
-  font-size: 1.25rem;
+/* The heading stays in the document for structure, out of the layout for looks. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 header p {

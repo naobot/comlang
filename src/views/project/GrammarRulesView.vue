@@ -28,7 +28,10 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
 <template>
   <section>
     <header>
-      <h1>Grammar rules</h1>
+      <!-- Visually hidden, not deleted: the tab already names the page, so showing it
+           twice is noise — but a page with no h1 leaves a screen reader with nothing to
+           announce it by. -->
+      <h1 class="sr-only">Grammar rules</h1>
       <p class="muted">
         Ordered, because the order is the pipeline — a rule applies to what the rules above it have
         already produced. Everything but the name is free text for now.
@@ -126,9 +129,14 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
 </template>
 
 <style scoped>
-h1 {
-  margin: 0 0 var(--sp-2);
-  font-size: 1.25rem;
+/* The heading stays in the document for structure, out of the layout for looks. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 header p {
@@ -173,12 +181,15 @@ header p {
   font-weight: 600;
 }
 
+/* One column even on a wide page: position is the pipeline, and rules flowing into a
+   second column would make "what feeds what" a reading puzzle. */
 .rules {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
   gap: var(--sp-4);
+  max-width: 80rem;
 }
 
 .rules > li {

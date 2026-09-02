@@ -112,9 +112,12 @@ h2:first-child {
   border-radius: var(--radius);
 }
 
+/* Eleven places of articulation want more room than the old 60rem page gave them, but a
+   chart stretched across 2400px is all gap and no grid. */
 table {
   border-collapse: collapse;
   width: 100%;
+  max-width: 88rem;
 }
 
 th {

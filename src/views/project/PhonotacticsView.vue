@@ -44,7 +44,10 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
 <template>
   <section>
     <header>
-      <h1>Phonotactics</h1>
+      <!-- Visually hidden, not deleted: the tab already names the page, so showing it
+           twice is noise — but a page with no h1 leaves a screen reader with nothing to
+           announce it by. -->
+      <h1 class="sr-only">Phonotactics</h1>
       <p class="muted">
         Which segments can go where. Classes name sets of phonemes, templates say how a syllable is
         built from them, and constraints rule out what the templates would otherwise allow.
@@ -118,9 +121,14 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
 </template>
 
 <style scoped>
-h1 {
-  margin: 0 0 var(--sp-2);
-  font-size: 1.25rem;
+/* The heading stays in the document for structure, out of the layout for looks. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 header p {

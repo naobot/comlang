@@ -50,7 +50,10 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
 <template>
   <section>
     <header>
-      <h1>Word classes</h1>
+      <!-- Visually hidden, not deleted: the tab already names the page, so showing it
+           twice is noise — but a page with no h1 leaves a screen reader with nothing to
+           announce it by. -->
+      <h1 class="sr-only">Word classes</h1>
       <p class="muted">
         The parts of speech this language has, and the categories each one inflects for. A class
         name is what a lexicon entry's word class refers to.
@@ -175,9 +178,14 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
 </template>
 
 <style scoped>
-h1 {
-  margin: 0 0 var(--sp-2);
-  font-size: 1.25rem;
+/* The heading stays in the document for structure, out of the layout for looks. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 header p {
@@ -237,11 +245,14 @@ h2 {
   align-items: start;
 }
 
+/* Extra width becomes more cards per row rather than 60rem-wide name fields — these are
+   short records, and a card is legible at about 24rem. */
 .cards {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(24rem, 1fr));
   gap: var(--sp-3);
 }
 

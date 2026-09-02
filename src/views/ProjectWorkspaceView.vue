@@ -93,8 +93,11 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+/* Full width up to 2400px. The sections are two-pane editors and dense charts, not
+   prose — they use the room. Individual blocks that *are* prose keep their own measure,
+   which is why the intro paragraphs still cap at 44rem. */
 .page {
-  max-width: 60rem;
+  max-width: 2400px;
   margin: 0 auto;
   padding: var(--sp-8) var(--sp-4);
 }

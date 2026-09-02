@@ -231,6 +231,22 @@ as "Cl" and "Near-op", and "Back" (at `left: 100%`) vanished entirely. Both labe
 therefore set an explicit `width`. Symbol pairs are opaque so the rules pass behind them,
 which is also why the axis labels need clearance: an overlapping pair paints over them.
 
+**The workspace body runs to 2400px, and each block declares how much of that it can
+use.** `ProjectWorkspaceView`'s `.page` was capped at 60rem; the sections are two-pane
+editors and dense charts, not prose, so they take the room. But "full width" applied
+naively makes a form field a thousand pixels wide, so the blocks that do not benefit cap
+themselves: the IPA consonant table at 88rem, grammar rules at 80rem (**one column even
+when there is space** — position is the pipeline, and rules flowing into a second column
+would make "what feeds what" a reading puzzle), the entry-detail form at 64rem, and every
+intro paragraph at 44rem. Word-class cards instead use `repeat(auto-fill, minmax(24rem,
+1fr))`, so extra width becomes more cards per row. Add a cap or an auto-fill to any new
+block; neither is a default.
+
+**A tab page's `<h1>` is `sr-only`, not deleted.** The header tab already names the page,
+so rendering it again below was noise — but a page with no `h1` leaves a screen reader with
+nothing to announce it by. `ProjectMembers` and `ProjectSettings` keep visible headings:
+they hang off the name menu, not the tab bar, so nothing else names them.
+
 **Sections declare dependencies with `meta.requires`.** Phonotactics, word classes,
 lexicon and grammar all carry `requires: "phonemes"`, and `SectionPlaceholderView`
 renders a "set up the inventory first" notice instead of the generic placeholder when

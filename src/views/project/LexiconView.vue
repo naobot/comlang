@@ -63,7 +63,10 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
 <template>
   <section>
     <header>
-      <h1>Lexicon</h1>
+      <!-- Visually hidden, not deleted: the tab already names the page, so showing it
+           twice is noise — but a page with no h1 leaves a screen reader with nothing to
+           announce it by. -->
+      <h1 class="sr-only">Lexicon</h1>
       <p class="muted">
         Every word in the language. Search by the conlang form or by what it means.
       </p>
@@ -90,9 +93,14 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
 </template>
 
 <style scoped>
-h1 {
-  margin: 0 0 var(--sp-2);
-  font-size: 1.25rem;
+/* The heading stays in the document for structure, out of the layout for looks. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 header p {
@@ -103,7 +111,7 @@ header p {
 
 .panes {
   display: grid;
-  grid-template-columns: 15rem minmax(0, 1fr);
+  grid-template-columns: minmax(15rem, 22rem) minmax(0, 1fr);
   gap: var(--sp-6);
   align-items: start;
 }
