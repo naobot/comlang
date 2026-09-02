@@ -30,10 +30,35 @@ const SectionPlaceholder = () => import("@/views/project/SectionPlaceholderView.
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    // The registration flow. Four pages, all of them reachable signed out and all of
+    // them carrying their own centred layout — `meta.chrome: false` is what keeps the app
+    // header off them (see App.vue).
     {
       path: "/login",
       name: "login",
       component: () => import("@/views/LoginView.vue"),
+      meta: { chrome: false },
+    },
+    {
+      path: "/signup",
+      name: "signup",
+      component: () => import("@/views/SignUpView.vue"),
+      meta: { chrome: false },
+    },
+    {
+      path: "/reset-password",
+      name: "reset-password",
+      component: () => import("@/views/ResetPasswordView.vue"),
+      meta: { chrome: false },
+    },
+    {
+      // Where a recovery link lands, and where the account menu sends someone changing
+      // their password. Deliberately **not** bounced away from when signed in: a recovery
+      // link creates a session, so arriving here signed in is the normal case.
+      path: "/set-password",
+      name: "set-password",
+      component: () => import("@/views/SetPasswordView.vue"),
+      meta: { chrome: false },
     },
     {
       path: "/",
@@ -136,7 +161,10 @@ router.beforeEach(async (to) => {
   if (to.meta.requiresAuth && !auth.user) {
     return { name: "login", query: { r: to.fullPath } };
   }
-  if (to.name === "login" && auth.user) {
+  // Only the two pages that would be nonsense with a session already in hand. Reset and
+  // set-password are not on this list on purpose — the first is how you fix an account
+  // you are half-locked out of, and the second needs the session the link just created.
+  if ((to.name === "login" || to.name === "signup") && auth.user) {
     return { name: "dashboard" };
   }
   return true;

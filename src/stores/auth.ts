@@ -10,6 +10,8 @@ export const useAuthStore = defineStore("auth", () => {
   const user = ref<User | null>(null);
   const session = ref<Session | null>(null);
   const signingIn = ref(false);
+  /** In flight for anything in the registration flow that is not the sign-in form. */
+  const working = ref(false);
   const error = ref<string | null>(null);
 
   // getSession() is async, so a router guard that reads `user` synchronously on a cold
@@ -88,10 +90,98 @@ export const useAuthStore = defineStore("auth", () => {
     }
   }
 
+  /**
+   * Create an account.
+   *
+   * Returns whether a **session** came back with it, which is the difference between the
+   * two ways a Supabase project can be configured: with `mailer_autoconfirm` on (this
+   * project, checked) the account is live immediately and the caller can go straight to
+   * the dashboard; with confirmations on, `session` is null and the caller has to say
+   * "check your email" instead. Reading it off the response rather than hard-coding one
+   * of the two means flipping that setting later changes nothing here.
+   */
+  async function signUp(email: string, password: string) {
+    working.value = true;
+    error.value = null;
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
+      if (signUpError) {
+        error.value = signUpError.message;
+        return null;
+      }
+      apply(data.session);
+      return { session: data.session !== null };
+    } finally {
+      working.value = false;
+    }
+  }
+
+  /**
+   * Send a recovery email.
+   *
+   * `redirectTo` must be in the project's redirect allow-list (Dashboard → Authentication
+   * → URL Configuration) or GoTrue quietly falls back to the Site URL and the link lands
+   * on the dashboard instead of the form. That is configuration this repo cannot carry.
+   *
+   * Success here means "the request was accepted", **not** "an account exists". GoTrue
+   * answers the same way either way, and so does this: telling an anonymous caller which
+   * addresses have accounts is a disclosure the sign-in form does not otherwise make.
+   */
+  async function sendPasswordReset(email: string) {
+    working.value = true;
+    error.value = null;
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/set-password`,
+      });
+      if (resetError) {
+        error.value = resetError.message;
+        return false;
+      }
+      return true;
+    } finally {
+      working.value = false;
+    }
+  }
+
+  /**
+   * Set the password on the **current session**, whichever kind it is: the temporary one
+   * a recovery link creates, or an ordinary one belonging to someone changing it from the
+   * account menu. Both are `updateUser`, so there is one form and one path.
+   */
+  async function setPassword(password: string) {
+    working.value = true;
+    error.value = null;
+    try {
+      const { data, error: updateError } = await supabase.auth.updateUser({ password });
+      if (updateError) {
+        error.value = updateError.message;
+        return false;
+      }
+      user.value = data.user;
+      return true;
+    } finally {
+      working.value = false;
+    }
+  }
+
   async function signOut() {
     await supabase.auth.signOut();
     apply(null);
   }
 
-  return { user, session, signingIn, error, ready, init, signIn, signOut };
+  return {
+    user,
+    session,
+    signingIn,
+    working,
+    error,
+    ready,
+    init,
+    signIn,
+    signUp,
+    sendPasswordReset,
+    setPassword,
+    signOut,
+  };
 });

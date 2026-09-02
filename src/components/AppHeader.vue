@@ -119,7 +119,10 @@ const lastAt = computed(() => {
             </RouterLink>
             <hr />
           </template>
-          <button v-if="auth.user" type="button" role="menuitem" @click="signOut">Sign out</button>
+          <template v-if="auth.user">
+            <RouterLink :to="{ name: 'set-password' }" role="menuitem">Change password</RouterLink>
+            <button type="button" role="menuitem" @click="signOut">Sign out</button>
+          </template>
           <RouterLink v-else :to="{ name: 'login', query: { r: route.fullPath } }" role="menuitem">
             Sign in
           </RouterLink>
@@ -135,7 +138,10 @@ const lastAt = computed(() => {
           </template>
           <p class="label">{{ auth.user?.email ?? "Not signed in" }}</p>
           <hr />
-          <button v-if="auth.user" type="button" role="menuitem" @click="signOut">Sign out</button>
+          <template v-if="auth.user">
+            <RouterLink :to="{ name: 'set-password' }" role="menuitem">Change password</RouterLink>
+            <button type="button" role="menuitem" @click="signOut">Sign out</button>
+          </template>
           <RouterLink v-else :to="{ name: 'login' }" role="menuitem">Sign in</RouterLink>
         </HeaderMenu>
       </template>

@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import AuthShell from "@/components/AuthShell.vue";
 import { useAuthStore } from "@/stores/auth";
 
 const auth = useAuthStore();
@@ -11,19 +12,16 @@ const route = useRoute();
 const email = ref("");
 const password = ref("");
 
+/** Where to land afterwards. `r` is set by the router guard and by the read-only banner. */
+const next = () => (typeof route.query.r === "string" ? route.query.r : "/");
+
 async function onSubmit() {
-  if (await auth.signIn(email.value, password.value)) {
-    const redirect = typeof route.query.r === "string" ? route.query.r : "/";
-    await router.replace(redirect);
-  }
+  if (await auth.signIn(email.value, password.value)) await router.replace(next());
 }
 </script>
 
 <template>
-  <main class="login">
-    <h1>comlang</h1>
-    <p class="tagline">Collaborative conlang management.</p>
-
+  <AuthShell title="Sign in">
     <form @submit.prevent="onSubmit">
       <label>
         Email
@@ -41,33 +39,18 @@ async function onSubmit() {
       </button>
     </form>
 
-    <!-- Accounts are created in the Supabase dashboard. There is deliberately no
-         sign-up here: that is what keeps the app closed to the two of us without
-         needing a public/private flag on projects. -->
-    <p class="note">Accounts are created by the project owner.</p>
-  </main>
+    <template #links>
+      <RouterLink :to="{ name: 'signup', query: route.query }">Create an account</RouterLink>
+      <RouterLink :to="{ name: 'reset-password' }">Forgot your password?</RouterLink>
+    </template>
+  </AuthShell>
 </template>
 
 <style scoped>
-.login {
-  max-width: 22rem;
-  margin: 12vh auto;
-  padding: var(--sp-6);
-}
-
-h1 {
-  margin: 0;
-}
-
-.tagline {
-  margin-top: var(--sp-1);
-  color: var(--c-muted);
-}
-
 form {
   display: grid;
   gap: var(--sp-4);
-  margin-top: var(--sp-8);
+  margin-top: var(--sp-6);
 }
 
 label {
@@ -78,11 +61,5 @@ label {
 .error {
   margin: 0;
   color: var(--c-danger);
-}
-
-.note {
-  margin-top: var(--sp-6);
-  color: var(--c-muted);
-  font-size: 0.875rem;
 }
 </style>

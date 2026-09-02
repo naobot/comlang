@@ -7,8 +7,9 @@ import AppHeader from "@/components/AppHeader.vue";
 const route = useRoute();
 
 /**
- * The login screen keeps its own centred layout. Everything else gets the header —
- * **including a signed-out visitor**, who since 0026 has real pages to be on.
+ * The registration flow keeps its own centred layout, declared as `meta.chrome: false` on
+ * those four routes. Everything else gets the header — **including a signed-out visitor**,
+ * who since 0026 has real pages to be on.
  *
  * This used to also require `auth.user`, from when every route was behind the auth guard.
  * With published projects that check hid the whole chrome from exactly the person who
@@ -17,7 +18,7 @@ const route = useRoute();
  * The header handles the missing user itself — the account menu offers Sign in, and the
  * member-only items are gated on `members.canEdit`.
  */
-const chrome = computed(() => route.name !== "login");
+const chrome = computed(() => route.meta.chrome !== false);
 </script>
 
 <template>

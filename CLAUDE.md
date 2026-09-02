@@ -647,10 +647,44 @@ you already share a project with, via `private.shares_project_with()`.
 can embed it — `select("*, profile:profiles(...)")` fails with "could not find the
 relation" without it, and the generated types catch that at compile time.
 
+**The registration flow is four pages and no schema (`/login`, `/signup`,
+`/reset-password`, `/set-password`).** Everything it needs already existed: GoTrue for the
+accounts, and 0006's `on_auth_user_created` trigger to mirror each new user into
+`profiles`, which is what lets an owner then invite them by email. Verified live end to
+end — sign up returns a session, the profile row appears, `updateUser` changes the
+password, the old one is refused and the new one signs in — on a throwaway account since
+deleted.
+
+Two settings on the hosted project decide how this behaves, and both were read from
+`/auth/v1/settings` rather than assumed: `disable_signup: false` and
+**`mailer_autoconfirm: true`**. Autoconfirm is why signing up lands you straight in the
+dashboard with no confirmation email. `signUp` still reports whether a session came back
+and the view says "check your email" when one does not, so turning confirmations on later
+needs no code change. The server's own minimum is 6 characters (confirmed by having one
+refused); `src/lib/password.ts` asks for 8, and the server is still the real check.
+
+**`resetPasswordForEmail`'s `redirectTo` must be in the project's allow-list** (Dashboard →
+Authentication → URL Configuration) or GoTrue silently falls back to the Site URL and the
+link lands on the dashboard instead of the form. That is configuration this repo cannot
+carry, and it is per-environment: the deployed origin needs adding as well as localhost.
+
+`SetPasswordView` accepts **three** shapes of recovery URL, because which one arrives
+depends on the email template and the client's flow type: a `#access_token=…` fragment
+(the implicit flow, which the Supabase client consumes itself on load), `?code=…` (PKCE,
+exchanged), and `?token_hash=…&type=recovery` (the newer templates, verified). Anything
+else is a used or expired link and says so. The same page is "change your password" from
+the account menu — both end in `updateUser`, so there is one form — which is why the guard
+deliberately does **not** bounce a signed-in user away from it, unlike `/login` and
+`/signup`.
+
+**The auth pages carry `meta.chrome: false`**, and `App.vue` reads that rather than naming
+routes. They have their own centred layout via `AuthShell`.
+
 **Adding a member goes through `add_project_member(project_id, email, role)`**, which is
 security-definer and checks ownership itself, because the caller cannot see the profile
 of someone they do not yet share a project with — which is exactly everyone they are
-about to invite. It resolves only existing accounts; there is no invite email. Note it
+about to invite. It resolves only existing accounts; there is no invite email — since the
+registration flow went in, the person signs up themselves and is then addable by email. Note it
 does let an owner discover whether an email has an account.
 
 **Trigger functions must not be grantable.** `sync_profile_from_auth_user` and
