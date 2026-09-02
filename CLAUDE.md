@@ -176,6 +176,21 @@ vowels" without the module, and so revising the chart cannot change what a store
 meant. `src/data/ipa.test.ts` pins the invariants — chiefly no duplicate symbol, since a
 duplicate would silently make two chart cells toggle as one phoneme.
 
+**The vowel chart is coordinates, not a grid — and the axis labels need explicit
+widths.** The first version laid the vowels out in a 4x3 CSS grid and drew a trapezoid
+behind it, which put every open and near-open symbol outside the outline it was meant to
+sit on, and had nowhere at all for the seven vowels that are not on a major row
+(ɪ ʏ ʊ ə æ ɐ) — they ended up in a leftover list underneath. `VOWEL_POSITIONS` now stores
+normalized `x`/`y` per position and `vowelPoint` applies the slant, so the symbols and the
+SVG outline are drawn from the same function and cannot drift. `x` is backness *within its
+row*: `a` and `i` are both `front`, at different absolute x. `ipa.test.ts` pins that.
+
+The labels are positioned by `right`/`left` against a moving edge, and an absolutely
+positioned box anchored that way gets no width to grow into — the height labels rendered
+as "Cl" and "Near-op", and "Back" (at `left: 100%`) vanished entirely. Both label rules
+therefore set an explicit `width`. Symbol pairs are opaque so the rules pass behind them,
+which is also why the axis labels need clearance: an overlapping pair paints over them.
+
 **Sections declare dependencies with `meta.requires`.** Phonotactics, word classes,
 lexicon and grammar all carry `requires: "phonemes"`, and `SectionPlaceholderView`
 renders a "set up the inventory first" notice instead of the generic placeholder when

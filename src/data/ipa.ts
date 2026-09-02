@@ -275,71 +275,135 @@ export const OTHER_SYMBOLS: PhoneGroup[] = [
 ];
 
 // Vowels ---------------------------------------------------------------------------
-// The quadrilateral. Rows are height, columns are backness, and each position carries
-// an unrounded/rounded pair — the same reading order as the printed chart.
+/**
+ * The quadrilateral, as coordinates rather than as a grid.
+ *
+ * The chart is a trapezoid because the vowel space is one: there is less front-back room
+ * the further the jaw opens, so the front edge slants inward while the back edge stays
+ * vertical. The first version of this laid the symbols out on a rectangular grid and drew
+ * a trapezoid behind them, which put every open and near-open symbol outside the outline
+ * it was supposed to sit on — and had nowhere at all for the seven vowels that are not on
+ * a major row (ɪ ʏ ʊ ə æ ɐ), which ended up in a leftover list underneath.
+ *
+ * So positions are stored, not inferred from a row and a column. `x` is backness within
+ * the row (0 front, 1 back) and `y` is height (0 close, 1 open). Both are phonetic
+ * coordinates rather than layout: `vowelPoint` is the only thing that knows about the
+ * slant, and nothing here is in pixels.
+ */
 
-export const VOWEL_HEIGHTS = ["Close", "Close-mid", "Open-mid", "Open"] as const;
-export const VOWEL_BACKNESSES = ["Front", "Central", "Back"] as const;
+export type VowelHeight =
+  | "Close"
+  | "Near-close"
+  | "Close-mid"
+  | "Mid"
+  | "Open-mid"
+  | "Near-open"
+  | "Open";
 
-export type VowelHeight = (typeof VOWEL_HEIGHTS)[number];
-export type VowelBackness = (typeof VOWEL_BACKNESSES)[number];
+export type VowelBackness = "front" | "near-front" | "central" | "near-back" | "back";
 
-export type VowelSlot = {
+/**
+ * `major` rows are the four the printed chart rules a line across. The other three carry
+ * real vowels but no line, which is why they cannot simply be extra grid rows.
+ */
+export const VOWEL_HEIGHTS: readonly { label: VowelHeight; y: number; major: boolean }[] = [
+  { label: "Close", y: 0, major: true },
+  { label: "Near-close", y: 1 / 6, major: false },
+  { label: "Close-mid", y: 2 / 6, major: true },
+  { label: "Mid", y: 3 / 6, major: false },
+  { label: "Open-mid", y: 4 / 6, major: true },
+  { label: "Near-open", y: 5 / 6, major: false },
+  { label: "Open", y: 1, major: true },
+];
+
+const BACKNESS_X: Record<VowelBackness, number> = {
+  front: 0,
+  "near-front": 0.25,
+  central: 0.5,
+  "near-back": 0.75,
+  back: 1,
+};
+
+/** The three columns the chart labels and rules a line down. */
+export const VOWEL_BACKNESSES: readonly { label: string; x: number }[] = [
+  { label: "Front", x: 0 },
+  { label: "Central", x: 0.5 },
+  { label: "Back", x: 1 },
+];
+
+/**
+ * How far in the front edge has slanted by the open row, as a fraction of the width.
+ *
+ * Geometry, so it lives with the coordinates rather than in the stylesheet: the symbols
+ * and the outline have to agree, and a value in CSS could only be kept in step by hand.
+ */
+export const VOWEL_FRONT_INSET = 0.42;
+
+/** Where the front edge sits at a given height. */
+export const vowelFrontEdge = (y: number) => y * VOWEL_FRONT_INSET;
+
+/**
+ * A phonetic position as a fraction of the plot area, with the slant applied.
+ *
+ * Backness is relative to the row, not absolute: `x: 0` is wherever the front edge has
+ * got to at that height, which is what keeps `a` on the same line as `i`.
+ */
+export function vowelPoint(x: number, y: number): { x: number; y: number } {
+  const left = vowelFrontEdge(y);
+  return { x: left + x * (1 - left), y };
+}
+
+export type VowelPosition = {
   height: VowelHeight;
   backness: VowelBackness;
+  /** Fractions of the plot area, slant already applied. */
+  x: number;
+  y: number;
   unrounded: Phone | null;
   rounded: Phone | null;
 };
 
-const VOWELS: Record<VowelHeight, readonly (readonly [string | null, string | null])[]> = {
-  Close: [
-    ["i", "y"],
-    ["ɨ", "ʉ"],
-    ["ɯ", "u"],
-  ],
-  "Close-mid": [
-    ["e", "ø"],
-    ["ɘ", "ɵ"],
-    ["ɤ", "o"],
-  ],
-  "Open-mid": [
-    ["ɛ", "œ"],
-    ["ɜ", "ɞ"],
-    ["ʌ", "ɔ"],
-  ],
-  Open: [
-    ["a", "ɶ"],
-    ["ɐ", null],
-    ["ɑ", "ɒ"],
-  ],
-};
-
-export const VOWEL_ROWS: { height: VowelHeight; slots: VowelSlot[] }[] = VOWEL_HEIGHTS.map(
-  (height) => ({
-    height,
-    slots: VOWEL_BACKNESSES.map((backness, i) => {
-      const pair = VOWELS[height][i] ?? [null, null];
-      const [unrounded, rounded] = pair;
-      const describe = (rounding: string) =>
-        `${height.toLowerCase()} ${backness.toLowerCase()} ${rounding} vowel`;
-      return {
-        height,
-        backness,
-        unrounded: unrounded ? phone(unrounded, "vowel", describe("unrounded")) : null,
-        rounded: rounded ? phone(rounded, "vowel", describe("rounded")) : null,
-      };
-    }),
-  }),
-);
-
-/** On the chart, but not at a quadrilateral corner or edge midpoint. */
-export const EXTRA_VOWELS: Phone[] = [
-  phone("ɪ", "vowel", "near-close near-front unrounded vowel"),
-  phone("ʏ", "vowel", "near-close near-front rounded vowel"),
-  phone("ʊ", "vowel", "near-close near-back rounded vowel"),
-  phone("ə", "vowel", "mid central vowel (schwa)"),
-  phone("æ", "vowel", "near-open front unrounded vowel"),
+/** `[height, backness, unrounded, rounded]`, in the printed chart's reading order. */
+const VOWEL_TABLE: readonly (readonly [
+  VowelHeight,
+  VowelBackness,
+  string | null,
+  string | null,
+])[] = [
+  ["Close", "front", "i", "y"],
+  ["Close", "central", "ɨ", "ʉ"],
+  ["Close", "back", "ɯ", "u"],
+  ["Near-close", "near-front", "ɪ", "ʏ"],
+  ["Near-close", "near-back", null, "ʊ"],
+  ["Close-mid", "front", "e", "ø"],
+  ["Close-mid", "central", "ɘ", "ɵ"],
+  ["Close-mid", "back", "ɤ", "o"],
+  ["Mid", "central", "ə", null],
+  ["Open-mid", "front", "ɛ", "œ"],
+  ["Open-mid", "central", "ɜ", "ɞ"],
+  ["Open-mid", "back", "ʌ", "ɔ"],
+  ["Near-open", "front", "æ", null],
+  ["Near-open", "central", "ɐ", null],
+  ["Open", "front", "a", "ɶ"],
+  ["Open", "back", "ɑ", "ɒ"],
 ];
+
+const HEIGHT_Y = new Map(VOWEL_HEIGHTS.map((h) => [h.label, h.y] as const));
+
+export const VOWEL_POSITIONS: VowelPosition[] = VOWEL_TABLE.map(
+  ([height, backness, unrounded, rounded]) => {
+    const point = vowelPoint(BACKNESS_X[backness], HEIGHT_Y.get(height) ?? 0);
+    const describe = (rounding: string) =>
+      `${height.toLowerCase()} ${backness.replace("-", " ")} ${rounding} vowel`;
+    return {
+      height,
+      backness,
+      ...point,
+      unrounded: unrounded ? phone(unrounded, "vowel", describe("unrounded")) : null,
+      rounded: rounded ? phone(rounded, "vowel", describe("rounded")) : null,
+    };
+  },
+);
 
 // Lookups -------------------------------------------------------------------------
 // Built once here so no component or store re-derives them.
@@ -353,13 +417,10 @@ function collect(): Phone[] {
     }
   }
   for (const group of [...NON_PULMONIC, ...OTHER_SYMBOLS]) out.push(...group.phones);
-  for (const row of VOWEL_ROWS) {
-    for (const slot of row.slots) {
-      if (slot.unrounded) out.push(slot.unrounded);
-      if (slot.rounded) out.push(slot.rounded);
-    }
+  for (const pos of VOWEL_POSITIONS) {
+    if (pos.unrounded) out.push(pos.unrounded);
+    if (pos.rounded) out.push(pos.rounded);
   }
-  out.push(...EXTRA_VOWELS);
   return out;
 }
 

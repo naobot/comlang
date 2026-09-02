@@ -7,8 +7,10 @@ import {
   PHONE_ORDER,
   PLACES,
   PULMONIC_ROWS,
-  VOWEL_BACKNESSES,
-  VOWEL_ROWS,
+  VOWEL_HEIGHTS,
+  VOWEL_POSITIONS,
+  vowelFrontEdge,
+  vowelPoint,
 } from "./ipa";
 
 describe("the IPA reference chart", () => {
@@ -32,10 +34,43 @@ describe("the IPA reference chart", () => {
     expect(PULMONIC_ROWS).toHaveLength(MANNERS.length);
   });
 
-  it("keeps every vowel row the same width as the backness header", () => {
-    for (const row of VOWEL_ROWS) {
-      expect(row.slots).toHaveLength(VOWEL_BACKNESSES.length);
+  // The quadrilateral is a claim about where a symbol sits, so the coordinates are worth
+  // pinning: a stray value puts a vowel outside the outline, which is the bug this model
+  // replaced a rectangular grid to fix.
+  it("keeps every vowel inside the quadrilateral", () => {
+    for (const pos of VOWEL_POSITIONS) {
+      expect(pos.y).toBeGreaterThanOrEqual(0);
+      expect(pos.y).toBeLessThanOrEqual(1);
+      // Not 0: the front edge has slanted in by this height, and x is already absolute.
+      expect(pos.x).toBeGreaterThanOrEqual(vowelFrontEdge(pos.y) - 1e-9);
+      expect(pos.x).toBeLessThanOrEqual(1 + 1e-9);
     }
+  });
+
+  it("slants the front edge and leaves the back edge vertical", () => {
+    expect(vowelPoint(0, 0).x).toBe(0);
+    expect(vowelPoint(0, 1).x).toBeGreaterThan(0);
+    expect(vowelPoint(1, 0).x).toBe(1);
+    expect(vowelPoint(1, 1).x).toBe(1);
+  });
+
+  // /a/ is open front and /i/ is close front: same backness, so they belong on the same
+  // slanted edge even though their x differs. The old rectangular grid could not say so.
+  it("puts the front vowels on the front edge at every height", () => {
+    const front = VOWEL_POSITIONS.filter((p) => p.backness === "front");
+    expect(front.length).toBeGreaterThan(1);
+    for (const pos of front) expect(pos.x).toBeCloseTo(vowelFrontEdge(pos.y));
+  });
+
+  it("gives every height a distinct position, minor rows included", () => {
+    expect(new Set(VOWEL_HEIGHTS.map((h) => h.y)).size).toBe(VOWEL_HEIGHTS.length);
+    expect(VOWEL_HEIGHTS.filter((h) => h.major)).toHaveLength(4);
+  });
+
+  // These had no cell on the old grid and lived in a leftover list below the chart.
+  it.each(["ɪ", "ʏ", "ʊ", "ə", "æ", "ɐ"])("places %s on the chart rather than beside it", (ipa) => {
+    const found = VOWEL_POSITIONS.some((p) => p.unrounded?.ipa === ipa || p.rounded?.ipa === ipa);
+    expect(found).toBe(true);
   });
 
   it("never puts a symbol in a cell marked impossible", () => {
