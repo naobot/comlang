@@ -176,6 +176,15 @@ vowels" without the module, and so revising the chart cannot change what a store
 meant. `src/data/ipa.test.ts` pins the invariants — chiefly no duplicate symbol, since a
 duplicate would silently make two chart cells toggle as one phoneme.
 
+**Buttons never wrap, and centre their label.** The base rule in `tokens.css` sets
+`white-space: nowrap` plus `inline-flex` + `align-items: center`, so a control's label
+stays one line and a button stretched by a taller sibling in a flex row keeps its text
+centred rather than at the top. Two deliberate opt-outs, both where a `<button>` is really
+*content*: `.lemmas button` (a lemma and its gloss, which must wrap) sets
+`white-space: normal`, and the "+ Add ⟨search text⟩" button truncates instead, since its
+label is arbitrary user input in a fixed-width sidebar. Its ellipsis lives on an inner
+`<span>` because `text-overflow` cannot apply to a bare text run inside a flex container.
+
 **The vowel chart is coordinates, not a grid — and the axis labels need explicit
 widths.** The first version laid the vowels out in a 4x3 CSS grid and drew a trapezoid
 behind it, which put every open and near-open symbol outside the outline it was meant to

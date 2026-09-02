@@ -52,6 +52,17 @@ button {
   font-weight: 600;
   letter-spacing: 0.07em;
   text-transform: uppercase;
+  /* A control's label is one line. Wrapping turns a button into a paragraph with a
+     border round it, and a two-line button in a row of one-line ones makes the whole
+     row jump — so the default is nowrap, and a button that is really *content* (a
+     lexicon entry, which carries a lemma and its gloss) opts back in to wrapping. */
+  white-space: nowrap;
+  /* inline-flex rather than the default inline-block: a button stretched by a taller
+     sibling in a flex row keeps its label centred instead of letting it sit at the top,
+     and centring survives a component overriding `display` for its own layout. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: var(--sp-1) var(--sp-3);
   border: 1px solid var(--c-border);
   border-radius: var(--radius);

@@ -75,7 +75,7 @@ const exactLemma = computed(() =>
       class="add"
       @click="emit('create', query.trim())"
     >
-      + Add “{{ query.trim() }}”
+      <span class="add-label">+ Add “{{ query.trim() }}”</span>
     </button>
     <button v-else type="button" class="add" @click="emit('create', '')">+ New entry</button>
   </div>
@@ -118,6 +118,8 @@ const exactLemma = computed(() =>
   background: transparent;
   text-align: left;
   text-transform: none;
+  /* Content, not a control: a lemma and its gloss are prose and have to wrap. */
+  white-space: normal;
   letter-spacing: normal;
   font-size: 0.875rem;
   font-weight: 400;
@@ -160,5 +162,14 @@ const exactLemma = computed(() =>
 .add {
   margin-top: var(--sp-2);
   width: 100%;
+}
+
+/* This is the one button whose label is arbitrary user text. Buttons do not wrap, so a
+   long search term has to be truncated rather than left to overflow the sidebar — and
+   the ellipsis needs a real element, since it cannot apply to a bare flex text run. */
+.add-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>
