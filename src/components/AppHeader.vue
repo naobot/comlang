@@ -34,14 +34,18 @@ async function signOut() {
  * whoever last touched it is essentially always a member, and `profiles` is only readable
  * for people you share a project with anyway.
  */
+/**
+ * Null when the person cannot be named — they have left the project, or the viewer is a
+ * visitor to a published conlang and cannot read the member list at all. The line then
+ * says only *when*, which is the part that is public.
+ */
 const lastBy = computed(() => {
   const id = project.value?.last_activity_by;
   if (!id) return null;
   if (id === auth.user?.id) return "you";
-  const member = members.members.find((m) => m.user_id === id);
-  const profile = member?.profile;
-  if (!profile) return "someone"; // they may have left the project since
-  return profile.display_name || profile.email.split("@")[0] || "someone";
+  const profile = members.members.find((m) => m.user_id === id)?.profile;
+  if (!profile) return null;
+  return profile.display_name || profile.email.split("@")[0] || null;
 });
 
 const lastAt = computed(() => {
@@ -148,7 +152,10 @@ const lastAt = computed(() => {
     </nav>
     <div v-else class="tabs" />
 
-    <p v-if="projectId && lastAt" class="activity">Last updated by {{ lastBy }} at {{ lastAt }}</p>
+    <p v-if="projectId && lastAt" class="activity">
+      <template v-if="lastBy">Last updated by {{ lastBy }} at {{ lastAt }}</template>
+      <template v-else>Last updated {{ lastAt }}</template>
+    </p>
 
     <span class="brand">comlang</span>
   </header>

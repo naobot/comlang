@@ -493,6 +493,17 @@ intro paragraph at 44rem. Word-class cards instead use `repeat(auto-fill, minmax
 1fr))`, so extra width becomes more cards per row. Add a cap or an auto-fill to any new
 block; neither is a default.
 
+**The app chrome is gated on the route, not on there being a user.** `App.vue` renders
+`AppHeader` for everything except the login screen. It used to also require `auth.user`,
+which was right while every route was behind the auth guard and became wrong the moment
+published projects existed: a signed-out visitor got no project name, no tab bar and so no
+way to reach any section but the one their link landed on — a whole conlang looking like
+one page with a read-only banner over it. The header copes with a missing user itself (the
+account menu offers Sign in; Members and Settings are gated on `members.canEdit`), and
+`lastBy` returns **null** rather than "someone" when the person cannot be named, so a
+visitor — who cannot read the member list — gets "Last updated ⟨when⟩" instead of a
+sentence about a stranger.
+
 **A tab page's `<h1>` is `sr-only`, not deleted.** The header tab already names the page,
 so rendering it again below was noise — but a page with no `h1` leaves a screen reader with
 nothing to announce it by. `ProjectMembers` and `ProjectSettings` keep visible headings:
@@ -578,6 +589,22 @@ gates the header's gear menu and the settings form, which exist on every tab —
 membership only where the list renders would leave `isOwner` false everywhere else, and
 an owner would lose their own controls by navigating. `ProjectMembers.vue` therefore
 renders and mutates only; it does not subscribe.
+
+**The router is in history mode, so the host has to serve `index.html` for every path.**
+`vercel.json` rewrites `/(.*)` to `/index.html`, and without it a deployed build 404s on
+exactly the two things that matter — refreshing a section and opening a link someone
+shared. It is not reproducible locally: Vite's dev server and `vp preview` both do this
+fallback themselves, so the bug only exists on the host. Vercel's zero-config Vite preset
+serves `dist/` as plain static files and adds no catch-all.
+
+Rewrites are evaluated *after* the filesystem check, so `/assets/...` and `/favicon.ico`
+still serve their own bytes rather than the shell — verified against the real `dist/` under
+a server that mimics that order. The build emits **root-absolute** asset URLs
+(`/assets/index-*.js`), which is what lets one `index.html` boot from a URL of any depth;
+switching to relative asset paths would reintroduce the bug in a subtler form. A genuinely
+unknown path now returns 200 with the app's own "Not found" — that is the normal shape of a
+single-page app, not a regression. Any other host needs its own version of this file
+(`_redirects` for Netlify, `try_files` for nginx).
 
 **Header tabs are child routes, listed once in `projectTabs`** (`src/router/index.ts`).
 `AppHeader` imports that array rather than filtering `router.getRoutes()`; `members` and
