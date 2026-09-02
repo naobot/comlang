@@ -152,7 +152,7 @@ export function violation(grammar: Grammar, segments: Segment[]): string | null 
       const b = segments[i + 1];
       if (a && b && matches(constraint.a, a) && matches(constraint.b, b)) {
         const where = constraint.position === "anywhere" ? "" : ` ${constraint.position}`;
-        return `${describe(constraint.a, grammar)}${describe(constraint.b, grammar)} is not allowed${where}`;
+        return `[${describe(constraint.a, grammar)}][${describe(constraint.b, grammar)}] is not allowed${where}`;
       }
     }
   }
