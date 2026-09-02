@@ -109,20 +109,49 @@ header p {
   font-size: 0.875rem;
 }
 
+/**
+ * The one section that fills the viewport instead of growing with its content.
+ *
+ * A dictionary is a list you scroll *inside*, not a page that gets taller with every word
+ * added — 60 entries already ran off the bottom. Height has to be **definite**, not a
+ * max-height: the lemma list is `flex: 1` inside its panel, and against an indefinite
+ * height that resolves to the full content height, so the list took its natural size and
+ * spilled out of the cap rather than scrolling within it. That was the bug.
+ *
+ * dvh rather than vh so mobile browser chrome does not leave the panes below the fold.
+ */
+section {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - var(--header-h) - var(--sp-8) * 2);
+  /* Below this there is no useful list left; let the window scroll instead. */
+  min-height: 26rem;
+}
+
 .panes {
+  flex: 1;
   display: grid;
   grid-template-columns: minmax(15rem, 22rem) minmax(0, 1fr);
   gap: var(--sp-6);
-  align-items: start;
+  /* Stretch, not start: a definite height is what lets each pane scroll on its own. */
+  align-items: stretch;
+  min-height: 0;
+}
+
+/* Without this a grid child refuses to shrink below its content, and the overflow
+   reappears one level down. */
+.panes > * {
+  min-height: 0;
 }
 
 .panes > :first-child {
-  position: sticky;
-  /* Below the app header, with room for the page's own top padding. */
-  top: calc(var(--header-h) + var(--sp-4));
-  max-height: calc(100vh - var(--header-h) - var(--sp-8));
   padding-right: var(--sp-3);
   border-right: 1px solid var(--c-border);
+}
+
+/* The form is short enough to fit, but a long note should not push the page instead. */
+.panes > :last-child {
+  overflow-y: auto;
 }
 
 .placeholder {
@@ -148,11 +177,12 @@ header p {
 @media (max-width: 44rem) {
   .panes {
     grid-template-columns: minmax(0, 1fr);
+    /* Two rows sharing the same fixed height: the list keeps a usable slice and the
+       entry takes the rest, so neither pane pushes the page. */
+    grid-template-rows: minmax(0, 16rem) minmax(0, 1fr);
   }
 
   .panes > :first-child {
-    position: static;
-    max-height: 22rem;
     padding-right: 0;
     padding-bottom: var(--sp-4);
     border-right: 0;

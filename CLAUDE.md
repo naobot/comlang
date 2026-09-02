@@ -231,6 +231,20 @@ as "Cl" and "Near-op", and "Back" (at `left: 100%`) vanished entirely. Both labe
 therefore set an explicit `width`. Symbol pairs are opaque so the rules pass behind them,
 which is also why the axis labels need clearance: an overlapping pair paints over them.
 
+**The lexicon fills the viewport; every other section grows with its content.** A
+dictionary is a list you scroll *inside*, not a page that gets taller with every word. Its
+`section` therefore takes a **definite** height — `calc(100dvh - var(--header-h) -
+var(--sp-8) * 2)`, the page's own padding included — and the panes stretch into it and
+scroll on their own.
+
+Definite is the load-bearing word. The first version used `max-height` on a sticky
+sidebar, and it did not work: `.lemmas` is `flex: 1` inside `.panel`, and against an
+*indefinite* height a flex item resolves to its full content height, so the list took its
+natural size and spilled straight out of the cap instead of scrolling within it. Grid
+children also need `min-height: 0` or they refuse to shrink below their content and the
+overflow simply reappears one level down. `min-height: 26rem` on the section is the escape
+hatch: below that there is no useful list left, so the window scrolls instead.
+
 **The workspace body runs to 2400px, and each block declares how much of that it can
 use.** `ProjectWorkspaceView`'s `.page` was capped at 60rem; the sections are two-pane
 editors and dense charts, not prose, so they take the room. But "full width" applied
