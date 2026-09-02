@@ -134,7 +134,7 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
       <ClassEditor />
       <TemplateEditor />
       <ConstraintEditor />
-      <SampleOutput />
+      <SampleOutput :project-id="projectId" />
     </template>
   </section>
 </template>

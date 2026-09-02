@@ -235,6 +235,7 @@ export type Database = {
           created_at: string
           english: string
           id: string
+          kind: Database["public"]["Enums"]["corpus_kind"]
           project_id: string
           sort_order: number
           updated_at: string
@@ -244,6 +245,7 @@ export type Database = {
           created_at?: string
           english?: string
           id?: string
+          kind?: Database["public"]["Enums"]["corpus_kind"]
           project_id: string
           sort_order?: number
           updated_at?: string
@@ -253,6 +255,7 @@ export type Database = {
           created_at?: string
           english?: string
           id?: string
+          kind?: Database["public"]["Enums"]["corpus_kind"]
           project_id?: string
           sort_order?: number
           updated_at?: string
@@ -747,6 +750,7 @@ export type Database = {
         | "forbid_in_role"
         | "forbid_sequence"
         | "no_identical_adjacent"
+      corpus_kind: "utterance" | "passage"
       phoneme_kind: "consonant" | "vowel"
       project_role: "owner" | "collaborator"
       sequence_position: "anywhere" | "word_initial" | "word_final"
@@ -884,6 +888,7 @@ export const Constants = {
         "forbid_sequence",
         "no_identical_adjacent",
       ],
+      corpus_kind: ["utterance", "passage"],
       phoneme_kind: ["consonant", "vowel"],
       project_role: ["owner", "collaborator"],
       sequence_position: ["anywhere", "word_initial", "word_final"],

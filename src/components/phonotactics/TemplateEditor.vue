@@ -2,7 +2,8 @@
 import { computed, ref } from "vue";
 
 import SlotPhonemesDialog from "@/components/phonotactics/SlotPhonemesDialog.vue";
-import { templateNotation } from "@/lib/phonotactics";
+import { useDragReorder } from "@/composables/useDragReorder";
+import { duplicateTemplateNames, templateNotation } from "@/lib/phonotactics";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
 import type { DraftSlot } from "@/stores/phonotactics";
 import type { SlotRole } from "@/types/models";
@@ -14,12 +15,30 @@ const ROLES: SlotRole[] = ["onset", "nucleus", "coda"];
 
 const classSymbols = computed(() => phonotactics.draft.classes.map((c) => c.symbol));
 
+/**
+ * Templates are addressed by index everywhere here, and `:key` is the index too.
+ *
+ * The name is editable, so it is no longer an identity: keying on it would remount the
+ * row — and drop focus — on every keystroke, and the store's edits would go looking for a
+ * name that is halfway to being something else.
+ */
+const reorder = useDragReorder((from, to) => phonotactics.moveTemplate(from, to));
+
+/**
+ * Shown, not prevented. Two templates may pass through the same name while one of them is
+ * being retyped, and refusing the keystroke would mean a name could never be edited into
+ * another's. `save` is where it is refused, with a message that says which.
+ */
+const duplicates = computed(() => new Set(duplicateTemplateNames(phonotactics.draft)));
+
+const nameIsBad = (name: string) => !name.trim() || duplicates.value.has(name.trim());
+
 /** Which slot's phoneme picker is open. One at a time; null is closed. */
-const editing = ref<{ templateName: string; index: number } | null>(null);
+const editing = ref<{ templateIndex: number; index: number } | null>(null);
 
 const editingSlot = computed<DraftSlot | null>(() => {
   if (!editing.value) return null;
-  const template = phonotactics.draft.templates.find((t) => t.name === editing.value?.templateName);
+  const template = phonotactics.draft.templates[editing.value.templateIndex];
   return template?.slots[editing.value.index] ?? null;
 });
 
@@ -38,9 +57,10 @@ function slotSummary(slot: DraftSlot) {
 }
 
 // The notation comes from the same function the generator uses, so the formal string and
-// the widgets below it cannot drift apart.
-const notationFor = (name: string) => {
-  const template = phonotactics.grammar.templates.find((t) => t.name === name);
+// the widgets below it cannot drift apart. By index rather than by name: `resolveGrammar`
+// maps the draft's templates in order, and two of them may share a name mid-edit.
+const notationFor = (index: number) => {
+  const template = phonotactics.grammar.templates[index];
   return template ? templateNotation(template) : "∅";
 };
 
@@ -54,7 +74,7 @@ function add() {
     <h2>Syllable templates</h2>
     <p class="hint">
       An ordered run of slots. Optional slots are bracketed, and weight sets how often a template is
-      picked relative to the others.
+      picked relative to the others. Drag a template by its handle to reorder it, or use the arrows.
     </p>
 
     <p v-if="classSymbols.length === 0" class="warn">
@@ -62,15 +82,35 @@ function add() {
     </p>
 
     <ul class="templates">
-      <li v-for="template in phonotactics.draft.templates" :key="template.name">
+      <li v-for="(template, t) in phonotactics.draft.templates" :key="t" v-bind="reorder.item(t)">
         <div class="head">
-          <code class="notation">{{ notationFor(template.name) }}</code>
-          <strong>{{ template.name }}</strong>
+          <!-- aria-hidden: dragging is mouse-only; the arrows are the keyboard route. -->
+          <span
+            class="drag-handle"
+            aria-hidden="true"
+            title="Drag to reorder"
+            v-bind="reorder.handle(t)"
+            >⠿</span
+          >
+          <code class="notation">{{ notationFor(t) }}</code>
+          <input
+            v-model="template.name"
+            class="name"
+            :class="{ bad: nameIsBad(template.name) }"
+            placeholder="template name"
+            :aria-label="`Name of template ${t + 1}`"
+          />
           <label class="weight">
             weight
             <input v-model.number="template.weight" type="number" min="1" step="1" />
           </label>
-          <button type="button" @click="phonotactics.removeTemplate(template.name)">Remove</button>
+          <button type="button" title="Move up" @click="phonotactics.moveTemplate(t, t - 1)">
+            ↑
+          </button>
+          <button type="button" title="Move down" @click="phonotactics.moveTemplate(t, t + 1)">
+            ↓
+          </button>
+          <button type="button" @click="phonotactics.removeTemplateAt(t)">Remove</button>
         </div>
 
         <ol class="slots">
@@ -80,13 +120,7 @@ function add() {
             <select
               :value="slot.class_symbol"
               :aria-label="`Slot ${i + 1} class`"
-              @change="
-                phonotactics.setSlotClass(
-                  template.name,
-                  i,
-                  ($event.target as HTMLSelectElement).value,
-                )
-              "
+              @change="phonotactics.setSlotClass(t, i, ($event.target as HTMLSelectElement).value)"
             >
               <option v-for="symbol in classSymbols" :key="symbol" :value="symbol">
                 {{ symbol }}
@@ -97,7 +131,7 @@ function add() {
               class="phonemes"
               :class="{ restricted: slot.phoneme_ipa !== null }"
               :aria-label="`Choose phonemes for slot ${i + 1}`"
-              @click="editing = { templateName: template.name, index: i }"
+              @click="editing = { templateIndex: t, index: i }"
             >
               {{ slotSummary(slot) }}
             </button>
@@ -108,21 +142,13 @@ function add() {
               <input v-model="slot.optional" type="checkbox" />
               optional
             </label>
-            <button
-              type="button"
-              title="Move left"
-              @click="phonotactics.moveSlot(template.name, i, -1)"
-            >
+            <button type="button" title="Move left" @click="phonotactics.moveSlot(t, i, -1)">
               ←
             </button>
-            <button
-              type="button"
-              title="Move right"
-              @click="phonotactics.moveSlot(template.name, i, 1)"
-            >
+            <button type="button" title="Move right" @click="phonotactics.moveSlot(t, i, 1)">
               →
             </button>
-            <button type="button" @click="phonotactics.removeSlot(template.name, i)">×</button>
+            <button type="button" @click="phonotactics.removeSlot(t, i)">×</button>
           </li>
         </ol>
 
@@ -132,11 +158,7 @@ function add() {
             :key="symbol"
             type="button"
             @click="
-              phonotactics.addSlot(
-                template.name,
-                symbol,
-                template.slots.length === 0 ? 'nucleus' : 'coda',
-              )
+              phonotactics.addSlot(t, symbol, template.slots.length === 0 ? 'nucleus' : 'coda')
             "
           >
             + {{ symbol }}
@@ -148,7 +170,7 @@ function add() {
     <SlotPhonemesDialog
       v-if="editing && editingSlot"
       :open="true"
-      :template-name="editing.templateName"
+      :template-index="editing.templateIndex"
       :slot-index="editing.index"
       :slot-draft="editingSlot"
       @close="editing = null"
@@ -215,9 +237,16 @@ h2 {
   background: var(--c-raised);
 }
 
-.head strong {
+.head .name {
   flex: 1;
   min-width: 0;
+  font-weight: 600;
+}
+
+/* Blank, or shared with another template. Not blocked — see `duplicates` — but a save
+   will refuse it, so it says so before the button is pressed. */
+.head .name.bad {
+  border-color: var(--c-danger);
 }
 
 .weight {

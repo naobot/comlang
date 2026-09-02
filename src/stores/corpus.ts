@@ -4,10 +4,17 @@ import { computed, ref } from "vue";
 import { subscribeToProjectTable } from "@/composables/useProjectChannel";
 import type { CorpusRow } from "@/lib/corpusImport";
 import { supabase } from "@/lib/supabase";
-import type { CorpusEntry } from "@/types/models";
+import type { CorpusEntry, CorpusKind } from "@/types/models";
 
 /**
- * The corpus: example utterances, English beside conlang, edited as a grid.
+ * The corpus: examples of the language in use, English beside conlang.
+ *
+ * Two sub-views over one table (0025): **passages** — conversations, paragraphs, anything
+ * with more than one sentence in it — and **utterances**, the single-sentence grid. `kind`
+ * says which, and it is stored rather than derived from the text: a passage starts empty
+ * and is typed into, so a rule reading the text would move the row out of the view it is
+ * being written in. Everything else — the draft-per-row model, the realtime handling, the
+ * CSV — is common to both, and the export carries the whole corpus as one file either way.
  *
  * Closest in shape to `lexicon.ts` — many independent records, saved one at a time,
  * with realtime patching the list — and different from it in one way that follows from
@@ -22,6 +29,9 @@ import type { CorpusEntry } from "@/types/models";
  */
 
 export type CorpusDraft = { english: string; conlang: string };
+
+/** A new row that has not been inserted yet. It knows which view it was started in. */
+export type PendingEntry = CorpusDraft & { kind: CorpusKind };
 
 const draftOf = (row: CorpusEntry): CorpusDraft => ({
   english: row.english,
@@ -53,7 +63,7 @@ export const useCorpusStore = defineStore("corpus", () => {
    * constraint rejects a row that is empty on both sides — which is exactly what a new
    * row starts as.
    */
-  const pending = ref<CorpusDraft | null>(null);
+  const pending = ref<PendingEntry | null>(null);
 
   const loading = ref(false);
   const savingIds = ref<Set<string>>(new Set());
@@ -68,6 +78,27 @@ export const useCorpusStore = defineStore("corpus", () => {
   );
 
   const count = computed(() => byId.value.size);
+
+  /** The two sub-views. Sorted the same way; they are one sequence, filtered. */
+  const ofKind = (kind: CorpusKind) => entries.value.filter((e) => e.kind === kind);
+  const passages = computed(() => ofKind("passage"));
+  const utterances = computed(() => ofKind("utterance"));
+
+  /**
+   * One sub-view, searched. Filtered on the client over rows that are already loaded, as
+   * in the lexicon: a corpus runs to a few hundred examples and a round trip per keystroke
+   * would be strictly worse. Both sides are searched, because you look an example up by
+   * whichever one you know.
+   *
+   * It lives here rather than in the two list components so that the toolbar's count and
+   * the list below it cannot disagree about what is showing.
+   */
+  function matching(kind: CorpusKind, query: string) {
+    const q = query.trim().toLowerCase();
+    const rows = kind === "passage" ? passages.value : utterances.value;
+    if (!q) return rows;
+    return rows.filter((e) => `${e.english} ${e.conlang}`.toLowerCase().includes(q));
+  }
 
   function isDirty(id: string): boolean {
     const row = byId.value.get(id);
@@ -155,8 +186,8 @@ export const useCorpusStore = defineStore("corpus", () => {
     }
   }
 
-  function startNew() {
-    pending.value ??= { english: "", conlang: "" };
+  function startNew(kind: CorpusKind) {
+    pending.value ??= { english: "", conlang: "", kind };
   }
 
   function cancelNew() {
@@ -198,6 +229,7 @@ export const useCorpusStore = defineStore("corpus", () => {
           english: draft.english.trim(),
           conlang: draft.conlang.trim(),
           sort_order: next,
+          kind: draft.kind,
         })
         .select()
         .single();
@@ -254,6 +286,37 @@ export const useCorpusStore = defineStore("corpus", () => {
     }
   }
 
+  /**
+   * Move a row to the other sub-view.
+   *
+   * A separate action rather than something the row editor writes, because it is not an
+   * edit to the text: it takes effect at once, with no Save, and it is the correction for
+   * an import's guess or for a note that turned out to be a conversation. The draft is
+   * left exactly as it is — moving a row must not discard what is being typed into it.
+   */
+  async function setKind(id: string, kind: CorpusKind) {
+    error.value = null;
+    const { data, error: updateError } = await supabase
+      .from("corpus_entries")
+      .update({ kind })
+      .eq("id", id)
+      .select()
+      .maybeSingle();
+
+    if (updateError) {
+      error.value = updateError.message;
+      return false;
+    }
+    // RLS filters rather than raising, so a blocked update returns null rather than an
+    // error — the same check `saveRow` makes, for the same reason.
+    if (!data) {
+      error.value = "That example no longer exists, or you don't have access to it.";
+      return false;
+    }
+    byId.value.set(id, data);
+    return true;
+  }
+
   async function remove(id: string) {
     error.value = null;
     const { error: deleteError } = await supabase.from("corpus_entries").delete().eq("id", id);
@@ -287,8 +350,15 @@ export const useCorpusStore = defineStore("corpus", () => {
         return null;
       }
       await fetchFor(projectId);
-      const result = (data ?? {}) as { created?: number; skipped?: number };
-      return { created: result.created ?? 0, skipped: result.skipped ?? 0 };
+      // `passages` is what the RPC inferred from the shape of each row; the client's own
+      // `planCorpusImport` predicts the same split, and this is the count that actually
+      // landed.
+      const result = (data ?? {}) as { created?: number; skipped?: number; passages?: number };
+      return {
+        created: result.created ?? 0,
+        skipped: result.skipped ?? 0,
+        passages: result.passages ?? 0,
+      };
     } finally {
       savingNew.value = false;
     }
@@ -326,6 +396,9 @@ export const useCorpusStore = defineStore("corpus", () => {
 
   return {
     entries,
+    passages,
+    utterances,
+    matching,
     count,
     drafts,
     incoming,
@@ -343,6 +416,7 @@ export const useCorpusStore = defineStore("corpus", () => {
     acceptIncoming,
     saveNew,
     saveRow,
+    setKind,
     remove,
     importRows,
     subscribe,

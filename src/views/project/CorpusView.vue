@@ -3,11 +3,13 @@ import { useEventListener } from "@vueuse/core";
 import { computed, ref } from "vue";
 import { onBeforeRouteLeave } from "vue-router";
 
+import PassageList from "@/components/corpus/PassageList.vue";
+import UtteranceGrid from "@/components/corpus/UtteranceGrid.vue";
 import { useProjectExport } from "@/composables/useProjectExport";
 import { parseCorpusCsv, planCorpusImport } from "@/lib/corpusImport";
-import { type CorpusDraft, useCorpusStore } from "@/stores/corpus";
+import { useCorpusStore } from "@/stores/corpus";
 import { usePhonemesStore } from "@/stores/phonemes";
-import type { CorpusEntry } from "@/types/models";
+import type { CorpusKind } from "@/types/models";
 
 const props = defineProps<{ projectId: string }>();
 
@@ -18,33 +20,31 @@ const phonemes = usePhonemesStore();
 // same data can drift apart.
 const exporter = useProjectExport(() => props.projectId);
 
+/**
+ * Which sub-view is showing. Passages first, deliberately.
+ *
+ * The grid was the whole page, and a grid of two short columns reads as a word list —
+ * which is how it was being used. Landing on the long-form half says what the corpus is
+ * for before anyone types anything, and the sentence grid is one click away with its count
+ * on the button.
+ */
+const view = ref<CorpusKind>("passage");
+
 const query = ref("");
 const fileInput = ref<HTMLInputElement | null>(null);
 const importing = ref(false);
 
-// Filtered on the client over rows that are already loaded, as in the lexicon: a corpus
-// runs to a few hundred examples and a round trip per keystroke would be strictly worse.
-// Both columns are searched, because you look an example up by whichever side you know.
-const matches = computed(() => {
-  const q = query.value.trim().toLowerCase();
-  if (!q) return corpus.entries;
-  return corpus.entries.filter((e) => `${e.english} ${e.conlang}`.toLowerCase().includes(q));
-});
-
-/**
- * Each visible row paired with its edit buffer.
- *
- * Read here rather than calling a materialise-on-demand helper from the template: that
- * would write to the store during render. The store's invariant is that every row in
- * `byId` has a draft — `fetchFor` and `upsert` are the only two places rows arrive, and
- * both set the pair together — so the guard below is a type narrowing, not a filter that
- * is expected to drop anything.
- */
-const rows = computed(() =>
-  matches.value
-    .map((entry) => ({ entry, draft: corpus.drafts.get(entry.id) }))
-    .filter((r): r is { entry: CorpusEntry; draft: CorpusDraft } => r.draft !== undefined),
+const shown = computed(() => corpus.matching(view.value, query.value).length);
+const total = computed(
+  () => (view.value === "passage" ? corpus.passages : corpus.utterances).length,
 );
+
+/** Switching views cancels a new row started in the other one, which is now invisible. */
+function show(kind: CorpusKind) {
+  if (view.value === kind) return;
+  if (corpus.pending && corpus.pending.kind !== kind) corpus.cancelNew();
+  view.value = kind;
+}
 
 function chooseFile() {
   fileInput.value?.click();
@@ -84,12 +84,20 @@ async function onFile(event: Event) {
         "will be skipped."
       : "";
 
+    // The file has no kind column either, so where each row lands is inferred from its
+    // shape. Stated up front, because it is a guess and correcting one is a click.
+    const split = plan.passages
+      ? ` ${plan.passages} of them ${plan.passages === 1 ? "looks" : "look"} long enough to ` +
+        `be ${plan.passages === 1 ? "a passage" : "passages"} and will open there; the rest ` +
+        "go to sentences."
+      : " All of them will go to sentences.";
+
     if (
       !window.confirm(
         `Import ${file.name}? This will add ${plan.add} ` +
-          `${plan.add === 1 ? "example" : "examples"}.${skipped} Nothing is changed or ` +
-          "deleted — examples are matched only by being identical on both sides, since the " +
-          "file has no key column.",
+          `${plan.add === 1 ? "example" : "examples"}.${skipped}${split} Nothing is changed ` +
+          "or deleted — examples are matched only by being identical on both sides, since " +
+          "the file has no key column.",
       )
     ) {
       return;
@@ -97,17 +105,14 @@ async function onFile(event: Event) {
 
     const result = await corpus.importRows(props.projectId, parsed.rows);
     if (result) {
-      window.alert(`Imported: ${result.created} added, ${result.skipped} skipped.`);
+      window.alert(
+        `Imported: ${result.created} added (${result.passages} as passages), ` +
+          `${result.skipped} skipped.`,
+      );
     }
   } finally {
     importing.value = false;
   }
-}
-
-function confirmDelete(id: string, english: string, conlang: string) {
-  const label = english.trim() || conlang.trim();
-  if (!window.confirm(`Delete “${label}”?`)) return;
-  void corpus.remove(id);
 }
 
 // Unsaved cells are the thing to protect here, and there can be several at once.
@@ -131,7 +136,11 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
       <h1 class="sr-only">Corpus</h1>
       <div class="intro">
         <p class="muted">
-          Example utterances, English beside the conlang. Edit a cell and save the row.
+          The language in use: things said in it, English beside the conlang. Whole exchanges and
+          paragraphs belong here as much as single sentences — a word on its own, with a definition,
+          belongs in the
+          <RouterLink :to="{ name: 'project-lexicon', params: { projectId } }">lexicon</RouterLink>
+          instead.
         </p>
         <div class="io">
           <button type="button" :disabled="corpus.count === 0" @click="exporter.exportCorpusCsv()">
@@ -167,142 +176,61 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
     </div>
 
     <template v-else>
+      <!-- One store, one CSV, two ways of editing. Tabs rather than routes: the header's
+           tab bar names the *sections*, and this is a choice within one of them. -->
+      <div class="tabs" role="tablist" aria-label="Corpus view">
+        <button
+          type="button"
+          role="tab"
+          :aria-selected="view === 'passage'"
+          :class="{ on: view === 'passage' }"
+          @click="show('passage')"
+        >
+          Passages <span class="tally">{{ corpus.passages.length }}</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          :aria-selected="view === 'utterance'"
+          :class="{ on: view === 'utterance' }"
+          @click="show('utterance')"
+        >
+          Sentences <span class="tally">{{ corpus.utterances.length }}</span>
+        </button>
+      </div>
+
+      <p class="lead muted">
+        <template v-if="view === 'passage'">
+          Conversations, paragraphs, stories — anything with more than one sentence in it. Line
+          breaks are kept, so a dialogue can be laid out speaker by speaker.
+        </template>
+        <template v-else>
+          One sentence per row. If a row grows into an exchange, move it across with → Passage.
+        </template>
+      </p>
+
       <div class="toolbar">
         <input
           v-model="query"
           type="search"
-          placeholder="Search either side"
-          aria-label="Search the corpus"
+          :placeholder="view === 'passage' ? 'Search the passages' : 'Search either side'"
+          :aria-label="`Search the ${view === 'passage' ? 'passages' : 'sentences'}`"
         />
         <p class="count">
-          {{ matches.length }}
-          {{ matches.length === 1 ? "example" : "examples" }}
-          <span v-if="query.trim()">of {{ corpus.count }}</span>
+          {{ shown }}
+          <template v-if="view === 'passage'">{{ shown === 1 ? "passage" : "passages" }}</template>
+          <template v-else>{{ shown === 1 ? "sentence" : "sentences" }}</template>
+          <span v-if="query.trim()">of {{ total }}</span>
         </p>
-        <button type="button" :disabled="!!corpus.pending" @click="corpus.startNew()">
-          + New example
+        <button type="button" :disabled="!!corpus.pending" @click="corpus.startNew(view)">
+          {{ view === "passage" ? "+ New passage" : "+ New sentence" }}
         </button>
       </div>
 
       <p v-if="corpus.error" class="error" role="alert">{{ corpus.error }}</p>
 
-      <div class="grid">
-        <table>
-          <thead>
-            <tr>
-              <th class="num"><span class="sr-only">Row</span></th>
-              <th>English</th>
-              <th>Conlang</th>
-              <th class="actions"><span class="sr-only">Actions</span></th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- The unsaved new row. Local rather than an immediately-inserted blank,
-                 because the table refuses a row that is empty on both sides — which is
-                 exactly what a new one starts as. -->
-            <tr v-if="corpus.pending" class="new">
-              <td class="num">+</td>
-              <td>
-                <div class="grow" :data-value="corpus.pending.english">
-                  <textarea
-                    v-model="corpus.pending.english"
-                    rows="1"
-                    aria-label="English, new example"
-                    @keydown.enter.meta.prevent="corpus.saveNew(projectId)"
-                    @keydown.enter.ctrl.prevent="corpus.saveNew(projectId)"
-                  />
-                </div>
-              </td>
-              <td>
-                <div class="grow conlang" :data-value="corpus.pending.conlang">
-                  <textarea
-                    v-model="corpus.pending.conlang"
-                    rows="1"
-                    aria-label="Conlang, new example"
-                    @keydown.enter.meta.prevent="corpus.saveNew(projectId)"
-                    @keydown.enter.ctrl.prevent="corpus.saveNew(projectId)"
-                  />
-                </div>
-              </td>
-              <td class="actions">
-                <button
-                  type="button"
-                  class="primary"
-                  :disabled="corpus.savingNew"
-                  @click="corpus.saveNew(projectId)"
-                >
-                  {{ corpus.savingNew ? "Saving…" : "Save" }}
-                </button>
-                <button type="button" @click="corpus.cancelNew()">Cancel</button>
-              </td>
-            </tr>
-
-            <tr v-for="({ entry, draft }, i) in rows" :key="entry.id">
-              <td class="num">{{ i + 1 }}</td>
-              <td>
-                <div class="grow" :data-value="draft.english">
-                  <textarea
-                    v-model="draft.english"
-                    rows="1"
-                    :aria-label="`English, row ${i + 1}`"
-                    @keydown.enter.meta.prevent="corpus.saveRow(entry.id)"
-                    @keydown.enter.ctrl.prevent="corpus.saveRow(entry.id)"
-                  />
-                </div>
-              </td>
-              <td>
-                <div class="grow conlang" :data-value="draft.conlang">
-                  <textarea
-                    v-model="draft.conlang"
-                    rows="1"
-                    :aria-label="`Conlang, row ${i + 1}`"
-                    @keydown.enter.meta.prevent="corpus.saveRow(entry.id)"
-                    @keydown.enter.ctrl.prevent="corpus.saveRow(entry.id)"
-                  />
-                </div>
-              </td>
-              <td class="actions">
-                <template v-if="corpus.isDirty(entry.id)">
-                  <button
-                    type="button"
-                    class="primary"
-                    :disabled="corpus.savingIds.has(entry.id)"
-                    @click="corpus.saveRow(entry.id)"
-                  >
-                    {{ corpus.savingIds.has(entry.id) ? "Saving…" : "Save" }}
-                  </button>
-                  <button type="button" @click="corpus.revert(entry.id)">Revert</button>
-                </template>
-                <button
-                  v-else
-                  type="button"
-                  class="danger-action"
-                  @click="confirmDelete(entry.id, entry.english, entry.conlang)"
-                >
-                  Delete
-                </button>
-
-                <!-- Held, not applied: someone else changed a row this client is in the
-                     middle of editing. Their version is one click away and nothing is
-                     lost either way. -->
-                <p v-if="corpus.incoming.has(entry.id)" class="held">
-                  Changed by someone else.
-                  <button type="button" class="link" @click="corpus.acceptIncoming(entry.id)">
-                    Use theirs
-                  </button>
-                </p>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <p v-if="rows.length === 0 && !corpus.pending" class="empty muted">
-          <template v-if="query.trim()">Nothing matches “{{ query.trim() }}”.</template>
-          <template v-else>
-            No examples yet. Add one, or import a CSV of English and conlang pairs.
-          </template>
-        </p>
-      </div>
+      <PassageList v-if="view === 'passage'" :project-id="projectId" :query="query" />
+      <UtteranceGrid v-else :project-id="projectId" :query="query" />
     </template>
   </section>
 </template>
@@ -327,7 +255,7 @@ section {
   display: flex;
   flex-direction: column;
   height: calc(100dvh - var(--header-h) - var(--sp-8) * 2);
-  /* Below this there is no useful grid left; let the window scroll instead. */
+  /* Below this there is no useful list left; let the window scroll instead. */
   min-height: 26rem;
 }
 
@@ -337,7 +265,7 @@ section {
   justify-content: space-between;
   gap: var(--sp-6);
   flex-wrap: wrap;
-  margin-bottom: var(--sp-4);
+  margin-bottom: var(--sp-3);
 }
 
 header p {
@@ -350,6 +278,32 @@ header p {
   display: flex;
   gap: var(--sp-2);
   flex: none;
+}
+
+.tabs {
+  display: flex;
+  gap: var(--sp-2);
+  border-bottom: 1px solid var(--c-border);
+  padding-bottom: var(--sp-2);
+}
+
+/* The selected one is filled rather than underlined: the app header's tab bar already
+   owns the underline, and two underlined rows on one page read as one broken row. */
+.tabs .on {
+  background: var(--c-accent);
+  color: var(--c-accent-text);
+  border-color: transparent;
+}
+
+.tally {
+  margin-left: var(--sp-2);
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+
+.lead {
+  max-width: 44rem;
+  margin: var(--sp-3) 0;
 }
 
 .toolbar {
@@ -376,156 +330,6 @@ header p {
   font-size: 0.8125rem;
 }
 
-/* The one scrolling region. min-height: 0 or a flex child refuses to shrink below its
-   content and the overflow simply reappears on the page. */
-.grid {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  border: 1px solid var(--c-border);
-  border-radius: var(--radius);
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
-
-/* Sticky so the column names survive scrolling — the two columns are both prose and
-   otherwise indistinguishable a screen down. */
-thead th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: var(--c-surface);
-  border-bottom: 1px solid var(--c-border);
-  padding: var(--sp-2) var(--sp-3);
-  text-align: left;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: var(--c-muted);
-}
-
-tbody td {
-  border-bottom: 1px solid var(--c-border);
-  padding: 0;
-  vertical-align: top;
-}
-
-.num {
-  width: 3rem;
-  padding: var(--sp-2) var(--sp-3);
-  color: var(--c-faint);
-  font-size: 0.75rem;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-}
-
-.actions {
-  width: 12rem;
-  padding: var(--sp-2) var(--sp-3);
-  white-space: nowrap;
-}
-
-.actions button + button {
-  margin-left: var(--sp-2);
-}
-
-/* Mirrors the global `button[type="submit"]` and EntryDetail's `.danger-action`. These
-   are real buttons in a grid rather than a form's submit, so the styling is by class. */
-.primary {
-  background: var(--c-accent);
-  color: var(--c-accent-text);
-  border-color: transparent;
-}
-
-.primary:hover:not(:disabled) {
-  background: var(--c-text);
-}
-
-.danger-action {
-  color: var(--c-danger);
-  border-color: var(--c-danger);
-}
-
-.new td {
-  background: var(--c-raised);
-}
-
-/**
- * A textarea that grows with its text, with no JavaScript in the loop.
- *
- * The wrapper is a 1x1 grid holding both the textarea and a hidden ::after carrying the
- * same string, stacked in the same cell: the pseudo-element sets the row height and the
- * textarea stretches to it. A sentence is the unit of content here, so a fixed-height
- * input that scrolled its own single line would hide exactly what the page is for.
- */
-.grow {
-  display: grid;
-}
-
-.grow::after {
-  content: attr(data-value) " ";
-  visibility: hidden;
-  white-space: pre-wrap;
-}
-
-.grow > textarea,
-.grow::after {
-  grid-area: 1 / 1;
-  min-width: 0;
-  padding: var(--sp-2) var(--sp-3);
-  border: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-size: 0.875rem;
-  line-height: 1.45;
-  overflow-wrap: anywhere;
-}
-
-.grow > textarea {
-  resize: none;
-  overflow: hidden;
-}
-
-.grow > textarea:focus {
-  outline: 2px solid var(--c-accent);
-  outline-offset: -2px;
-  border-radius: var(--radius);
-}
-
-.conlang > textarea,
-.conlang::after {
-  font-family: var(--font-mono);
-}
-
-.held {
-  margin: var(--sp-2) 0 0;
-  color: var(--c-muted);
-  font-size: 0.6875rem;
-  white-space: normal;
-}
-
-.link {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--c-accent);
-  text-decoration: underline;
-  text-transform: none;
-  letter-spacing: normal;
-  font-size: inherit;
-}
-
-.empty {
-  padding: var(--sp-6) var(--sp-3);
-  font-size: 0.875rem;
-}
-
 .gate {
   padding: var(--sp-8) 0;
   text-align: center;
@@ -539,18 +343,5 @@ tbody td {
 .muted {
   color: var(--c-muted);
   font-size: 0.875rem;
-}
-
-/* The action column is the first thing to give up its width; below this the two prose
-   columns matter more than always-visible labels. */
-@media (max-width: 52rem) {
-  .actions {
-    width: 6rem;
-    white-space: normal;
-  }
-
-  .actions button + button {
-    margin: var(--sp-1) 0 0;
-  }
 }
 </style>

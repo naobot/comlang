@@ -154,3 +154,41 @@ textarea:focus-visible {
 a {
   color: var(--c-accent);
 }
+
+/**
+ * Drag-to-reorder, shared by every ordered list (see `composables/useDragReorder.ts`).
+ *
+ * Global rather than repeated in four scoped blocks: one composable applies these classes,
+ * and the affordance has to read identically on a grammar rule, a word class, a category
+ * and a syllable template or it stops being one affordance.
+ *
+ * The handle is a `<span>`, not a `<button>`. Native HTML5 drag does not fire for the
+ * keyboard, so a focusable control here would announce itself as operable and then do
+ * nothing; each list keeps its move buttons, and those are the keyboard and touch route.
+ */
+.drag-handle {
+  flex: none;
+  align-self: center;
+  padding: 0 var(--sp-1);
+  color: var(--c-faint);
+  font-size: 0.875rem;
+  line-height: 1;
+  cursor: grab;
+  /* The row is only draggable while its own handle is held, so the press must not also
+     start a text selection or a scroll gesture. */
+  user-select: none;
+  touch-action: none;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+.drag-source {
+  opacity: 0.45;
+}
+
+.drag-target {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+}

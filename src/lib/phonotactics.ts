@@ -395,6 +395,43 @@ export function canonicalDraft(draft: Draft): string {
   });
 }
 
+/**
+ * Template names that occur more than once, trimmed and compared as the RPC will compare
+ * them. Blank is not counted here — it is its own problem, reported separately.
+ *
+ * This is the only thing standing between two same-named templates and a silent merge:
+ * `save_phonotactics` upserts on `(project_id, name)`, so a duplicate is not an error
+ * there, it is one row where the user wrote two. Same trap `problems()` catches for word
+ * classes.
+ */
+export function duplicateTemplateNames(draft: Draft): string[] {
+  const seen = new Map<string, number>();
+  for (const template of draft.templates) {
+    const name = template.name.trim();
+    if (name) seen.set(name, (seen.get(name) ?? 0) + 1);
+  }
+  return [...seen].filter(([, n]) => n > 1).map(([name]) => name);
+}
+
+/**
+ * Everything wrong with the draft, in messages a user can act on — *every* problem rather
+ * than the first, so fixing one does not just reveal the next.
+ *
+ * Only names are checked. A half-built template or an empty class is a normal working
+ * state and saving one loses nothing; a name collision loses a whole template.
+ */
+export function draftProblems(draft: Draft): string[] {
+  const found: string[] = [];
+  if (draft.templates.some((t) => !t.name.trim())) {
+    found.push("Every syllable template needs a name.");
+  }
+  const duplicates = duplicateTemplateNames(draft);
+  if (duplicates.length) {
+    found.push(`Two templates are called ${duplicates.map((n) => `"${n}"`).join(", ")}.`);
+  }
+  return found;
+}
+
 export type RemovalImpact = {
   /** Classes that lose members, and which. */
   classes: { symbol: string; ipa: string[] }[];

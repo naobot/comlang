@@ -78,8 +78,39 @@ lemma there instead — so re-importing it gives a previously unkeyed entry a ke
 row rather than matching one. That is inherent to the format, not a bug to fix, and it is
 why the confirmation states the create/update split before anything is written.
 
-**The corpus is two columns and nothing else, and that is a decision rather than a
-starting point.** `corpus_entries` (0022) holds `english`, `conlang` and a `sort_order`. A
+**The corpus has two sub-views and one table, and the CSV knows about neither (0025).**
+`corpus_entries.kind` is `utterance` or `passage`: the sentence grid and the long-form
+passage list are filters on it. The problem it solves is not layout — a grid of two short
+columns *reads* as a word list, and collaborators were filling it in like a second lexicon.
+So the page opens on Passages, the intro says outright that a word with a definition
+belongs in the lexicon, and a passage card is a pair of tall panes with the room already
+made rather than a cell that grows from one line.
+
+The kind is **stored, not derived from the text.** Deriving it is tempting — it costs no
+schema and survives a round trip for free — and it fails at the only moment that matters:
+a passage starts empty and is typed into, so the row would hop out of the view it is being
+written in halfway through the first sentence. `setKind` moves a row between views and
+takes effect immediately, with no Save, because it changes where an example is edited and
+not what it says.
+
+**The CSV is unchanged: `english,conlang`, one file, the whole corpus.** The sub-views are
+how it is edited, not a second format. What follows is stated rather than hidden: on import
+the kind is *inferred* — a newline on either side, or more than
+`CORPUS_PASSAGE_MIN_LENGTH` (240) characters, which is what catches the pasted paragraph
+that has no line breaks in it. So exporting a short passage and importing it again brings
+it back as an utterance. Same family of loss as the missing key column, one click to
+correct, and cheaper than a third column every other tool reading these files would have
+to learn. `inferKind` in `src/lib/corpusImport.ts` and the `case` in `import_corpus` are
+the same rule written twice; the duplication buys the confirmation dialog's *"3 of them
+look long enough to be passages"* before the import runs, and the two must be kept in step.
+
+The two panes of a passage are two blocks of text and are deliberately **not aligned line
+by line**. That would need a third representation and a rule for one side having more lines
+than the other, which is a design question this round did not answer. Line breaks are
+preserved exactly, which is enough to lay a conversation out by hand.
+
+**Otherwise the corpus is still two columns and nothing else, and that is a decision rather
+than a starting point.** `corpus_entries` (0022) holds `english`, `conlang` and a `sort_order`. A
 gloss line, a grammaticality flag and a link to the rule an example illustrates are all
 plausible and all deferred, because each one is a thing to fill in before you are allowed
 to write a sentence down, and the value of a notebook is that writing in it is free.
@@ -107,6 +138,8 @@ somebody wrote. So:
   beside the original. That is inherent to a keyless format, not a bug to fix, and it is
   why the confirmation states the add/skip counts before anything is written.
 - Nothing is ever updated or deleted.
+- The dedup is **not** narrowed by kind: the same text filed in the other view is the same
+  example, and adding it again because it is filed differently would be a doubling.
 
 Deduplication is a courtesy of the import, **not** a constraint on the table: two examples
 may legitimately share an English translation, and one conlang sentence may be glossed two
@@ -153,6 +186,42 @@ That is also why this page saves whole-page rather than per entry like the lexic
 reordering is inherently multi-row, and a per-rule save could leave the pipeline
 half-permuted.
 
+**Drag-to-reorder is one composable, no dependency, and the move buttons stay.**
+`src/composables/useDragReorder.ts` wraps the native HTML5 drag events for grammar rules,
+word classes, categories and syllable templates. Two things it deliberately is not: native
+drag does not fire for the keyboard **or for touch**, so every list keeps its ↑↓ buttons
+and the handle is an `aria-hidden` `<span>` rather than a button that would announce itself
+as operable and then do nothing; and each list holds its own instance, ignoring a drag it
+did not start (`dragging === null`), so dragging a word class over the categories beside it
+does nothing rather than something surprising. A row is `draggable` only while its own
+handle is held — these rows are mostly inputs, and a permanently draggable row swallows
+text selection in them. Dropping *on* an item moves the dragged item to that index, through
+the same store function the arrows call, so there is one reordering path and not two.
+
+The classes `.drag-handle` / `.drag-source` / `.drag-target` live in `tokens.css` beside
+the base button rule rather than in four scoped blocks: one composable applies them, and
+the affordance has to read identically everywhere or it stops being one affordance.
+
+**Reordering has to reach `canonical()`, or the page will not know it is dirty.** Word
+classes, categories and grammar rules canonicalise array order directly, so a move is
+visible for free. Phonotactics does **not** — `canonicalDraft` sorts templates by name — so
+`moveTemplate` renumbers `sort_order` from position, and that renumbering is what makes the
+drag register at all. Check this before making any other list reorderable.
+
+**A syllable template's name is editable, so the store addresses templates by index.**
+`removeTemplate(name)`, `addSlot(name, …)` and the rest were name-keyed, which was fine
+while the name was write-once. It is not an identity once someone can type in it: retyping
+"CVC" passes through "CV", and a name-keyed edit would land on the other template. The
+`:key` is the index for the same reason — keying on the name remounts the row, and drops
+focus, on every keystroke.
+
+Duplicate and blank names are **shown, not prevented**: refusing the keystroke would mean
+no name could ever be edited into another's. `draftProblems` in the pure module reports
+every problem rather than the first, `save` refuses on it, and the field outlines red
+meanwhile. This matters because `save_phonotactics` upserts templates on
+`(project_id, name)` — two same-named templates are not an error there, they are one row
+where the user wrote two. Same trap `problems()` catches for word classes.
+
 **A draft and its baseline must never be the same object.** The lexicon store held two
 `EntryDraft`s and, on adopting a collaborator's version, assigned one object to both — so
 every later keystroke mutated the baseline too, `dirty` was pinned to false, and the open
@@ -185,6 +254,22 @@ The entry editor's field is a `<select>` over the defined classes **once the pro
 any**, and falls back to free text with a `datalist` when it has none — a new project must
 still be able to write a word down. An orphaned value stays selectable rather than being
 silently cleared.
+
+**A generated word can be added to the lexicon from the phonotactics page, and that write
+must not go through the editor's open draft.** The sample output's words are buttons;
+clicking one opens `AddToLexiconDialog` with the form pre-filled as the lemma and the rest
+of the fields empty, because the generator produces a *form* and nothing else. The write is
+`lexicon.createEntry`, a second insert path that touches neither `openId`, `draft` nor
+`creating`: `startCreating` + `saveOpen` would move the editor's single open draft, so
+adding a word from another tab would silently discard an unsaved entry someone left open on
+the lexicon page. For the same reason `createEntry` **returns** its error instead of setting
+the store's `error` — that ref is rendered by the lexicon's own pane, and a failure here
+belongs to the dialog that asked for the write. It still patches `byId`, so the list is
+right before realtime gets there.
+
+The dialog says when the lemma is already in the lexicon and adds anyway: homographs are
+the reason there is no unique constraint on `lemma`, so this is "did you mean to?" and not
+an error. Chips for those forms recede rather than warn.
 
 **Never `structuredClone` a store draft.** It throws `DataCloneError` on a Vue reactive
 proxy, and `usePhonotacticsStore().save()` cloned as its first statement — so every save
@@ -627,6 +712,16 @@ and the RPC; `anon` refused at the grant; and the collaborator's write stamping
 `projects.last_activity_by` despite the owner-only UPDATE policy. `get_advisors` showed
 nothing new. xenic was confirmed intact afterwards: 60 lexicon entries, 27 phonemes, 16
 word classes.
+
+What was verified when the corpus split in two (2026-09-02), against the live project:
+0025 applied, `kind` defaulting to `utterance` so all 38 existing rows stayed exactly where
+they were and none moved views; the inference `case` run over six samples in SQL agreeing
+with `inferKind`'s unit tests on every one, boundary included (240 characters is an
+utterance, 241 a passage); `get_advisors` showing nothing new. **Not** re-run as a
+collaborator: this round's only RPC change is additive (`import_corpus` now sets `kind` and
+returns one extra count), and no signed-in collaborator session was available here — so the
+member guard, the import counts and the realtime path are covered by 0022's verification
+and by the unit tests, not by a fresh live run.
 
 The word-class seed is generated the same way the lexicon's is: `pnpm import:word-classes`
 writes `supabase/seed/word-classes.json`. It combines **two** parts of grammar.yaml that

@@ -2,6 +2,7 @@
 import { useEventListener } from "@vueuse/core";
 import { onBeforeRouteLeave } from "vue-router";
 
+import { useDragReorder } from "@/composables/useDragReorder";
 import { useGrammarRulesStore } from "@/stores/grammarRules";
 import { usePhonemesStore } from "@/stores/phonemes";
 
@@ -9,6 +10,10 @@ const props = defineProps<{ projectId: string }>();
 
 const rules = useGrammarRulesStore();
 const phonemes = usePhonemesStore();
+
+// The store moves by delta, because that is what the arrow buttons ask for; a drop is
+// the same splice with the distance worked out from where it landed.
+const reorder = useDragReorder((from, to) => rules.move(from, to - from));
 
 async function save() {
   await rules.save(props.projectId);
@@ -34,7 +39,8 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
       <h1 class="sr-only">Grammar rules</h1>
       <p class="muted">
         Ordered, because the order is the pipeline — a rule applies to what the rules above it have
-        already produced. Everything but the name is free text for now.
+        already produced. Drag a rule by its handle to move it, or use the arrows. Everything but
+        the name is free text for now.
       </p>
     </header>
 
@@ -72,8 +78,17 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
       </div>
 
       <ol class="rules">
-        <li v-for="(rule, i) in rules.draft" :key="i">
+        <li v-for="(rule, i) in rules.draft" :key="i" v-bind="reorder.item(i)">
           <div class="head">
+            <!-- aria-hidden: dragging is mouse-only, and the arrows below are the
+                 keyboard and touch route to the same move. -->
+            <span
+              class="drag-handle"
+              aria-hidden="true"
+              title="Drag to reorder"
+              v-bind="reorder.handle(i)"
+              >⠿</span
+            >
             <span class="index">{{ i + 1 }}</span>
             <input
               v-model="rule.name"

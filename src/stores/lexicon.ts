@@ -236,7 +236,7 @@ export const useLexiconStore = defineStore("lexicon", () => {
           .single();
 
         if (insertError) {
-          error.value = describe(insertError.message);
+          error.value = describe(insertError.message, draft.value.entry_key);
           return false;
         }
         byId.value.set(data.id, data);
@@ -252,7 +252,7 @@ export const useLexiconStore = defineStore("lexicon", () => {
         .maybeSingle();
 
       if (updateError) {
-        error.value = describe(updateError.message);
+        error.value = describe(updateError.message, draft.value.entry_key);
         return false;
       }
       // RLS filters rows rather than raising, so a blocked update matches nothing and
@@ -284,11 +284,48 @@ export const useLexiconStore = defineStore("lexicon", () => {
   }
 
   /** The partial unique index is the one error a user can actually act on. */
-  function describe(message: string) {
+  function describe(message: string, key: string) {
     if (message.includes("lexicon_entries_key_idx")) {
-      return `Another entry already uses the key "${draft.value.entry_key.trim()}".`;
+      return `Another entry already uses the key "${key.trim()}".`;
     }
     return message;
+  }
+
+  /**
+   * Insert one entry **without opening it**, for callers outside the lexicon page.
+   *
+   * The phonotactics page's sample output adds a generated word this way. It cannot go
+   * through `startCreating` + `saveOpen`: those move the editor's single open draft, so
+   * adding a word from another tab would silently discard an unsaved entry someone left
+   * open on the lexicon page.
+   *
+   * For the same reason it does not touch `error` — that ref is rendered by the lexicon's
+   * own pane, and a failure here belongs to the dialog that asked for the write. The new
+   * row is put into `byId` so the list is right immediately; realtime would deliver it
+   * anyway, but not before the caller wants to say what happened.
+   */
+  async function createEntry(projectId: string, entry: EntryDraft) {
+    const lemma = entry.lemma.trim();
+    if (!lemma) return { ok: false as const, error: "A lemma is required." };
+
+    const { data, error: insertError } = await supabase
+      .from("lexicon_entries")
+      .insert({
+        project_id: projectId,
+        lemma,
+        gloss: orNull(entry.gloss),
+        word_class: orNull(entry.word_class),
+        entry_key: orNull(entry.entry_key),
+        notes: orNull(entry.notes),
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      return { ok: false as const, error: describe(insertError.message, entry.entry_key) };
+    }
+    byId.value.set(data.id, data);
+    return { ok: true as const, entry: data };
   }
 
   /**
@@ -372,6 +409,7 @@ export const useLexiconStore = defineStore("lexicon", () => {
     discard,
     acceptIncoming,
     saveOpen,
+    createEntry,
     remove,
     importRows,
     subscribe,

@@ -20,6 +20,36 @@ import { parseCsv } from "./csv";
 
 export type CorpusRow = { english: string; conlang: string };
 
+export type CorpusKind = "utterance" | "passage";
+
+/**
+ * Longer than this on either side and a row is treated as a passage on import.
+ *
+ * Roughly forty words — well past any single example sentence, and about where a pasted
+ * paragraph starts. It catches the passage that has no line breaks in it, which a newline
+ * test alone would file as an utterance.
+ */
+export const CORPUS_PASSAGE_MIN_LENGTH = 240;
+
+/**
+ * Which sub-view a row from a **file** should land in.
+ *
+ * Only ever applied to imported rows. Inside the app the kind is stored, because a passage
+ * starts empty and is typed into — deriving it there would move the row out of the view it
+ * is being written in. The CSV has no kind column, though, so something has to decide, and
+ * a wrong guess here costs one button press.
+ *
+ * `import_corpus` (0025) applies the same two tests in SQL. The duplication is deliberate
+ * and is the price of being able to state the split in the confirmation dialog *before*
+ * the import runs; keep the two in step.
+ */
+export function inferKind(row: CorpusRow): CorpusKind {
+  const sides = [row.english, row.conlang];
+  if (sides.some((text) => text.includes("\n"))) return "passage";
+  if (sides.some((text) => text.trim().length > CORPUS_PASSAGE_MIN_LENGTH)) return "passage";
+  return "utterance";
+}
+
 export type ParsedCorpusImport = {
   rows: CorpusRow[];
   /** Whether a header row was found and skipped — it changes which line a problem cites. */
@@ -80,7 +110,12 @@ export function parseCorpusCsv(text: string): ParsedCorpusImport {
   return { rows: out, header, problems };
 }
 
-export type CorpusImportPlan = { add: number; skip: number };
+export type CorpusImportPlan = {
+  add: number;
+  skip: number;
+  /** How many of the added rows land in the passages view. See `inferKind`. */
+  passages: number;
+};
 
 /**
  * What applying this file would do, given what is already stored.
@@ -91,6 +126,9 @@ export type CorpusImportPlan = { add: number; skip: number };
  * tell a correction from a new example, and guessing wrong overwrites someone's sentence.
  *
  * Duplicates inside the file count once, so the numbers shown match what actually lands.
+ *
+ * The passage count is part of the plan because the kind is inferred rather than carried:
+ * a person is owed the split before the import, not a surprise afterwards.
  */
 export function planCorpusImport(
   rows: readonly CorpusRow[],
@@ -102,6 +140,7 @@ export function planCorpusImport(
   const seen = new Set(existing.map(pairOf));
   let add = 0;
   let skip = 0;
+  let passages = 0;
 
   for (const row of rows) {
     const pair = pairOf(row);
@@ -111,7 +150,8 @@ export function planCorpusImport(
     }
     seen.add(pair);
     add++;
+    if (inferKind(row) === "passage") passages++;
   }
 
-  return { add, skip };
+  return { add, skip, passages };
 }

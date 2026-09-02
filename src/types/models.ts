@@ -3,6 +3,8 @@
 // Import from here rather than reaching into Database["public"]["Tables"][...] at every
 // call site: when `pnpm gen:types` rewrites database.ts, only this file has to keep up.
 
+import type { CorpusKind as PureCorpusKind } from "@/lib/corpusImport";
+
 import type { Enums, Tables } from "./database";
 
 export type Project = Tables<"projects">;
@@ -41,6 +43,24 @@ export type LexiconEntry = Tables<"lexicon_entries">;
  * grid, where a cell is empty or it is not. See 0022.
  */
 export type CorpusEntry = Tables<"corpus_entries">;
+
+/**
+ * Which sub-view an example is edited in — a passage or a single utterance (0025).
+ *
+ * The pure import module declares the same union locally, because its purity test forbids
+ * it from importing anything outside `src/lib`. `_kindsAgree` below is what stops the two
+ * drifting: it stops compiling if the enum and the literal type stop matching.
+ */
+export type CorpusKind = Enums<"corpus_kind">;
+
+type Assert<T extends true> = T;
+export type CorpusKindsAgree = Assert<
+  [PureCorpusKind] extends [CorpusKind]
+    ? [CorpusKind] extends [PureCorpusKind]
+      ? true
+      : false
+    : false
+>;
 
 /**
  * One grammar rule. Every field but the name is free text this round; `rule_order` is

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { DragHandleProps } from "@/composables/useDragReorder";
 import type { DraftCategory, DraftClass } from "@/lib/wordClasses";
 
 defineProps<{
@@ -8,6 +9,12 @@ defineProps<{
   /** Entries in the lexicon whose word_class names this class. */
   entries: number;
   categories: DraftCategory[];
+  /**
+   * The drag handle's listeners. The card is dragged by the list that owns it — the drop
+   * targets and the reordering both belong there — but the handle has to live inside the
+   * card, so the list passes it down rather than reaching into the card's markup.
+   */
+  handle: DragHandleProps;
 }>();
 
 const emit = defineEmits<{
@@ -20,6 +27,8 @@ const emit = defineEmits<{
 <template>
   <li class="card">
     <div class="head">
+      <!-- aria-hidden: dragging is mouse-only; the arrows are the keyboard route. -->
+      <span class="drag-handle" aria-hidden="true" title="Drag to reorder" v-bind="handle">⠿</span>
       <input
         v-model="cls.name"
         class="name"

@@ -14,6 +14,8 @@ import {
   type DraftConstraint,
   canonicalDraft,
   cloneDraft,
+  draftProblems,
+  duplicateTemplateNames,
   generateWord,
   generateWords,
   impactOfRemoving,
@@ -769,5 +771,40 @@ describe("orphanedSlotMembers", () => {
       { slot_index: 0, role: "onset", optional: false, class_symbol: "C", phoneme_ipa: null },
     ]);
     expect(orphanedSlotMembers(draft, new Set(["p"]))).toEqual([]);
+  });
+});
+
+describe("template names", () => {
+  const withNames = (...names: string[]): Draft => ({
+    classes: [],
+    templates: names.map((name, i) => ({
+      name,
+      weight: 1,
+      sort_order: i,
+      notes: null,
+      slots: [],
+    })),
+    constraints: [],
+  });
+
+  it("finds a name two templates share, trimmed as the RPC compares them", () => {
+    expect(duplicateTemplateNames(withNames("CV", "CVC", " CV "))).toEqual(["CV"]);
+  });
+
+  it("does not count blanks as duplicates of each other", () => {
+    expect(duplicateTemplateNames(withNames("", "  ", "CV"))).toEqual([]);
+  });
+
+  // Both at once, rather than the first: fixing one must not just reveal the next.
+  it("reports every problem", () => {
+    expect(draftProblems(withNames("CV", "CV", ""))).toHaveLength(2);
+  });
+
+  it("says nothing about a draft with distinct names", () => {
+    expect(draftProblems(withNames("CV", "CVC"))).toEqual([]);
+  });
+
+  it("names the duplicate, so the message can be acted on", () => {
+    expect(draftProblems(withNames("CV", "CV")).join(" ")).toContain('"CV"');
   });
 });

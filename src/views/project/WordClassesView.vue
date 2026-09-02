@@ -5,6 +5,7 @@ import { onBeforeRouteLeave } from "vue-router";
 
 import CategoryCard from "@/components/wordClasses/CategoryCard.vue";
 import ClassCard from "@/components/wordClasses/ClassCard.vue";
+import { useDragReorder } from "@/composables/useDragReorder";
 import { entryCounts, orphanedClassNames } from "@/lib/wordClasses";
 import { useLexiconStore } from "@/stores/lexicon";
 import { usePhonemesStore } from "@/stores/phonemes";
@@ -17,6 +18,11 @@ const lexicon = useLexiconStore();
 const phonemes = usePhonemesStore();
 
 const counts = computed(() => entryCounts(lexicon.entries));
+
+// One instance per list, so a class dragged over the categories beside it is ignored
+// rather than doing something the drop target cannot mean.
+const classOrder = useDragReorder((from, to) => classes.moveClass(from, to - from));
+const categoryOrder = useDragReorder((from, to) => classes.moveCategory(from, to - from));
 
 /**
  * Lexicon entries whose class no longer exists.
@@ -56,7 +62,8 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
       <h1 class="sr-only">Word classes</h1>
       <p class="muted">
         The parts of speech this language has, and the categories each one inflects for. A class
-        name is what a lexicon entry's word class refers to.
+        name is what a lexicon entry's word class refers to. Drag a card by its handle to reorder
+        it, or use the arrows.
       </p>
     </header>
 
@@ -128,6 +135,8 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
               :count="classes.draft.classes.length"
               :entries="counts.get(cls.name.trim()) ?? 0"
               :categories="classes.draft.categories"
+              :handle="classOrder.handle(i)"
+              v-bind="classOrder.item(i)"
               @move="classes.moveClass"
               @remove="classes.removeClassAt"
               @toggle="classes.toggleCategory"
@@ -152,6 +161,8 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
                   .filter((c) => c.categories.includes(category.name))
                   .map((c) => c.name || 'unnamed')
               "
+              :handle="categoryOrder.handle(i)"
+              v-bind="categoryOrder.item(i)"
               @move="classes.moveCategory"
               @remove="classes.removeCategoryAt"
               @rename="classes.renameCategory"

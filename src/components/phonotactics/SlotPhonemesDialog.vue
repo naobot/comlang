@@ -18,7 +18,7 @@ import type { DraftSlot } from "@/stores/phonotactics";
  */
 const props = defineProps<{
   open: boolean;
-  templateName: string;
+  templateIndex: number;
   slotIndex: number;
   /** Named `slotDraft`, not `slot`: `slot` is still a reserved attribute in a template. */
   slotDraft: DraftSlot;
@@ -90,7 +90,7 @@ const matchesClass = computed(() => {
 
 function done() {
   phonotactics.setSlotPhonemes(
-    props.templateName,
+    props.templateIndex,
     props.slotIndex,
     matchesClass.value ? null : [...selected.value],
   );

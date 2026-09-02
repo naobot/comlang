@@ -3,7 +3,7 @@ import { computed, ref } from "vue";
 
 import { subscribeToProjectTable } from "@/composables/useProjectChannel";
 import { usePhonemesStore } from "@/stores/phonemes";
-import { canonicalDraft, cloneDraft, resolveGrammar } from "@/lib/phonotactics";
+import { canonicalDraft, cloneDraft, draftProblems, resolveGrammar } from "@/lib/phonotactics";
 import type { Draft, DraftConstraint, DraftTemplate, Grammar, SlotRole } from "@/lib/phonotactics";
 import { supabase } from "@/lib/supabase";
 
@@ -150,6 +150,14 @@ export const usePhonotacticsStore = defineStore("phonotactics", () => {
   }
 
   async function save(projectId: string) {
+    // Names are the one thing the database will not catch: templates upsert on their
+    // name, so two rows called the same thing become one without raising anything.
+    const found = draftProblems(draft.value);
+    if (found.length) {
+      error.value = found.join(" ");
+      return false;
+    }
+
     saving.value = true;
     error.value = null;
     try {
@@ -278,6 +286,30 @@ export const usePhonotacticsStore = defineStore("phonotactics", () => {
     if (cls) cls.phoneme_ipa = [...new Set(ipa)];
   }
 
+  /**
+   * Templates are addressed by **index**, not by name.
+   *
+   * They were name-keyed until the name became editable, and a name is not an identity
+   * once someone can type in it: a rename that passes through a name another template
+   * already has — backspacing "CVC" to "CV" — would silently land the next edit on the
+   * wrong template. The index is what the list renders from, so it cannot disagree with
+   * what the user is pointing at.
+   */
+  function templateAt(index: number) {
+    return draft.value.templates[index] ?? null;
+  }
+
+  /**
+   * `sort_order` is renumbered from position on every structural change, because
+   * `canonicalDraft` sorts templates by name — array order alone is invisible to it, so
+   * without this a drag that reordered the list would not even register as dirty.
+   */
+  function renumberTemplates() {
+    draft.value.templates.forEach((t, i) => {
+      t.sort_order = i;
+    });
+  }
+
   function addTemplate(name: string) {
     const trimmed = name.trim();
     if (!trimmed || draft.value.templates.some((t) => t.name === trimmed)) return false;
@@ -291,16 +323,24 @@ export const usePhonotacticsStore = defineStore("phonotactics", () => {
     return true;
   }
 
-  function removeTemplate(name: string) {
-    draft.value.templates = draft.value.templates.filter((t) => t.name !== name);
+  function removeTemplateAt(index: number) {
+    draft.value.templates.splice(index, 1);
+    renumberTemplates();
+  }
+
+  function moveTemplate(from: number, to: number) {
+    if (to < 0 || to >= draft.value.templates.length) return;
+    const [template] = draft.value.templates.splice(from, 1);
+    if (template) draft.value.templates.splice(to, 0, template);
+    renumberTemplates();
   }
 
   function reindex(template: DraftTemplate) {
     template.slots = template.slots.map((s, i) => ({ ...s, slot_index: i }));
   }
 
-  function addSlot(templateName: string, classSymbol: string, role: SlotRole) {
-    const template = draft.value.templates.find((t) => t.name === templateName);
+  function addSlot(templateIndex: number, classSymbol: string, role: SlotRole) {
+    const template = templateAt(templateIndex);
     if (!template) return;
     template.slots.push({
       slot_index: template.slots.length,
@@ -311,13 +351,13 @@ export const usePhonotacticsStore = defineStore("phonotactics", () => {
     });
   }
 
-  function slotAt(templateName: string, index: number) {
-    return draft.value.templates.find((t) => t.name === templateName)?.slots[index] ?? null;
+  function slotAt(templateIndex: number, index: number) {
+    return templateAt(templateIndex)?.slots[index] ?? null;
   }
 
   /** `null` puts the slot back to following its class. */
-  function setSlotPhonemes(templateName: string, index: number, ipa: string[] | null) {
-    const slot = slotAt(templateName, index);
+  function setSlotPhonemes(templateIndex: number, index: number, ipa: string[] | null) {
+    const slot = slotAt(templateIndex, index);
     if (!slot) return;
     // Empty is not a state the database will hold, and a slot nothing can fill is a
     // mistake rather than a choice — collapse it to "follow the class".
@@ -330,22 +370,22 @@ export const usePhonotacticsStore = defineStore("phonotactics", () => {
    * one, and leaving it behind would give the slot a label that describes none of its
    * contents.
    */
-  function setSlotClass(templateName: string, index: number, classSymbol: string) {
-    const slot = slotAt(templateName, index);
+  function setSlotClass(templateIndex: number, index: number, classSymbol: string) {
+    const slot = slotAt(templateIndex, index);
     if (!slot || slot.class_symbol === classSymbol) return;
     slot.class_symbol = classSymbol;
     slot.phoneme_ipa = null;
   }
 
-  function removeSlot(templateName: string, index: number) {
-    const template = draft.value.templates.find((t) => t.name === templateName);
+  function removeSlot(templateIndex: number, index: number) {
+    const template = templateAt(templateIndex);
     if (!template) return;
     template.slots.splice(index, 1);
     reindex(template);
   }
 
-  function moveSlot(templateName: string, index: number, delta: number) {
-    const template = draft.value.templates.find((t) => t.name === templateName);
+  function moveSlot(templateIndex: number, index: number, delta: number) {
+    const template = templateAt(templateIndex);
     if (!template) return;
     const target = index + delta;
     if (target < 0 || target >= template.slots.length) return;
@@ -407,7 +447,8 @@ export const usePhonotacticsStore = defineStore("phonotactics", () => {
     toggleMember,
     setMembers,
     addTemplate,
-    removeTemplate,
+    removeTemplateAt,
+    moveTemplate,
     addSlot,
     removeSlot,
     moveSlot,

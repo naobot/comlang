@@ -1,7 +1,14 @@
 <script setup lang="ts">
+import type { DragHandleProps } from "@/composables/useDragReorder";
 import type { DraftCategory } from "@/lib/wordClasses";
 
-defineProps<{ category: DraftCategory; index: number; usedBy: string[] }>();
+defineProps<{
+  category: DraftCategory;
+  index: number;
+  usedBy: string[];
+  /** See `ClassCard`: the handle renders here, the dragging is the list's business. */
+  handle: DragHandleProps;
+}>();
 
 const emit = defineEmits<{
   move: [index: number, delta: number];
@@ -15,6 +22,8 @@ const emit = defineEmits<{
 <template>
   <li class="card">
     <div class="head">
+      <!-- aria-hidden: dragging is mouse-only; the arrows are the keyboard route. -->
+      <span class="drag-handle" aria-hidden="true" title="Drag to reorder" v-bind="handle">⠿</span>
       <!-- Renaming goes through the store rather than v-model: the classes that inflect
            for this category refer to it by name, and those references have to move too. -->
       <input
