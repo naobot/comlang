@@ -15,6 +15,8 @@
      unselected symbol on the IPA chart. */
   --c-faint: #9aa8bf;
   --c-danger: #a4232a;
+  /* A token because a navy-tinted shadow is invisible on a near-black ground. */
+  --c-shadow: rgb(22 35 63 / 12%);
 
   --sp-1: 0.25rem;
   --sp-2: 0.5rem;
@@ -28,6 +30,48 @@
   --font-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   /* The lexicon renders IPA and ⟨ŋ⟩ / ⟨ʔ⟩; pick stacks with real coverage. */
   --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
+}
+
+/**
+ * Dark mode: very light blue on very dark grey.
+ *
+ * Only the palette is redefined — every rule in the app already reads a token, so nothing
+ * below this block is theme-aware and nothing needs to be. `color-scheme` matters as much
+ * as the colours: without it the browser paints form controls, scrollbars and the search
+ * field's own clear button in their light-mode skins, on a black page.
+ *
+ * `--c-accent` inverts rather than darkens. In light mode it is navy — legible as link
+ * text on white and usable as a button fill with white on it. Neither of those holds for
+ * navy on near-black, so here it becomes a pale blue and `--c-accent-text` becomes the
+ * page ground. The pair is what keeps `button[type="submit"]` readable in both.
+ *
+ * Follows the system setting; there is no toggle. Adding one means writing these same
+ * tokens under a `:root[data-theme="dark"]` selector as well.
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --c-bg: #0d0f13;
+    /* Unlike light mode, surface is *not* the same as the page: a hair lighter, so an
+       input or the app header separates from the ground without needing a border to do
+       all the work. The gap also keeps the chart's impossible-cell hatch visible, since
+       it stripes raised against surface. */
+    --c-surface: #14171d;
+    --c-raised: #1e222b;
+    --c-border: #2c313c;
+    --c-text: #e6ecfb;
+    --c-muted: #98a3ba;
+    --c-accent: #93b8f2;
+    --c-accent-text: #0d0f13;
+    /* Recedes further from the text than in light mode, and still lands at better
+       contrast than the light palette's faint does — white gives an unselected symbol
+       nowhere to hide. */
+    --c-faint: #59637a;
+    /* The light palette's #a4232a is unreadable here; danger has to lighten, not darken. */
+    --c-danger: #ff9a9a;
+    --c-shadow: rgb(0 0 0 / 55%);
+  }
 }
 
 * {

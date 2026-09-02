@@ -231,6 +231,28 @@ as "Cl" and "Near-op", and "Back" (at `left: 100%`) vanished entirely. Both labe
 therefore set an explicit `width`. Symbol pairs are opaque so the rules pass behind them,
 which is also why the axis labels need clearance: an overlapping pair paints over them.
 
+**Dark mode is a palette swap and nothing else, which is the whole point of the
+tokens.** `@media (prefers-color-scheme: dark)` in `src/styles/tokens.css` redefines the
+`--c-*` variables and no rule anywhere else is theme-aware. When adding UI, reach for a
+token; the one hardcoded colour in the app (the header menu's navy shadow) had to become
+`--c-shadow` because it was invisible on near-black.
+
+Three things that are not just "make it darker":
+- **`color-scheme: dark` is required**, not decoration. Without it the browser paints form
+  controls, scrollbars and the search input's own clear button in light-mode skins on a
+  black page.
+- **`--c-accent` inverts rather than darkens.** In light mode it is navy: legible as link
+  text on white *and* usable as a fill under white. Neither holds for navy on near-black,
+  so in dark it becomes pale blue and `--c-accent-text` becomes the page ground. The pair
+  is what keeps `button[type="submit"]` readable in both.
+- **`--c-surface` stops being identical to `--c-bg`.** In light both are white and borders
+  do the separating; in dark, surface is a hair lighter so inputs and the app header lift
+  off the page — and the consonant chart's impossible-cell hatch needs the two to differ,
+  since it stripes raised against surface.
+
+It follows the system setting; there is no toggle. Adding one means writing the same
+tokens under a `:root[data-theme="dark"]` selector too.
+
 **The lexicon fills the viewport; every other section grows with its content.** A
 dictionary is a list you scroll *inside*, not a page that gets taller with every word. Its
 `section` therefore takes a **definite** height — `calc(100dvh - var(--header-h) -

@@ -85,7 +85,7 @@ function close() {
   border: 1px solid var(--c-border);
   border-radius: var(--radius);
   background: var(--c-surface);
-  box-shadow: 0 6px 20px rgb(22 35 63 / 12%);
+  box-shadow: 0 6px 20px var(--c-shadow);
 }
 
 /* Items are supplied by the caller; style them from here so every menu matches. */
