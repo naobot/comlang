@@ -11,12 +11,12 @@ import { useAuthStore } from "@/stores/auth";
  * are deliberately absent.
  */
 export const projectTabs = [
-  { name: "project-phonemes", label: "Phoneme inventory" },
+  { name: "project-phonemes", label: "Phonemes" },
   { name: "project-phonotactics", label: "Phonotactics" },
-  { name: "project-word-classes", label: "Word classes" },
+  { name: "project-word-classes", label: "Word Classes" },
   { name: "project-lexicon", label: "Lexicon" },
   { name: "project-corpus", label: "Corpus" },
-  { name: "project-grammar", label: "Grammar rules" },
+  { name: "project-grammar", label: "Syntax" },
 ] as const;
 
 // Orthography is hidden from the header for now. Its route stays live, so a saved link

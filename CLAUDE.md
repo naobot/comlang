@@ -391,6 +391,19 @@ vowels" without the module, and so revising the chart cannot change what a store
 meant. `src/data/ipa.test.ts` pins the invariants — chiefly no duplicate symbol, since a
 duplicate would silently make two chart cells toggle as one phoneme.
 
+**The header menu closes on a delay, and the gap under the trigger is bridged.**
+`HeaderMenu` opens on hover and closed on `mouseleave` with no grace period, which made it
+a target you had to hit rather than a menu you could reach for — the panel hangs
+`--sp-1` below the trigger, so those few pixels belong to neither element and any diagonal
+path towards an item left the menu on the way in. Two fixes, and both are wanted: a
+`.panel::before` strip spanning the gap so the pointer never leaves the element, and a
+300 ms `CLOSE_DELAY_MS` cancelled by re-entry, which covers the paths a bridge cannot
+(leaving sideways and coming back). **Only closing is delayed** — a menu that hesitates
+before appearing feels broken in a way that one lingering for a third of a second does not.
+Verified by dispatching real mouse events at the built app in headless Chrome: it opens on
+enter, is still open 60 ms after leaving, is gone by 460 ms, and a re-entry inside the
+window cancels the close outright.
+
 **`ModalDialog.vue` is the app's only modal, and it is a native `<dialog>` on purpose.**
 `showModal()` gives Escape, the top layer, the inert background and a focus trap for free,
 none of which then has to be written or kept correct. The one thing it does not give is

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onClickOutside } from "@vueuse/core";
-import { computed, ref, useTemplateRef } from "vue";
+import { computed, onScopeDispose, ref, useTemplateRef } from "vue";
 
 /**
  * Hover-opened dropdown with a click/keyboard path alongside it.
@@ -15,12 +15,51 @@ const root = useTemplateRef<HTMLElement>("root");
 
 const open = computed(() => hovering.value || pinned.value);
 
-onClickOutside(root, () => {
-  pinned.value = false;
-  hovering.value = false;
-});
+/**
+ * How long the menu stays open after the pointer leaves.
+ *
+ * Closing on `mouseleave` alone made it a target you had to hit rather than a menu you
+ * could reach for: the panel hangs below the trigger with a gap between them, so the
+ * pointer is briefly over neither, and any diagonal path — the natural one, towards an
+ * item that is not directly below the trigger — left the menu entirely on the way in.
+ * The gap is bridged in CSS as well, but a bridge alone still punishes an overshoot.
+ *
+ * Only the *closing* is delayed. Opening stays immediate, because a menu that hesitates
+ * before appearing feels broken in a way that one lingering for a third of a second does
+ * not.
+ */
+const CLOSE_DELAY_MS = 300;
+
+let closeTimer: ReturnType<typeof setTimeout> | null = null;
+
+function cancelClose() {
+  if (closeTimer === null) return;
+  clearTimeout(closeTimer);
+  closeTimer = null;
+}
+
+function onEnter() {
+  // Coming back within the grace period is the whole point: the pending close is
+  // cancelled rather than the menu being reopened, so it never blinks.
+  cancelClose();
+  hovering.value = true;
+}
+
+function onLeave() {
+  cancelClose();
+  closeTimer = setTimeout(() => {
+    closeTimer = null;
+    hovering.value = false;
+  }, CLOSE_DELAY_MS);
+}
+
+// A timer outliving its component would fire against a dead one.
+onScopeDispose(cancelClose);
+
+onClickOutside(root, () => close());
 
 function close() {
+  cancelClose();
   pinned.value = false;
   hovering.value = false;
 }
@@ -30,13 +69,7 @@ function close() {
 </script>
 
 <template>
-  <div
-    ref="root"
-    class="menu"
-    @mouseenter="hovering = true"
-    @mouseleave="hovering = false"
-    @keydown.esc="close"
-  >
+  <div ref="root" class="menu" @mouseenter="onEnter" @mouseleave="onLeave" @keydown.esc="close">
     <button
       type="button"
       class="trigger"
@@ -86,6 +119,23 @@ function close() {
   border-radius: var(--radius);
   background: var(--c-surface);
   box-shadow: 0 6px 20px var(--c-shadow);
+}
+
+/**
+ * Bridges the gap between the trigger and the panel.
+ *
+ * The panel sits `--sp-1` below the trigger, and those few pixels belong to neither, so
+ * crossing them counts as leaving the menu. An invisible strip spanning the gap keeps the
+ * pointer inside the element the whole way down; the close delay then covers the sloppier
+ * paths this cannot, like leaving sideways and coming back.
+ */
+.panel::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: var(--sp-1);
 }
 
 /* Items are supplied by the caller; style them from here so every menu matches. */
