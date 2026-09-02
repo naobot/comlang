@@ -19,7 +19,13 @@ import { csvField } from "./csv";
 
 export type ExportPhoneme = { ipa: string; kind: "consonant" | "vowel" };
 export type ExportClass = { symbol: string; label: string | null; phoneme_ipa: string[] };
-export type ExportSlot = { role: string; optional: boolean; class_symbol: string };
+export type ExportSlot = {
+  role: string;
+  optional: boolean;
+  class_symbol: string;
+  /** The slot's own segments, or null when it takes the whole class. */
+  phoneme_ipa: string[] | null;
+};
 export type ExportTemplate = { name: string; weight: number; slots: ExportSlot[] };
 export type ExportConstraint = {
   kind: string;
@@ -157,8 +163,16 @@ export function toGrammarYaml(input: ExportInput): string {
         push(`      weight: ${template.weight}`);
         push("      slots:");
         for (const slot of template.slots) {
+          // A restricted slot has to carry its segments, or the archive describes a
+          // grammar that is not the one being generated. Flow context: every scalar in
+          // here goes through yamlScalar's `flow` flag, since a bare comma inside {...}
+          // is a separator and silently reshapes the mapping.
+          const phonemes =
+            slot.phoneme_ipa === null
+              ? ""
+              : `, phonemes: [${slot.phoneme_ipa.map((ipa) => yamlScalar(ipa, true)).join(", ")}]`;
           push(
-            `        - { class: ${yamlScalar(slot.class_symbol, true)}, role: ${slot.role}, optional: ${slot.optional} }`,
+            `        - { class: ${yamlScalar(slot.class_symbol, true)}, role: ${slot.role}, optional: ${slot.optional}${phonemes} }`,
           );
         }
       }
@@ -244,7 +258,14 @@ export function toGrammarYaml(input: ExportInput): string {
 
 function notation(template: ExportTemplate): string {
   if (template.slots.length === 0) return "∅";
-  return template.slots.map((s) => (s.optional ? `(${s.class_symbol})` : s.class_symbol)).join("");
+  // The prime marks a slot that names its own segments rather than taking its whole
+  // class, exactly as `templateNotation` does — `CVC` and `CVC′` are different grammars.
+  return template.slots
+    .map((s) => {
+      const symbol = s.phoneme_ipa === null ? s.class_symbol : `${s.class_symbol}′`;
+      return s.optional ? `(${symbol})` : symbol;
+    })
+    .join("");
 }
 
 function describeConstraint(c: ExportConstraint): string {

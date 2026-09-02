@@ -14,6 +14,7 @@ export type {
   DraftClass,
   DraftConstraint,
   DraftSlot,
+  DraftTerm,
   DraftTemplate,
 } from "@/lib/phonotactics";
 
@@ -111,6 +112,9 @@ export const usePhonotacticsStore = defineStore("phonotactics", () => {
               role: s.role,
               optional: s.optional,
               class_symbol: classById.get(s.class_id)?.symbol ?? "",
+              // Read straight through, like a rule's terms: a slot may name a segment the
+              // inventory no longer has, and that is the state the editor renders in red.
+              phoneme_ipa: s.phoneme_ipa,
             })),
         })),
       constraints: (constraints.data ?? []).map((c) => ({
@@ -303,7 +307,34 @@ export const usePhonotacticsStore = defineStore("phonotactics", () => {
       role,
       optional: false,
       class_symbol: classSymbol,
+      phoneme_ipa: null,
     });
+  }
+
+  function slotAt(templateName: string, index: number) {
+    return draft.value.templates.find((t) => t.name === templateName)?.slots[index] ?? null;
+  }
+
+  /** `null` puts the slot back to following its class. */
+  function setSlotPhonemes(templateName: string, index: number, ipa: string[] | null) {
+    const slot = slotAt(templateName, index);
+    if (!slot) return;
+    // Empty is not a state the database will hold, and a slot nothing can fill is a
+    // mistake rather than a choice — collapse it to "follow the class".
+    slot.phoneme_ipa = ipa === null || ipa.length === 0 ? null : [...new Set(ipa)];
+  }
+
+  /**
+   * An action rather than a `v-model`, because changing the class has to **drop the
+   * override**. A set that was drawn from the old class has nothing to do with the new
+   * one, and leaving it behind would give the slot a label that describes none of its
+   * contents.
+   */
+  function setSlotClass(templateName: string, index: number, classSymbol: string) {
+    const slot = slotAt(templateName, index);
+    if (!slot || slot.class_symbol === classSymbol) return;
+    slot.class_symbol = classSymbol;
+    slot.phoneme_ipa = null;
   }
 
   function removeSlot(templateName: string, index: number) {
@@ -325,6 +356,11 @@ export const usePhonotacticsStore = defineStore("phonotactics", () => {
 
   function addConstraint(constraint: DraftConstraint) {
     draft.value.constraints.push(constraint);
+  }
+
+  function updateConstraint(index: number, constraint: DraftConstraint) {
+    if (index < 0 || index >= draft.value.constraints.length) return;
+    draft.value.constraints.splice(index, 1, constraint);
   }
 
   function removeConstraint(index: number) {
@@ -375,7 +411,10 @@ export const usePhonotacticsStore = defineStore("phonotactics", () => {
     addSlot,
     removeSlot,
     moveSlot,
+    setSlotClass,
+    setSlotPhonemes,
     addConstraint,
+    updateConstraint,
     removeConstraint,
     subscribe,
     unsubscribeAll,

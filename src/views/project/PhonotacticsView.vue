@@ -7,7 +7,7 @@ import ClassEditor from "@/components/phonotactics/ClassEditor.vue";
 import ConstraintEditor from "@/components/phonotactics/ConstraintEditor.vue";
 import SampleOutput from "@/components/phonotactics/SampleOutput.vue";
 import TemplateEditor from "@/components/phonotactics/TemplateEditor.vue";
-import { orphanedConstraints } from "@/lib/phonotactics";
+import { orphanedConstraints, orphanedSlotMembers } from "@/lib/phonotactics";
 import { usePhonemesStore } from "@/stores/phonemes";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
 
@@ -23,6 +23,12 @@ const broken = computed(() =>
 );
 
 const missingSegments = computed(() => [...new Set(broken.value.flatMap((b) => b.missing))]);
+
+// The same failure one level down: a slot that names its own segments can outlive one of
+// them too, and unlike a class member it is not visible anywhere on the class editor.
+const brokenSlots = computed(() =>
+  orphanedSlotMembers(phonotactics.draft, new Set(phonemes.inventory.map((p) => p.ipa))),
+);
 
 async function save() {
   await phonotactics.save(props.projectId);
@@ -83,6 +89,19 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
         <RouterLink :to="{ name: 'project-phonemes', params: { projectId } }">
           phoneme inventory </RouterLink
         >, or remove the rule.
+      </p>
+
+      <p v-if="brokenSlots.length" class="broken-banner" role="alert">
+        <strong>
+          {{ brokenSlots.length === 1 ? "A slot names" : `${brokenSlots.length} slots name` }}
+          {{ brokenSlots.length === 1 ? "a segment" : "segments" }} the inventory no longer has:
+          <template v-for="(entry, i) in brokenSlots" :key="`${entry.template}-${entry.slotIndex}`">
+            <template v-if="i">, </template>{{ entry.template }} slot {{ entry.slotIndex + 1 }} ({{
+              entry.missing.map((ipa) => `/${ipa}/`).join(", ")
+            }})</template
+          >.
+        </strong>
+        Those segments are kept but never generated, so the slot is narrower than it reads.
       </p>
 
       <p v-if="phonotactics.error" class="error" role="alert">{{ phonotactics.error }}</p>

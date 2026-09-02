@@ -56,6 +56,7 @@ export function useProjectExport(projectId: () => string | null) {
           role: s.role,
           optional: s.optional,
           class_symbol: s.class_symbol,
+          phoneme_ipa: s.phoneme_ipa,
         })),
       })),
       constraints: phonotactics.persisted.constraints.map((c) => ({

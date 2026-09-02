@@ -409,6 +409,7 @@ export type Database = {
           class_id: string
           id: string
           optional: boolean
+          phoneme_ipa: string[] | null
           project_id: string
           role: Database["public"]["Enums"]["slot_role"]
           slot_index: number
@@ -418,6 +419,7 @@ export type Database = {
           class_id: string
           id?: string
           optional?: boolean
+          phoneme_ipa?: string[] | null
           project_id: string
           role: Database["public"]["Enums"]["slot_role"]
           slot_index: number
@@ -427,6 +429,7 @@ export type Database = {
           class_id?: string
           id?: string
           optional?: boolean
+          phoneme_ipa?: string[] | null
           project_id?: string
           role?: Database["public"]["Enums"]["slot_role"]
           slot_index?: number

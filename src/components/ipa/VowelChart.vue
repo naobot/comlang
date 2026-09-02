@@ -1,9 +1,34 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 import PhoneToggle from "@/components/ipa/PhoneToggle.vue";
 import { VOWEL_BACKNESSES, VOWEL_HEIGHTS, VOWEL_POSITIONS, vowelFrontEdge } from "@/data/ipa";
+import type { Phone } from "@/data/ipa";
 
-defineProps<{ isSelected: (ipa: string) => boolean }>();
+/**
+ * `isAvailable` narrows the chart to a subset — the project's inventory, when this is a
+ * picker rather than the inventory page's reference chart. Omitted, every vowel is shown.
+ *
+ * Unlike the consonant table nothing is dropped here beyond the symbols themselves: the
+ * outline, the rules and the axis labels *are* the chart, and a vowel's meaning is where
+ * it sits. Removing the frame to fit three vowels would leave three symbols floating.
+ */
+const props = defineProps<{
+  isSelected: (ipa: string) => boolean;
+  isAvailable?: (ipa: string) => boolean;
+}>();
 defineEmits<{ toggle: [ipa: string] }>();
+
+const shown = (phone: Phone | null | undefined): phone is Phone =>
+  phone != null && (!props.isAvailable || props.isAvailable(phone.ipa));
+
+const positions = computed(() =>
+  VOWEL_POSITIONS.map((p) => ({
+    ...p,
+    unrounded: shown(p.unrounded) ? p.unrounded : null,
+    rounded: shown(p.rounded) ? p.rounded : null,
+  })),
+);
 
 const pct = (n: number) => `${n * 100}%`;
 
@@ -68,7 +93,7 @@ const centralLine = { x1: 50, x2: edgeAt(1) + (100 - edgeAt(1)) / 2 };
           </span>
 
           <span
-            v-for="p in VOWEL_POSITIONS"
+            v-for="p in positions"
             :key="`${p.height}-${p.backness}`"
             class="pair"
             :style="{ left: pct(p.x), top: pct(p.y) }"

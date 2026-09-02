@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
+import SlotPhonemesDialog from "@/components/phonotactics/SlotPhonemesDialog.vue";
 import { templateNotation } from "@/lib/phonotactics";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
+import type { DraftSlot } from "@/stores/phonotactics";
 import type { SlotRole } from "@/types/models";
 
 const phonotactics = usePhonotacticsStore();
@@ -11,6 +13,29 @@ const newName = ref("");
 const ROLES: SlotRole[] = ["onset", "nucleus", "coda"];
 
 const classSymbols = computed(() => phonotactics.draft.classes.map((c) => c.symbol));
+
+/** Which slot's phoneme picker is open. One at a time; null is closed. */
+const editing = ref<{ templateName: string; index: number } | null>(null);
+
+const editingSlot = computed<DraftSlot | null>(() => {
+  if (!editing.value) return null;
+  const template = phonotactics.draft.templates.find((t) => t.name === editing.value?.templateName);
+  return template?.slots[editing.value.index] ?? null;
+});
+
+const membersOf = (symbol: string) =>
+  phonotactics.draft.classes.find((c) => c.symbol === symbol)?.phoneme_ipa.length ?? 0;
+
+/**
+ * What the slot draws from, said in one short label: how many segments, and out of how
+ * many its class holds. A following slot says "all"; a restricted one says the count, so
+ * the difference is legible without opening anything.
+ */
+function slotSummary(slot: DraftSlot) {
+  const total = membersOf(slot.class_symbol);
+  if (slot.phoneme_ipa === null) return `all ${total}`;
+  return `${slot.phoneme_ipa.length} of ${total}`;
+}
 
 // The notation comes from the same function the generator uses, so the formal string and
 // the widgets below it cannot drift apart.
@@ -50,11 +75,32 @@ function add() {
 
         <ol class="slots">
           <li v-for="(slot, i) in template.slots" :key="i">
-            <select v-model="slot.class_symbol" :aria-label="`Slot ${i + 1} class`">
+            <!-- An action, not a v-model: changing the class drops the slot's own
+                 selection, which was drawn from the class it is leaving. -->
+            <select
+              :value="slot.class_symbol"
+              :aria-label="`Slot ${i + 1} class`"
+              @change="
+                phonotactics.setSlotClass(
+                  template.name,
+                  i,
+                  ($event.target as HTMLSelectElement).value,
+                )
+              "
+            >
               <option v-for="symbol in classSymbols" :key="symbol" :value="symbol">
                 {{ symbol }}
               </option>
             </select>
+            <button
+              type="button"
+              class="phonemes"
+              :class="{ restricted: slot.phoneme_ipa !== null }"
+              :aria-label="`Choose phonemes for slot ${i + 1}`"
+              @click="editing = { templateName: template.name, index: i }"
+            >
+              {{ slotSummary(slot) }}
+            </button>
             <select v-model="slot.role" :aria-label="`Slot ${i + 1} role`">
               <option v-for="role in ROLES" :key="role" :value="role">{{ role }}</option>
             </select>
@@ -98,6 +144,15 @@ function add() {
         </div>
       </li>
     </ul>
+
+    <SlotPhonemesDialog
+      v-if="editing && editingSlot"
+      :open="true"
+      :template-name="editing.templateName"
+      :slot-index="editing.index"
+      :slot-draft="editingSlot"
+      @close="editing = null"
+    />
 
     <form class="add" @submit.prevent="add">
       <input
@@ -199,6 +254,20 @@ h2 {
   border-radius: var(--radius);
   background: var(--c-surface);
   color: var(--c-text);
+}
+
+.phonemes {
+  /* Content, not a label: a count reads worse tracked out and uppercased. */
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 400;
+  color: var(--c-muted);
+}
+
+/* Matches the ′ the notation above carries, so the row and the formal string agree. */
+.phonemes.restricted {
+  color: var(--c-text);
+  border-color: var(--c-accent);
 }
 
 .opt {

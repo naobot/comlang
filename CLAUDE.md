@@ -223,6 +223,28 @@ comparison is provably right rather than approximately right, and it exists beca
 phonotactics save writes across five tables at once (word classes, four) where id
 bookkeeping would be fragile. Copy the comparison approach for any future multi-table page.
 
+**A slot names a class *and* may name its own segments (0024), and the class is not a
+fence.** `syllable_slots.phoneme_ipa` is a nullable `text[]`: `null` means "the whole
+class" — the default, what every pre-0024 row reads back as, and what keeps an untouched
+slot tracking edits to its class — and a non-empty array is an explicit set. There is no
+third state: an empty override is a slot nothing can fill, which is a mistake rather than
+something to persist, so `phoneme_ipa_nonempty` refuses it, the dialog's Done is disabled
+at zero selected, and an empty array in an RPC payload collapses to `null` through
+`array_agg`.
+
+The class stays on the slot because it is doing two other jobs: it is what `CVC` notation
+is built from, and a segment generated into a restricted slot still carries that class, so
+`forbid_in_role C onset` keeps firing on it. Restricting a slot narrows what it produces;
+it does not reclassify what it produced. That is also why the set is *not* required to be
+a subset of the class — a divergence is shown rather than prevented, as `C′` in the
+notation and an accented count button on the slot row.
+
+Stored as IPA text for the reason 0012 and 0013 gave. `orphanedSlotMembers` finds the
+dangling ones (the class editor cannot: a slot's set is its own), `resolveGrammar` filters
+it against the inventory exactly as it filters class membership, and `impactOfRemoving`
+judges a restricted slot on its own set rather than on its class — a class may still be
+full of segments the slot does not allow.
+
 **`save_phonotactics` clears slots before it deletes classes.** `syllable_slots.class_id`
 is `on delete restrict` so a class cannot vanish from under a live template — which also
 means a legitimate "remove the class and the slots using it" save has to empty the slots
@@ -283,6 +305,37 @@ deliberately leave voicing and manner underspecified (`conlang/docs/overview.md:
 vowels" without the module, and so revising the chart cannot change what a stored row
 meant. `src/data/ipa.test.ts` pins the invariants — chiefly no duplicate symbol, since a
 duplicate would silently make two chart cells toggle as one phoneme.
+
+**`ModalDialog.vue` is the app's only modal, and it is a native `<dialog>` on purpose.**
+`showModal()` gives Escape, the top layer, the inert background and a focus trap for free,
+none of which then has to be written or kept correct. The one thing it does not give is
+click-outside, which is done by comparing `event.target` against the dialog element — the
+panel fills the element, so anything not covered by a child is backdrop. `::backdrop`
+inherits nothing from the page, so its colour is restated in the component. Note the panel
+takes a **definite** height, not a `max-height`, for the reason the lexicon's list pane
+did: its scrolling body is a flex child, and against an indefinite height it resolves to
+its full content and spills.
+
+Two things follow from `showModal()` that will otherwise be rediscovered: calling it on an
+already-open dialog throws, so the `open` watcher is guarded both ways; and the dialog's
+own Done is a `type="submit"` button, so a dialog rendered **inside** a `<form>` submits
+that form instead of closing — `ConstraintForm` deliberately renders its picker as a
+sibling of the form, not a child.
+
+**The IPA charts take an optional `isAvailable`, which is what lets them be a picker.**
+`ConsonantChart` and `VowelChart` were already store-free reference renderers taking
+`isSelected`; `isAvailable` narrows them to a subset, which for every caller so far is the
+project's own inventory. The consonant table drops rows *and columns* with nothing left in
+them — eleven places of articulation holding three symbols is a grid you have to hunt
+through — while the vowel chart drops only symbols, because the outline, the rules and the
+axis labels **are** the chart and a vowel's meaning is where it sits.
+
+**A constraint is edited beside the draft, never in it.** `ConstraintForm` holds local
+refs and the parent commits on `submit`; there is no half-filled constraint in
+`draft.constraints` at any point. That is not fussiness: `kind_shape` would refuse one, and
+this page saves whole rather than per rule, so a single incomplete constraint would block
+every other edit on the page from being saved. The same component is the add row and the
+in-place editor, so the two cannot drift.
 
 **Buttons never wrap, and centre their label.** The base rule in `tokens.css` sets
 `white-space: nowrap` plus `inline-flex` + `align-items: center`, so a control's label
@@ -499,6 +552,17 @@ a non-member is refused with 42501 rather than silently writing nothing; an anon
 call is refused at the grant. Over Realtime with two signed-in clients: inserts and
 deletes both arrive, the delete carrying **only the primary key**, and every event id was
 attributable to a save the client had made — which is the premise `ownWrites` rests on.
+
+What was verified when per-slot phonemes went in (2026-09-02), as a **collaborator**
+against the live project on a throwaway project since deleted: a save carrying both a
+following slot (`null`) and a restricted one round-trips unchanged; a re-save that relabels
+the classes and narrows the override keeps class **ids stable**; a direct update setting
+`phoneme_ipa = '{}'` is refused with 23514 while the same empty array *in the payload*
+lands as `null`; a non-member sees zero slots and is refused 42501 by the RPC; and the
+collaborator's write stamped `projects.last_activity_by` despite the owner-only UPDATE
+policy. `get_advisors` showed nothing new — only the two documented `create_project` /
+`add_project_member` warnings. xenic was confirmed untouched afterwards: 60 lexicon
+entries, 23 phonemes, 16 word classes.
 
 What was verified when phonotactics went in (2026-09-01): as a **collaborator**,
 `save_phonotactics` writes all five tables in one call; a re-save that relabels a class and

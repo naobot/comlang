@@ -1,33 +1,88 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
 import PhoneToggle from "@/components/ipa/PhoneToggle.vue";
 import { NON_PULMONIC, OTHER_SYMBOLS, PLACES, PULMONIC_ROWS } from "@/data/ipa";
+import type { Phone } from "@/data/ipa";
 
-defineProps<{ isSelected: (ipa: string) => boolean }>();
+/**
+ * `isAvailable` narrows the chart to a subset — the project's own inventory, when this is
+ * used as a picker rather than as the inventory page's reference grid. Omitted, every
+ * phone is shown, which is what the inventory page needs.
+ *
+ * Rows *and* columns with nothing left are dropped rather than rendered empty: eleven
+ * places of articulation holding three symbols is a grid you have to hunt through, and the
+ * point of showing only the inventory is that you should not have to.
+ */
+const props = defineProps<{
+  isSelected: (ipa: string) => boolean;
+  isAvailable?: (ipa: string) => boolean;
+}>();
 defineEmits<{ toggle: [ipa: string] }>();
+
+const shown = (phone: Phone | null | undefined): phone is Phone =>
+  phone != null && (!props.isAvailable || props.isAvailable(phone.ipa));
+
+const rows = computed(() =>
+  PULMONIC_ROWS.map((row) => ({
+    manner: row.manner,
+    cells: row.cells.map((cell) => ({
+      place: cell.place,
+      impossible: cell.impossible,
+      voiceless: shown(cell.voiceless) ? cell.voiceless : null,
+      voiced: shown(cell.voiced) ? cell.voiced : null,
+    })),
+  })).filter((row) => !props.isAvailable || row.cells.some((c) => c.voiceless || c.voiced)),
+);
+
+/** The places any surviving row still uses, in the chart's own order. */
+const places = computed(() => {
+  if (!props.isAvailable) return [...PLACES] as string[];
+  const used = new Set(
+    rows.value.flatMap((row) =>
+      row.cells.filter((c) => c.voiceless || c.voiced).map((c) => c.place as string),
+    ),
+  );
+  return PLACES.filter((place) => used.has(place)) as string[];
+});
+
+type Row = (typeof rows.value)[number];
+
+const cellsOf = (row: Row) => row.cells.filter((cell) => places.value.includes(cell.place));
+
+const groups = (source: typeof NON_PULMONIC) =>
+  source
+    .map((group) => ({ label: group.label, phones: group.phones.filter(shown) }))
+    .filter((group) => group.phones.length > 0);
+
+const nonPulmonic = computed(() => groups(NON_PULMONIC));
+const otherSymbols = computed(() => groups(OTHER_SYMBOLS));
 </script>
 
 <template>
   <section>
-    <h2>Pulmonic consonants</h2>
-    <p class="hint">
-      Voiceless left, voiced right. Shaded cells are articulations judged impossible.
-    </p>
+    <template v-if="rows.length">
+      <h2>Pulmonic consonants</h2>
+      <p class="hint">
+        Voiceless left, voiced right. Shaded cells are articulations judged impossible.
+      </p>
+    </template>
 
     <!-- Eleven places of articulation do not fit a narrow window. The table scrolls
          inside this wrapper; the page body must never scroll sideways. -->
-    <div class="scroller">
+    <div v-if="rows.length" class="scroller">
       <table>
         <thead>
           <tr>
             <th scope="col" class="corner"></th>
-            <th v-for="place in PLACES" :key="place" scope="col">{{ place }}</th>
+            <th v-for="place in places" :key="place" scope="col">{{ place }}</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="row in PULMONIC_ROWS" :key="row.manner">
+          <tr v-for="row in rows" :key="row.manner">
             <th scope="row">{{ row.manner }}</th>
             <td
-              v-for="cell in row.cells"
+              v-for="cell in cellsOf(row)"
               :key="cell.place"
               :class="{ impossible: cell.impossible }"
             >
@@ -53,9 +108,9 @@ defineEmits<{ toggle: [ipa: string] }>();
       </table>
     </div>
 
-    <h2>Non-pulmonic consonants</h2>
-    <div class="groups">
-      <div v-for="group in NON_PULMONIC" :key="group.label" class="group">
+    <h2 v-if="nonPulmonic.length">Non-pulmonic consonants</h2>
+    <div v-if="nonPulmonic.length" class="groups">
+      <div v-for="group in nonPulmonic" :key="group.label" class="group">
         <h3>{{ group.label }}</h3>
         <div class="row">
           <PhoneToggle
@@ -69,9 +124,9 @@ defineEmits<{ toggle: [ipa: string] }>();
       </div>
     </div>
 
-    <h2>Other symbols</h2>
-    <div class="groups">
-      <div v-for="group in OTHER_SYMBOLS" :key="group.label" class="group">
+    <h2 v-if="otherSymbols.length">Other symbols</h2>
+    <div v-if="otherSymbols.length" class="groups">
+      <div v-for="group in otherSymbols" :key="group.label" class="group">
         <h3>{{ group.label }}</h3>
         <div class="row">
           <PhoneToggle

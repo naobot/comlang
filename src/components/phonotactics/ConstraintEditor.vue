@@ -1,69 +1,37 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 
+import ConstraintForm from "@/components/phonotactics/ConstraintForm.vue";
 import { orphanedTerms } from "@/lib/phonotactics";
 import { usePhonemesStore } from "@/stores/phonemes";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
 import type { DraftConstraint } from "@/stores/phonotactics";
-import type { ConstraintKind, SequencePosition, SlotRole } from "@/types/models";
 
 const phonemes = usePhonemesStore();
 const phonotactics = usePhonotacticsStore();
 
-const kind = ref<ConstraintKind>("forbid_in_role");
-const role = ref<SlotRole>("onset");
-const seqPosition = ref<SequencePosition>("anywhere");
-// One string per term, prefixed so a class named "a" and the phoneme /a/ stay distinct.
-const a = ref("");
-const b = ref("");
-
-const options = computed(() => [
-  ...phonotactics.draft.classes.map((c) => ({
-    value: `class:${c.symbol}`,
-    label: `${c.symbol} (class)`,
-  })),
-  ...phonemes.inventory.map((p) => ({ value: `phoneme:${p.ipa}`, label: `/${p.ipa}/` })),
-]);
-
-function split(token: string) {
-  const [type, ...rest] = token.split(":");
-  const value = rest.join(":");
-  return type === "class"
-    ? { class_symbol: value, phoneme_ipa: null }
-    : { class_symbol: null, phoneme_ipa: value };
-}
-
-const canAdd = computed(() => {
-  if (kind.value === "no_identical_adjacent") return true;
-  if (kind.value === "forbid_in_role") return Boolean(a.value);
-  return Boolean(a.value && b.value);
-});
-
-function add() {
-  if (!canAdd.value) return;
-  const termA = a.value ? split(a.value) : { class_symbol: null, phoneme_ipa: null };
-  const termB = b.value ? split(b.value) : { class_symbol: null, phoneme_ipa: null };
-
-  const constraint: DraftConstraint = {
-    kind: kind.value,
-    role: kind.value === "forbid_in_role" ? role.value : null,
-    seq_position: kind.value === "forbid_sequence" ? seqPosition.value : null,
-    a_class_symbol: kind.value === "no_identical_adjacent" ? null : termA.class_symbol,
-    a_phoneme_ipa: kind.value === "no_identical_adjacent" ? null : termA.phoneme_ipa,
-    b_class_symbol: kind.value === "forbid_sequence" ? termB.class_symbol : null,
-    b_phoneme_ipa: kind.value === "forbid_sequence" ? termB.phoneme_ipa : null,
-    note: null,
-  };
-  phonotactics.addConstraint(constraint);
-  a.value = "";
-  b.value = "";
-}
+/**
+ * Which row is being edited, or `"new"` for the add form. One at a time.
+ *
+ * Editing happens in a form beside the draft rather than on the constraint itself,
+ * because a constraint is only saveable once its kind and its terms agree — the database
+ * checks that with `kind_shape`, and this page saves whole, so one half-filled rule would
+ * block every other edit on it.
+ */
+const editing = ref<number | "new" | null>(null);
 
 // Against the saved inventory, because that is what the rule will be measured by; the
 // unsaved chart selection has not happened yet.
 const inventoryIpa = computed(() => new Set(phonemes.inventory.map((p) => p.ipa)));
 
 const missingFor = (c: DraftConstraint) => orphanedTerms(c, inventoryIpa.value);
+
+function commit(constraint: DraftConstraint) {
+  if (editing.value === "new") phonotactics.addConstraint(constraint);
+  else if (typeof editing.value === "number")
+    phonotactics.updateConstraint(editing.value, constraint);
+  editing.value = null;
+}
 
 function describe(c: DraftConstraint) {
   const term = (cls: string | null, ipa: string | null) => cls ?? (ipa ? `/${ipa}/` : "?");
@@ -88,61 +56,47 @@ function describe(c: DraftConstraint) {
       <li
         v-for="(c, i) in phonotactics.draft.constraints"
         :key="i"
-        :class="{ broken: missingFor(c).length }"
+        :class="{ broken: missingFor(c).length, editing: editing === i }"
       >
-        <span class="what">
-          {{ describe(c) }}
-          <em v-if="missingFor(c).length">
-            — not applied:
-            {{
-              missingFor(c)
-                .map((ipa) => `/${ipa}/`)
-                .join(" and ")
-            }}
-            {{ missingFor(c).length === 1 ? "is" : "are" }} no longer in the inventory
-          </em>
-        </span>
-        <button type="button" @click="phonotactics.removeConstraint(i)">Remove</button>
+        <ConstraintForm
+          v-if="editing === i"
+          :initial="c"
+          submit-label="Save rule"
+          @submit="commit"
+          @cancel="editing = null"
+        />
+
+        <template v-else>
+          <span class="what">
+            {{ describe(c) }}
+            <em v-if="c.note" class="note">— {{ c.note }}</em>
+            <em v-if="missingFor(c).length">
+              — not applied:
+              {{
+                missingFor(c)
+                  .map((ipa) => `/${ipa}/`)
+                  .join(" and ")
+              }}
+              {{ missingFor(c).length === 1 ? "is" : "are" }} no longer in the inventory
+            </em>
+          </span>
+          <span class="actions">
+            <button type="button" @click="editing = i">Edit</button>
+            <button type="button" @click="phonotactics.removeConstraint(i)">Remove</button>
+          </span>
+        </template>
       </li>
     </ul>
     <p v-else class="hint">None yet.</p>
 
-    <form class="add" @submit.prevent="add">
-      <select v-model="kind" aria-label="Constraint kind">
-        <option value="forbid_in_role">forbid in role</option>
-        <option value="forbid_sequence">forbid sequence</option>
-        <option value="no_identical_adjacent">no identical adjacent</option>
-      </select>
-
-      <template v-if="kind !== 'no_identical_adjacent'">
-        <select v-model="a" aria-label="First term">
-          <option value="">choose…</option>
-          <option v-for="o in options" :key="o.value" :value="o.value">{{ o.label }}</option>
-        </select>
-      </template>
-
-      <template v-if="kind === 'forbid_in_role'">
-        <select v-model="role" aria-label="Role">
-          <option value="onset">onset</option>
-          <option value="nucleus">nucleus</option>
-          <option value="coda">coda</option>
-        </select>
-      </template>
-
-      <template v-if="kind === 'forbid_sequence'">
-        <select v-model="b" aria-label="Second term">
-          <option value="">choose…</option>
-          <option v-for="o in options" :key="o.value" :value="o.value">{{ o.label }}</option>
-        </select>
-        <select v-model="seqPosition" aria-label="Position">
-          <option value="anywhere">anywhere</option>
-          <option value="word_initial">word-initial</option>
-          <option value="word_final">word-final</option>
-        </select>
-      </template>
-
-      <button type="submit" :disabled="!canAdd">Add</button>
-    </form>
+    <ConstraintForm
+      v-if="editing === 'new'"
+      :initial="null"
+      submit-label="Add"
+      @submit="commit"
+      @cancel="editing = null"
+    />
+    <button v-else type="button" @click="editing = 'new'">Add constraint</button>
   </section>
 </template>
 
@@ -191,23 +145,26 @@ h2 {
   min-width: 0;
 }
 
-.list li.broken em {
+.actions {
+  display: flex;
+  gap: var(--sp-2);
+  flex: none;
+}
+
+.note {
+  font-style: normal;
+  color: var(--c-muted);
+}
+
+/* The form needs the whole row: the space-between that separates a rule from its buttons
+   would otherwise push its widgets to both ends. */
+.list li.editing {
+  display: block;
+}
+
+/* :not(.note) so a broken rule's own note does not read as part of the warning. */
+.list li.broken em:not(.note) {
   font-style: normal;
   color: var(--c-danger);
-}
-
-.add {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
-}
-
-select {
-  font: inherit;
-  padding: var(--sp-1) var(--sp-2);
-  border: 1px solid var(--c-border);
-  border-radius: var(--radius);
-  background: var(--c-surface);
-  color: var(--c-text);
 }
 </style>

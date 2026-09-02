@@ -27,8 +27,8 @@ const input = (over: Partial<ExportInput> = {}): ExportInput => ({
       name: "basic",
       weight: 1,
       slots: [
-        { role: "onset", optional: true, class_symbol: "C" },
-        { role: "nucleus", optional: false, class_symbol: "V" },
+        { role: "onset", optional: true, class_symbol: "C", phoneme_ipa: null },
+        { role: "nucleus", optional: false, class_symbol: "V", phoneme_ipa: ["a"] },
       ],
     },
   ],
@@ -106,7 +106,18 @@ describe("toGrammarYaml", () => {
   });
 
   it("renders the template notation alongside its slots", () => {
-    expect(yaml).toContain("notation: (C)V");
+    // The prime is not decoration: the nucleus names its own segments rather than taking
+    // all of V, and an archive that wrote "(C)V" would describe a different grammar.
+    expect(yaml).toContain("notation: (C)V′");
+  });
+
+  it("carries a restricted slot's own segments, and only that slot's", () => {
+    const doc = parse(yaml) as {
+      phonotactics: { syllable_templates: { slots: { phonemes?: string[] }[] }[] };
+    };
+    const slots = doc.phonotactics.syllable_templates[0]!.slots;
+    expect(slots[0]?.phonemes).toBeUndefined();
+    expect(slots[1]?.phonemes).toEqual(["a"]);
   });
 
   it("emits rule_order as an explicit list, since order is the pipeline", () => {

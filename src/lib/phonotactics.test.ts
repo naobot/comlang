@@ -8,6 +8,7 @@ import source from "./phonotactics.ts?raw";
 import {
   type Grammar,
   type ResolvedClass,
+  type ResolvedSlot,
   type ResolvedTemplate,
   type Draft,
   type DraftConstraint,
@@ -18,6 +19,7 @@ import {
   impactOfRemoving,
   orphanedConstraints,
   orphanedMembers,
+  orphanedSlotMembers,
   orphanedTerms,
   resolveGrammar,
   seededRng,
@@ -34,15 +36,36 @@ const C: ResolvedClass = {
 const G: ResolvedClass = { id: "g", symbol: "G", label: "glide", ipa: ["j", "w"] };
 const V: ResolvedClass = { id: "v", symbol: "V", label: "vowel", ipa: ["i", "e", "a", "o", "u"] };
 
+/** A slot taking its whole class — what `resolveGrammar` builds from `phoneme_ipa: null`. */
+const follows = (
+  role: ResolvedSlot["role"],
+  optional: boolean,
+  cls: ResolvedClass,
+): ResolvedSlot => ({
+  role,
+  optional,
+  cls,
+  ipa: cls.ipa,
+  restricted: false,
+});
+
+/** A slot naming its own segments, which may be narrower than the class it belongs to. */
+const restricts = (
+  role: ResolvedSlot["role"],
+  optional: boolean,
+  cls: ResolvedClass,
+  ipa: string[],
+): ResolvedSlot => ({ role, optional, cls, ipa, restricted: true });
+
 const heavy: ResolvedTemplate = {
   id: "t1",
   name: "heavy",
   weight: 1,
   slots: [
-    { role: "onset", optional: true, cls: C },
-    { role: "onset", optional: true, cls: G },
-    { role: "nucleus", optional: false, cls: V },
-    { role: "coda", optional: true, cls: C },
+    follows("onset", true, C),
+    follows("onset", true, G),
+    follows("nucleus", false, V),
+    follows("coda", true, C),
   ],
 };
 
@@ -60,6 +83,53 @@ describe("templateNotation", () => {
 
   it("marks a template with no slots rather than rendering empty", () => {
     expect(templateNotation({ ...heavy, slots: [] })).toBe("∅");
+  });
+
+  it("primes a slot that names its own segments, inside the optional brackets", () => {
+    const t: ResolvedTemplate = {
+      ...heavy,
+      slots: [restricts("onset", true, C, ["p", "t"]), follows("nucleus", false, V)],
+    };
+    expect(templateNotation(t)).toBe("(C′)V");
+  });
+});
+
+describe("restricted slots", () => {
+  const narrow: ResolvedTemplate = {
+    id: "t2",
+    name: "narrow",
+    weight: 1,
+    slots: [restricts("onset", false, C, ["p", "t"]), follows("nucleus", false, V)],
+  };
+
+  it("only ever emits segments the slot itself allows, not its whole class", () => {
+    const g = grammar({ templates: [narrow] });
+    for (const result of generateWords(g, { maxSyllables: 3 }, seededRng(9), 40)) {
+      expect(result.ok).toBe(true);
+      if (!result.ok) continue;
+      for (const segment of result.segments) {
+        if (segment.role === "onset") expect(["p", "t"]).toContain(segment.ipa);
+      }
+    }
+  });
+
+  it("still carries the slot's class, so a class constraint keeps firing on it", () => {
+    // Restricting a slot narrows what it produces; it does not reclassify the result. A
+    // rule about C has to reach /p/ generated into a C slot that only allows /p t/.
+    const g = grammar({
+      templates: [narrow],
+      constraints: [{ kind: "forbid_in_role", role: "onset", a: { kind: "class", classId: "c" } }],
+    });
+    const result = generateWord(g, { maxAttempts: 40 }, seededRng(4));
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toContain("C cannot be a onset");
+  });
+
+  it("fails as data, not by hanging, when its own segments are all gone", () => {
+    const g = grammar({ templates: [{ ...narrow, slots: [restricts("nucleus", false, V, [])] }] });
+    const result = generateWord(g, { maxAttempts: 10 }, seededRng(1));
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.reason).toContain("no segments left");
   });
 });
 
@@ -187,16 +257,16 @@ describe("grammars that cannot produce anything", () => {
     if (!result.ok) expect(result.reason).toContain("nucleus");
   });
 
-  it("reports a required slot whose class is empty", () => {
+  it("reports a required slot with nothing to draw from", () => {
     const empty: ResolvedClass = { id: "v", symbol: "V", label: null, ipa: [] };
     const g: Grammar = {
       classes: [empty],
-      templates: [{ ...heavy, slots: [{ role: "nucleus", optional: false, cls: empty }] }],
+      templates: [{ ...heavy, slots: [follows("nucleus", false, empty)] }],
       constraints: [],
     };
     const result = generateWord(g, { maxAttempts: 10 }, seededRng(2));
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.reason).toContain("empty");
+    if (!result.ok) expect(result.reason).toContain("no segments left");
   });
 
   it("reports a grammar with no usable template", () => {
@@ -237,9 +307,9 @@ describe("impactOfRemoving", () => {
         sort_order: 0,
         notes: null,
         slots: [
-          { slot_index: 0, role: "onset", optional: true, class_symbol: "C" },
-          { slot_index: 1, role: "onset", optional: false, class_symbol: "G" },
-          { slot_index: 2, role: "nucleus", optional: false, class_symbol: "V" },
+          { slot_index: 0, role: "onset", optional: true, class_symbol: "C", phoneme_ipa: null },
+          { slot_index: 1, role: "onset", optional: false, class_symbol: "G", phoneme_ipa: null },
+          { slot_index: 2, role: "nucleus", optional: false, class_symbol: "V", phoneme_ipa: null },
         ],
       },
     ],
@@ -267,10 +337,65 @@ describe("impactOfRemoving", () => {
     ],
   };
 
+  it("names a slot that would lose segments it holds itself", () => {
+    const withRestricted: Draft = {
+      ...draft,
+      templates: [
+        {
+          ...draft.templates[0]!,
+          slots: [
+            {
+              slot_index: 0,
+              role: "onset",
+              optional: false,
+              class_symbol: "C",
+              phoneme_ipa: ["p", "ŋ"],
+            },
+            {
+              slot_index: 1,
+              role: "nucleus",
+              optional: false,
+              class_symbol: "V",
+              phoneme_ipa: null,
+            },
+          ],
+        },
+      ],
+    };
+    const impact = impactOfRemoving(withRestricted, new Set(["ŋ"]));
+    expect(impact.slots).toEqual([{ template: "heavy", slotIndex: 0, ipa: ["ŋ"] }]);
+    // Its class still has /p/ and so does the slot, so nothing stops generating.
+    expect(impact.templates).toEqual([]);
+  });
+
+  // A restricted slot has to be judged on its own set: C still holds /p/ and /t/, but this
+  // slot allows neither, so the template it is required in stops producing anything.
+  it("names a template whose required slot's own segments are all going", () => {
+    const withRestricted: Draft = {
+      ...draft,
+      templates: [
+        {
+          ...draft.templates[0]!,
+          slots: [
+            {
+              slot_index: 0,
+              role: "onset",
+              optional: false,
+              class_symbol: "C",
+              phoneme_ipa: ["ŋ"],
+            },
+          ],
+        },
+      ],
+    };
+    expect(impactOfRemoving(withRestricted, new Set(["ŋ"])).templates).toEqual(["heavy"]);
+  });
+
   it("reports nothing when nothing is being removed", () => {
     expect(impactOfRemoving(draft, new Set())).toEqual({
       classes: [],
       emptied: [],
+      slots: [],
       orphaned: [],
       templates: [],
     });
@@ -367,7 +492,9 @@ describe("cloneDraft", () => {
         weight: 1,
         sort_order: 0,
         notes: null,
-        slots: [{ slot_index: 0, role: "nucleus", optional: false, class_symbol: "C" }],
+        slots: [
+          { slot_index: 0, role: "nucleus", optional: false, class_symbol: "C", phoneme_ipa: null },
+        ],
       },
     ],
     constraints: [],
@@ -431,8 +558,14 @@ describe("canonicalDraft", () => {
           sort_order: 0,
           notes: null,
           slots: [
-            { slot_index: 0, role: "onset", optional: true, class_symbol: "C" },
-            { slot_index: 1, role: "nucleus", optional: false, class_symbol: "V" },
+            { slot_index: 0, role: "onset", optional: true, class_symbol: "C", phoneme_ipa: null },
+            {
+              slot_index: 1,
+              role: "nucleus",
+              optional: false,
+              class_symbol: "V",
+              phoneme_ipa: null,
+            },
           ],
         },
       ],
@@ -444,6 +577,31 @@ describe("canonicalDraft", () => {
       slots[1].class_symbol = "C";
     }
     expect(canonicalDraft(two)).not.toBe(canonicalDraft(one));
+  });
+
+  const withSlot = (phoneme_ipa: string[] | null): Draft => ({
+    ...base,
+    templates: [
+      {
+        name: "t",
+        weight: 1,
+        sort_order: 0,
+        notes: null,
+        slots: [
+          { slot_index: 0, role: "nucleus", optional: false, class_symbol: "V", phoneme_ipa },
+        ],
+      },
+    ],
+  });
+
+  it("ignores the order of a slot's own segments", () => {
+    expect(canonicalDraft(withSlot(["a", "i"]))).toBe(canonicalDraft(withSlot(["i", "a"])));
+  });
+
+  // Different states, even where they resolve to the same list today: one follows the
+  // class as it is edited and the other does not.
+  it("tells following the class apart from naming exactly what the class holds", () => {
+    expect(canonicalDraft(withSlot(["i", "a"]))).not.toBe(canonicalDraft(withSlot(null)));
   });
 });
 
@@ -460,8 +618,8 @@ describe("resolveGrammar", () => {
         sort_order: 0,
         notes: null,
         slots: [
-          { slot_index: 0, role: "onset", optional: true, class_symbol: "C" },
-          { slot_index: 1, role: "nucleus", optional: false, class_symbol: "V" },
+          { slot_index: 0, role: "onset", optional: true, class_symbol: "C", phoneme_ipa: null },
+          { slot_index: 1, role: "nucleus", optional: false, class_symbol: "V", phoneme_ipa: null },
         ],
       },
     ],
@@ -488,6 +646,39 @@ describe("resolveGrammar", () => {
     expect(g.classes.find((c) => c.symbol === "C")?.ipa).toEqual(["p", "ŋ"]);
   });
 
+  const restricted = (phoneme_ipa: string[] | null): Draft => ({
+    ...draft,
+    templates: [
+      {
+        ...draft.templates[0]!,
+        slots: [
+          { slot_index: 0, role: "nucleus", optional: false, class_symbol: "C", phoneme_ipa },
+        ],
+      },
+    ],
+  });
+
+  it("gives a following slot its class's members, filtered", () => {
+    const slot = resolveGrammar(restricted(null), new Set(["p", "a"])).templates[0]?.slots[0];
+    expect(slot?.ipa).toEqual(["p"]);
+    expect(slot?.restricted).toBe(false);
+  });
+
+  // The same filter class members get, for the same reason: a slot may name a segment the
+  // language no longer has, and generating it anyway would make removing a phoneme mean
+  // nothing at all.
+  it("filters a slot's own segments against the inventory too", () => {
+    const slot = resolveGrammar(restricted(["p", "ŋ"]), new Set(["p", "a"])).templates[0]?.slots[0];
+    expect(slot?.ipa).toEqual(["p"]);
+    expect(slot?.restricted).toBe(true);
+  });
+
+  it("lets a slot name a segment its class does not hold", () => {
+    const slot = resolveGrammar(restricted(["a"]), new Set(["p", "ŋ", "a"])).templates[0]?.slots[0];
+    expect(slot?.ipa).toEqual(["a"]);
+    expect(slot?.cls.symbol).toBe("C");
+  });
+
   it("drops a slot whose class does not exist rather than emitting a hole", () => {
     const broken: Draft = {
       ...draft,
@@ -495,8 +686,20 @@ describe("resolveGrammar", () => {
         {
           ...draft.templates[0]!,
           slots: [
-            { slot_index: 0, role: "onset", optional: true, class_symbol: "GONE" },
-            { slot_index: 1, role: "nucleus", optional: false, class_symbol: "V" },
+            {
+              slot_index: 0,
+              role: "onset",
+              optional: true,
+              class_symbol: "GONE",
+              phoneme_ipa: null,
+            },
+            {
+              slot_index: 1,
+              role: "nucleus",
+              optional: false,
+              class_symbol: "V",
+              phoneme_ipa: null,
+            },
           ],
         },
       ],
@@ -540,5 +743,31 @@ describe("orphanedMembers", () => {
 
   it("says nothing when every member is in the inventory", () => {
     expect(orphanedMembers(draft, new Set(["p", "ŋ", "a"]))).toEqual([]);
+  });
+});
+
+describe("orphanedSlotMembers", () => {
+  const withSlots = (slots: Draft["templates"][number]["slots"]): Draft => ({
+    classes: [{ symbol: "C", label: null, sort_order: 0, phoneme_ipa: ["p", "ŋ"] }],
+    templates: [{ name: "basic", weight: 1, sort_order: 0, notes: null, slots }],
+    constraints: [],
+  });
+
+  it("names the template, the slot and the segments it can no longer use", () => {
+    const draft = withSlots([
+      { slot_index: 0, role: "onset", optional: false, class_symbol: "C", phoneme_ipa: ["p", "ŋ"] },
+    ]);
+    expect(orphanedSlotMembers(draft, new Set(["p"]))).toEqual([
+      { template: "basic", slotIndex: 0, missing: ["ŋ"] },
+    ]);
+  });
+
+  // A following slot has nothing of its own to dangle: it takes whatever the class has,
+  // and orphanedMembers already reports the class.
+  it("says nothing about a slot that follows its class", () => {
+    const draft = withSlots([
+      { slot_index: 0, role: "onset", optional: false, class_symbol: "C", phoneme_ipa: null },
+    ]);
+    expect(orphanedSlotMembers(draft, new Set(["p"]))).toEqual([]);
   });
 });

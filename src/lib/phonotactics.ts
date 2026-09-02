@@ -28,7 +28,19 @@ export type ResolvedClass = {
   ipa: string[];
 };
 
-export type ResolvedSlot = { role: SlotRole; optional: boolean; cls: ResolvedClass };
+export type ResolvedSlot = {
+  role: SlotRole;
+  optional: boolean;
+  /** The class the slot names. Identity, not contents — see `ipa`. */
+  cls: ResolvedClass;
+  /**
+   * What the slot actually draws from: the class's members, or the slot's own explicit
+   * set, in both cases filtered against the inventory.
+   */
+  ipa: string[];
+  /** True when the slot names its own segments rather than following its class. */
+  restricted: boolean;
+};
 
 export type ResolvedTemplate = {
   id: string;
@@ -81,7 +93,13 @@ const DEFAULTS = {
 export function templateNotation(template: ResolvedTemplate): string {
   if (template.slots.length === 0) return "∅";
   return template.slots
-    .map((slot) => (slot.optional ? `(${slot.cls.symbol})` : slot.cls.symbol))
+    .map((slot) => {
+      // The prime is what keeps a restricted slot from reading as its whole class: `CVC`
+      // and `CVC′` are different grammars, and the notation is the only place that
+      // difference is visible at a glance.
+      const symbol = slot.restricted ? `${slot.cls.symbol}′` : slot.cls.symbol;
+      return slot.optional ? `(${symbol})` : symbol;
+    })
     .join("");
 }
 
@@ -168,13 +186,16 @@ function buildSyllable(
   const out: Segment[] = [];
   for (const slot of template.slots) {
     if (slot.optional && rng() >= optionalFillChance) continue;
-    const ipa = pick(slot.cls.ipa, rng);
-    // A required slot whose class is empty makes this template unusable. Fail the
+    const ipa = pick(slot.ipa, rng);
+    // A required slot with nothing to draw from makes this template unusable. Fail the
     // attempt rather than emitting a syllable with a hole in it.
     if (ipa === null) {
       if (slot.optional) continue;
       return null;
     }
+    // The class id is the slot's, even when the segment came from a restricted set. A
+    // constraint naming the class still has to fire here: restricting a slot narrows what
+    // it produces, it does not reclassify what it produced.
     out.push({ ipa, role: slot.role, classId: slot.cls.id });
   }
   return out;
@@ -214,7 +235,7 @@ export function generateWord(grammar: Grammar, options: GenerateOptions, rng: Rn
       }
       const syllable = buildSyllable(template, fill, rng);
       if (syllable === null) {
-        lastReason = `template "${template.name}" has a required slot whose class is empty`;
+        lastReason = `template "${template.name}" has a required slot with no segments left to draw from`;
         failed = true;
         break;
       }
@@ -285,6 +306,16 @@ export type DraftSlot = {
   role: SlotRole;
   optional: boolean;
   class_symbol: string;
+  /**
+   * The segments this slot allows, or `null` to follow its class.
+   *
+   * `null` is the default and is what keeps an untouched slot tracking edits to the class
+   * it names; an array is an explicit set, which may legitimately include segments the
+   * class does not. Stored as IPA text for the reason 0012 and 0013 gave: the reference is
+   * allowed to dangle so the page can show it in red rather than lose it. Never empty —
+   * the database refuses that, since a slot nothing can fill is a mistake and not a state.
+   */
+  phoneme_ipa: string[] | null;
 };
 
 export type DraftTemplate = {
@@ -294,6 +325,14 @@ export type DraftTemplate = {
   notes: string | null;
   slots: DraftSlot[];
 };
+
+/**
+ * One side of a constraint as the draft stores it — a class, a segment, or neither yet.
+ *
+ * The resolved `Term` above is the same idea once it is known to be complete; this one is
+ * what a half-filled editor holds, which is why both fields are nullable.
+ */
+export type DraftTerm = { class_symbol: string | null; phoneme_ipa: string | null };
 
 export type DraftConstraint = {
   kind: ConstraintKind;
@@ -341,7 +380,16 @@ export function canonicalDraft(draft: Draft): string {
       .map((c) => ({ ...c, phoneme_ipa: [...c.phoneme_ipa].sort() }))
       .sort((a, b) => a.symbol.localeCompare(b.symbol)),
     templates: [...draft.templates]
-      .map((t) => ({ ...t, slots: [...t.slots].sort((a, b) => a.slot_index - b.slot_index) }))
+      .map((t) => ({
+        ...t,
+        slots: [...t.slots]
+          .sort((a, b) => a.slot_index - b.slot_index)
+          // Sorted, like a class's members: the order of a set is not information, so
+          // re-ordering one must not read as a change. `null` stays `null` — "follow the
+          // class" and "these exact segments" are different states even when they resolve
+          // to the same list today.
+          .map((s) => ({ ...s, phoneme_ipa: s.phoneme_ipa ? [...s.phoneme_ipa].sort() : null })),
+      }))
       .sort((a, b) => a.name.localeCompare(b.name)),
     constraints: [...draft.constraints].map((c) => JSON.stringify(c)).sort(),
   });
@@ -352,6 +400,8 @@ export type RemovalImpact = {
   classes: { symbol: string; ipa: string[] }[];
   /** Classes that would be left with nothing in them. */
   emptied: string[];
+  /** Slots naming these segments explicitly, and which. */
+  slots: { template: string; slotIndex: number; ipa: string[] }[];
   /** Rules left naming a segment the inventory no longer has. Kept, not deleted. */
   orphaned: DraftConstraint[];
   /** Templates with a required slot whose class would be emptied — these stop generating. */
@@ -388,6 +438,29 @@ export function orphanedMembers(
 }
 
 /**
+ * Slots naming a segment the inventory no longer has.
+ *
+ * The slot-level twin of `orphanedMembers`, and needed for the same reason: a restricted
+ * slot holds IPA text so the reference survives the phoneme leaving, which means something
+ * other than the database has to notice that it dangles. A slot that follows its class has
+ * nothing of its own to dangle — `orphanedMembers` already covers it.
+ */
+export function orphanedSlotMembers(
+  draft: Draft,
+  inventory: ReadonlySet<string>,
+): { template: string; slotIndex: number; missing: string[] }[] {
+  return draft.templates.flatMap((t) =>
+    t.slots
+      .map((slot) => ({
+        template: t.name,
+        slotIndex: slot.slot_index,
+        missing: (slot.phoneme_ipa ?? []).filter((ipa) => !inventory.has(ipa)),
+      }))
+      .filter((entry) => entry.missing.length > 0),
+  );
+}
+
+/**
  * The draft resolved into what the sampler consumes, with class membership **filtered
  * against the inventory**.
  *
@@ -414,7 +487,21 @@ export function resolveGrammar(draft: Draft, inventory: ReadonlySet<string>): Gr
     slots: t.slots
       .map((slot) => {
         const cls = bySymbol.get(slot.class_symbol);
-        return cls ? { role: slot.role, optional: slot.optional, cls } : null;
+        if (!cls) return null;
+        // The same filter the class members get, and for the same reason: a slot may name
+        // a segment the language no longer has, and generating it anyway would make
+        // removing a phoneme mean nothing. `cls.ipa` is already filtered above.
+        const ipa =
+          slot.phoneme_ipa === null
+            ? cls.ipa
+            : slot.phoneme_ipa.filter((symbol) => inventory.has(symbol));
+        return {
+          role: slot.role,
+          optional: slot.optional,
+          cls,
+          ipa,
+          restricted: slot.phoneme_ipa !== null,
+        };
       })
       .filter((slot): slot is ResolvedSlot => slot !== null),
   }));
@@ -466,7 +553,9 @@ export function orphanedConstraints(
  * failure than deleted, so it still has to be said out loud before the save.
  */
 export function impactOfRemoving(draft: Draft, removing: ReadonlySet<string>): RemovalImpact {
-  if (removing.size === 0) return { classes: [], emptied: [], orphaned: [], templates: [] };
+  if (removing.size === 0) {
+    return { classes: [], emptied: [], slots: [], orphaned: [], templates: [] };
+  }
 
   const classes = draft.classes
     .map((c) => ({ symbol: c.symbol, ipa: c.phoneme_ipa.filter((ipa) => removing.has(ipa)) }))
@@ -486,12 +575,31 @@ export function impactOfRemoving(draft: Draft, removing: ReadonlySet<string>): R
       (c.b_phoneme_ipa !== null && removing.has(c.b_phoneme_ipa)),
   );
 
-  // A required slot whose class is empty makes the whole template unusable — see
-  // `buildSyllable`. Worth naming separately: an emptied class is recoverable, a
+  const slots = draft.templates.flatMap((t) =>
+    t.slots
+      .map((s) => ({
+        template: t.name,
+        slotIndex: s.slot_index,
+        ipa: (s.phoneme_ipa ?? []).filter((ipa) => removing.has(ipa)),
+      }))
+      .filter((s) => s.ipa.length > 0),
+  );
+
+  // A required slot with nothing left to draw from makes the whole template unusable —
+  // see `buildSyllable`. Worth naming separately: an emptied class is recoverable, a
   // template that can no longer generate is the visible symptom.
+  //
+  // A restricted slot has to be judged on its own set rather than on its class: the class
+  // may still be full of segments the slot does not allow, and the class may be emptied
+  // while the slot names something outside it that survives.
+  const drained = (slot: DraftSlot) =>
+    slot.phoneme_ipa === null
+      ? emptied.includes(slot.class_symbol)
+      : slot.phoneme_ipa.every((ipa) => removing.has(ipa));
+
   const templates = draft.templates
-    .filter((t) => t.slots.some((s) => !s.optional && emptied.includes(s.class_symbol)))
+    .filter((t) => t.slots.some((s) => !s.optional && drained(s)))
     .map((t) => t.name);
 
-  return { classes, emptied, orphaned, templates };
+  return { classes, emptied, slots, orphaned, templates };
 }
