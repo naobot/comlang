@@ -663,6 +663,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      import_lexicon: {
+        Args: { p_fields: string[]; p_project_id: string; p_rows: Json }
+        Returns: Json
+      }
       save_grammar_rules: {
         Args: { p_project_id: string; p_rules: Json }
         Returns: undefined

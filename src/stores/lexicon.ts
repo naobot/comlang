@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 
 import { subscribeToProjectTable } from "@/composables/useProjectChannel";
+import type { ImportField, ImportRow } from "@/lib/lexiconImport";
 import { supabase } from "@/lib/supabase";
 import type { LexiconEntry } from "@/types/models";
 
@@ -290,6 +291,38 @@ export const useLexiconStore = defineStore("lexicon", () => {
     return message;
   }
 
+  /**
+   * Apply a parsed CSV.
+   *
+   * Goes through `import_lexicon` rather than looping inserts here: it is one act over many
+   * rows, and a file half-applied is worse than one refused. `fields` is which columns the
+   * file carried, and the RPC writes only those — the two-column export has no gloss
+   * column, and treating its absence as "clear it" would empty every gloss in the project.
+   *
+   * The re-fetch afterwards is not optional. This is the one write the store cannot patch
+   * from its own return value: the RPC reports counts, not rows.
+   */
+  async function importRows(projectId: string, rows: ImportRow[], fields: ImportField[]) {
+    saving.value = true;
+    error.value = null;
+    try {
+      const { data, error: rpcError } = await supabase.rpc("import_lexicon", {
+        p_project_id: projectId,
+        p_rows: rows,
+        p_fields: fields,
+      });
+      if (rpcError) {
+        error.value = rpcError.message;
+        return null;
+      }
+      await fetchFor(projectId);
+      const result = (data ?? {}) as { created?: number; updated?: number };
+      return { created: result.created ?? 0, updated: result.updated ?? 0 };
+    } finally {
+      saving.value = false;
+    }
+  }
+
   let unsubscribe: (() => void) | null = null;
   let subscribedTo: string | null = null;
 
@@ -340,6 +373,7 @@ export const useLexiconStore = defineStore("lexicon", () => {
     acceptIncoming,
     saveOpen,
     remove,
+    importRows,
     subscribe,
     unsubscribeAll,
     reset,

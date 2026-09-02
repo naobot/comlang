@@ -57,6 +57,27 @@ the fixture had no commas; exporting the real project found it in seconds. `yaml
 takes a `flow` flag for exactly this, and the tests round-trip through the real parser
 rather than asserting on substrings.
 
+**Import is the lexicon's one whole-file write, and `import_lexicon` (0021) is where its
+three rules live.** Everything else on that page saves per entry; an import is one act over
+many rows, and a file half-applied is worse than one refused.
+
+- **Matching is on `entry_key` only, never on lemma.** The language has homographs — `gwan`
+  is both "meaning" (noun) and "become" (verb) — which is precisely why `lexicon_entries`
+  has no unique constraint on lemma. Matching on it would merge two different words. A row
+  with no key is therefore always an insert.
+- **`p_fields` says which columns the file actually carried, and only those are written.**
+  The two-column export has no gloss column, so treating an absent column as "clear it"
+  would empty every gloss in the project on import. Verified live: a `fields: ["lemma"]`
+  import renamed a lemma and left its gloss and word class untouched.
+- **Nothing is ever deleted.** A partial file is a normal thing to import; inferring
+  deletions from absence would silently turn an import into a whole-project replace.
+
+`parseLexiconCsv` accepts exactly the two shapes `exporters.ts` writes and reports which it
+found. Note the two-column format cannot represent "no key" — `toLexiconCsv` writes the
+lemma there instead — so re-importing it gives a previously unkeyed entry a key and adds a
+row rather than matching one. That is inherent to the format, not a bug to fix, and it is
+why the confirmation states the create/update split before anything is written.
+
 **The export is built from what is saved, never from a draft.** An archive of half-typed
 edits is worse than making someone press Save first.
 

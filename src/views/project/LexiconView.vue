@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { useEventListener } from "@vueuse/core";
-import { onMounted, watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 
 import EntryDetail from "@/components/lexicon/EntryDetail.vue";
 import LemmaList from "@/components/lexicon/LemmaList.vue";
+import { useProjectExport } from "@/composables/useProjectExport";
+import { parseLexiconCsv, planImport } from "@/lib/lexiconImport";
 import { useLexiconStore } from "@/stores/lexicon";
 import { usePhonemesStore } from "@/stores/phonemes";
 
@@ -14,6 +16,72 @@ const lexicon = useLexiconStore();
 const phonemes = usePhonemesStore();
 const route = useRoute();
 const router = useRouter();
+
+// The same composable the header menu uses, so the two exports cannot drift apart. This
+// page offers the full CSV only: it is the one that carries pos, gloss and notes, and so
+// the only one that survives a round trip back through Import. Disabled on the lexicon's
+// own count rather than the exporter's `hasAnything`, which is true when any *section*
+// has data — here that would offer a file with nothing but a header row in it.
+const exporter = useProjectExport(() => props.projectId);
+
+const fileInput = ref<HTMLInputElement | null>(null);
+const importing = ref(false);
+
+function chooseFile() {
+  fileInput.value?.click();
+}
+
+async function onFile(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  // Cleared immediately so picking the same file twice in a row still fires a change.
+  input.value = "";
+  if (!file) return;
+
+  importing.value = true;
+  try {
+    const parsed = parseLexiconCsv(await file.text());
+    if (parsed.problems.length) {
+      // Every problem at once: fixing one in a spreadsheet and re-importing to find the
+      // next is a miserable loop.
+      window.alert(`That file can't be imported:\n\n${parsed.problems.join("\n")}`);
+      return;
+    }
+
+    const plan = planImport(parsed.rows, lexicon.entries);
+    const parts = [
+      plan.create ? `add ${plan.create}` : null,
+      plan.update ? `update ${plan.update}` : null,
+    ].filter(Boolean);
+    // Says what it will do before it does it. Entries are matched by key, so a file of
+    // unkeyed rows adds rather than updates — worth seeing before, not after.
+    const unkeyed = plan.unkeyed
+      ? `\n\n${plan.unkeyed} row${plan.unkeyed === 1 ? " has" : "s have"} no key, so ` +
+        `${plan.unkeyed === 1 ? "it is" : "they are"} added as new entries rather than matched.`
+      : "";
+    const missing = parsed.fields.includes("gloss")
+      ? ""
+      : "\n\nThis file has only key and lemma columns, so meanings, word classes and " +
+        "notes on existing entries are left as they are.";
+
+    if (
+      !window.confirm(
+        `Import ${file.name}? This will ${parts.join(" and ")} ${
+          plan.create + plan.update === 1 ? "entry" : "entries"
+        }. Nothing is deleted.${unkeyed}${missing}`,
+      )
+    ) {
+      return;
+    }
+
+    const result = await lexicon.importRows(props.projectId, parsed.rows, parsed.fields);
+    if (result) {
+      window.alert(`Imported: ${result.created} added, ${result.updated} updated.`);
+    }
+  } finally {
+    importing.value = false;
+  }
+}
 
 // Selection lives in the URL so an entry is linkable and the back button works. A query
 // param rather than a child route: the tab's own active state stays intact, and there is
@@ -67,9 +135,36 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
            twice is noise — but a page with no h1 leaves a screen reader with nothing to
            announce it by. -->
       <h1 class="sr-only">Lexicon</h1>
-      <p class="muted">
-        Every word in the language. Search by the conlang form or by what it means.
-      </p>
+      <div class="intro">
+        <p class="muted">
+          Every word in the language. Search by the conlang form or by what it means.
+        </p>
+        <div class="io">
+          <button
+            type="button"
+            :disabled="lexicon.count === 0"
+            @click="exporter.exportLexiconCsvFull()"
+          >
+            Export CSV
+          </button>
+          <button type="button" :disabled="importing || lexicon.saving" @click="chooseFile">
+            {{ importing ? "Importing…" : "Import CSV" }}
+          </button>
+          <!-- A real file input, kept out of the layout: a styled button that opens it is
+               the only way to get the app's own button styling on a file picker.
+               tabindex="-1" because the visible button is the control — otherwise the tab
+               order lands on something nobody can see. -->
+          <input
+            ref="fileInput"
+            type="file"
+            accept=".csv,text/csv"
+            class="sr-only"
+            tabindex="-1"
+            aria-hidden="true"
+            @change="onFile"
+          />
+        </div>
+      </div>
     </header>
 
     <!-- The same soft gate the placeholder had. -->
@@ -103,10 +198,25 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
   white-space: nowrap;
 }
 
+.intro {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-6);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-6);
+}
+
 header p {
   max-width: 44rem;
-  margin: 0 0 var(--sp-6);
+  margin: 0;
   font-size: 0.875rem;
+}
+
+.io {
+  display: flex;
+  gap: var(--sp-2);
+  flex: none;
 }
 
 /**
