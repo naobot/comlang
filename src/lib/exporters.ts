@@ -275,7 +275,7 @@ function describeConstraint(c: ExportConstraint): string {
     return `${term(c.a_class_symbol, c.a_phoneme_ipa)} cannot be a ${c.role}`;
   }
   const where = c.seq_position && c.seq_position !== "anywhere" ? ` ${c.seq_position}` : "";
-  return `${term(c.a_class_symbol, c.a_phoneme_ipa)}${term(c.b_class_symbol, c.b_phoneme_ipa)} not allowed${where}`;
+  return `[${term(c.a_class_symbol, c.a_phoneme_ipa)}][${term(c.b_class_symbol, c.b_phoneme_ipa)}] not allowed${where}`;
 }
 
 // lexicon CSV --------------------------------------------------------------------------
