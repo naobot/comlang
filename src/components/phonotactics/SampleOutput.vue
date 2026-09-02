@@ -4,6 +4,7 @@ import { computed, ref } from "vue";
 import AddToLexiconDialog from "@/components/phonotactics/AddToLexiconDialog.vue";
 import { generateWords, seededRng } from "@/lib/phonotactics";
 import { useLexiconStore } from "@/stores/lexicon";
+import { useMembersStore } from "@/stores/members";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
 
 /**
@@ -15,6 +16,7 @@ defineProps<{ projectId: string }>();
 
 const phonotactics = usePhonotacticsStore();
 const lexicon = useLexiconStore();
+const members = useMembersStore();
 
 const seed = ref(Math.floor(Math.random() * 1e9));
 const count = ref(24);
@@ -91,27 +93,35 @@ const failure = computed(() => {
          click. The chip is content rather than a control, so it opts out of the app's
          uppercase button styling. -->
     <p v-if="words.length" class="words">
-      <button
-        v-for="(word, i) in words"
-        :key="`${word}-${i}`"
-        type="button"
-        class="word"
-        :class="{ added: justAdded.has(word), known: known.has(word) && !justAdded.has(word) }"
-        :title="
-          known.has(word)
-            ? `${word} is already a lemma in the lexicon — click to add another entry for it`
-            : `Add ${word} to the lexicon`
-        "
-        @click="adding = word"
-      >
-        {{ word }}<span class="mark" aria-hidden="true">{{ justAdded.has(word) ? "✓" : "+" }}</span>
-      </button>
+      <!-- A visitor to a published conlang can generate words and read them; adding one
+           to the lexicon is a write, so for them the chip is just the word. -->
+      <template v-if="!members.canEdit">
+        <span v-for="(word, i) in words" :key="`${word}-${i}`" class="word still">{{ word }}</span>
+      </template>
+      <template v-else>
+        <button
+          v-for="(word, i) in words"
+          :key="`${word}-${i}`"
+          type="button"
+          class="word"
+          :class="{ added: justAdded.has(word), known: known.has(word) && !justAdded.has(word) }"
+          :title="
+            known.has(word)
+              ? `${word} is already a lemma in the lexicon — click to add another entry for it`
+              : `Add ${word} to the lexicon`
+          "
+          @click="adding = word"
+        >
+          {{ word
+          }}<span class="mark" aria-hidden="true">{{ justAdded.has(word) ? "✓" : "+" }}</span>
+        </button>
+      </template>
     </p>
     <p v-else-if="!failure" class="hint">
       Add a class and a template with a required nucleus to see sample words.
     </p>
 
-    <p v-if="words.length" class="hint">
+    <p v-if="words.length && members.canEdit" class="hint">
       Click a word to add it to the lexicon. Words are generated from the draft on this page, so
       they follow edits before they are saved.
     </p>
@@ -179,6 +189,8 @@ h2 {
  */
 .word {
   position: relative;
+  display: inline-flex;
+  align-items: center;
   font-family: inherit;
   font-size: inherit;
   font-weight: 400;
@@ -189,7 +201,13 @@ h2 {
   background: none;
 }
 
-.word:hover:not(:disabled),
+/* Not a control at all for a read-only visitor: no hover, no border, no affordance. */
+.word.still {
+  cursor: default;
+  padding: 2px var(--sp-2);
+}
+
+.word:not(.still):hover:not(:disabled),
 .word:focus-visible {
   border-color: var(--c-border);
   background: var(--c-surface);

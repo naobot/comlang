@@ -32,8 +32,30 @@ export const useMembersStore = defineStore("members", () => {
   );
   const isOwner = computed(() => currentRole.value === "owner");
 
+  /**
+   * Whether this project has been looked up yet. `canEdit` is false before it has, and
+   * the workspace waits for it, so a member never sees the page in read-only for a beat.
+   */
+  const loaded = ref(false);
+
+  /**
+   * May the signed-in user change anything here?
+   *
+   * Since 0026 a project can be **public**, and a public project is readable by anyone —
+   * a non-member sees the whole workspace and must not be offered a control that RLS will
+   * refuse. Membership is the answer to that question, and it is the same answer for a
+   * signed-out visitor (no rows, no role) and for a signed-in stranger.
+   *
+   * This is a *presentation* decision, never a boundary. The boundary is RLS, and it
+   * holds whatever this returns.
+   */
+  const canEdit = computed(() => loaded.value && currentRole.value !== null);
+
   async function fetchFor(projectId: string) {
     loading.value = true;
+    // Cleared first: navigating to another project must not answer "can I edit?" from the
+    // last one's membership while this one is in flight.
+    loaded.value = false;
     error.value = null;
     try {
       const { data, error: queryError } = await supabase
@@ -48,6 +70,9 @@ export const useMembersStore = defineStore("members", () => {
       byKey.value = new Map(
         (data ?? []).map((row) => [keyOf(row), row as ProjectMemberWithProfile]),
       );
+      // Set even on the empty result, which is the ordinary case for a public project's
+      // visitor: zero rows is an answer, not a failure.
+      loaded.value = true;
     } finally {
       loading.value = false;
     }
@@ -124,6 +149,7 @@ export const useMembersStore = defineStore("members", () => {
   function reset() {
     unsubscribeAll();
     byKey.value = new Map();
+    loaded.value = false;
     error.value = null;
   }
 
@@ -131,6 +157,8 @@ export const useMembersStore = defineStore("members", () => {
     members,
     currentRole,
     isOwner,
+    canEdit,
+    loaded,
     loading,
     adding,
     error,

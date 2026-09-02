@@ -2,6 +2,7 @@
 import { computed } from "vue";
 
 import { type CorpusDraft, useCorpusStore } from "@/stores/corpus";
+import { useMembersStore } from "@/stores/members";
 import type { CorpusEntry } from "@/types/models";
 
 /**
@@ -21,6 +22,7 @@ import type { CorpusEntry } from "@/types/models";
 const props = defineProps<{ projectId: string; query: string }>();
 
 const corpus = useCorpusStore();
+const members = useMembersStore();
 
 // The store does the filtering, so this list and the count in the toolbar above it are
 // answering the same question.
@@ -100,7 +102,7 @@ function confirmDelete(entry: CorpusEntry) {
         <div class="head">
           <span class="label">{{ i + 1 }}. {{ firstLine(entry) || "untitled" }}</span>
           <span class="shape">{{ shape(draft) }}</span>
-          <div class="actions">
+          <div v-if="members.canEdit" class="actions">
             <template v-if="corpus.isDirty(entry.id)">
               <button
                 type="button"
@@ -141,6 +143,7 @@ function confirmDelete(entry: CorpusEntry) {
             <span class="pane-label">English</span>
             <textarea
               v-model="draft.english"
+              :readonly="!members.canEdit"
               :aria-label="`English, passage ${i + 1}`"
               @keydown.enter.meta.prevent="corpus.saveRow(entry.id)"
               @keydown.enter.ctrl.prevent="corpus.saveRow(entry.id)"
@@ -151,6 +154,7 @@ function confirmDelete(entry: CorpusEntry) {
             <textarea
               v-model="draft.conlang"
               class="conlang"
+              :readonly="!members.canEdit"
               :aria-label="`Conlang, passage ${i + 1}`"
               @keydown.enter.meta.prevent="corpus.saveRow(entry.id)"
               @keydown.enter.ctrl.prevent="corpus.saveRow(entry.id)"

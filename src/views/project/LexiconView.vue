@@ -8,11 +8,13 @@ import LemmaList from "@/components/lexicon/LemmaList.vue";
 import { useProjectExport } from "@/composables/useProjectExport";
 import { parseLexiconCsv, planImport } from "@/lib/lexiconImport";
 import { useLexiconStore } from "@/stores/lexicon";
+import { useMembersStore } from "@/stores/members";
 import { usePhonemesStore } from "@/stores/phonemes";
 
 const props = defineProps<{ projectId: string }>();
 
 const lexicon = useLexiconStore();
+const members = useMembersStore();
 const phonemes = usePhonemesStore();
 const route = useRoute();
 const router = useRouter();
@@ -147,7 +149,12 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
           >
             Export CSV
           </button>
-          <button type="button" :disabled="importing || lexicon.saving" @click="chooseFile">
+          <button
+            v-if="members.canEdit"
+            type="button"
+            :disabled="importing || lexicon.saving"
+            @click="chooseFile"
+          >
             {{ importing ? "Importing…" : "Import CSV" }}
           </button>
           <!-- A real file input, kept out of the layout: a styled button that opens it is

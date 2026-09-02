@@ -17,6 +17,8 @@ import type { Phone } from "@/data/ipa";
 const props = defineProps<{
   isSelected: (ipa: string) => boolean;
   isAvailable?: (ipa: string) => boolean;
+  /** Renders the chart as a reference rather than a picker. See `PhoneToggle`. */
+  readOnly?: boolean;
 }>();
 defineEmits<{ toggle: [ipa: string] }>();
 
@@ -90,6 +92,7 @@ const otherSymbols = computed(() => groups(OTHER_SYMBOLS));
                 <PhoneToggle
                   v-if="cell.voiceless"
                   :phone="cell.voiceless"
+                  :read-only="readOnly"
                   :selected="isSelected(cell.voiceless.ipa)"
                   @toggle="$emit('toggle', $event)"
                 />
@@ -97,6 +100,7 @@ const otherSymbols = computed(() => groups(OTHER_SYMBOLS));
                 <PhoneToggle
                   v-if="cell.voiced"
                   :phone="cell.voiced"
+                  :read-only="readOnly"
                   :selected="isSelected(cell.voiced.ipa)"
                   @toggle="$emit('toggle', $event)"
                 />
@@ -117,6 +121,7 @@ const otherSymbols = computed(() => groups(OTHER_SYMBOLS));
             v-for="p in group.phones"
             :key="p.ipa"
             :phone="p"
+            :read-only="readOnly"
             :selected="isSelected(p.ipa)"
             @toggle="$emit('toggle', $event)"
           />
@@ -133,6 +138,7 @@ const otherSymbols = computed(() => groups(OTHER_SYMBOLS));
             v-for="p in group.phones"
             :key="p.ipa"
             :phone="p"
+            :read-only="readOnly"
             :selected="isSelected(p.ipa)"
             @toggle="$emit('toggle', $event)"
           />

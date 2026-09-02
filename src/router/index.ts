@@ -39,13 +39,17 @@ const router = createRouter({
       path: "/",
       name: "dashboard",
       component: () => import("@/views/DashboardView.vue"),
-      meta: { requiresAuth: true },
+      // No `requiresAuth`: the dashboard lists published conlangs to anyone, and asks a
+      // signed-out visitor to sign in for their own. See 0026.
     },
     {
       path: "/projects/:projectId",
       name: "project",
       component: () => import("@/views/ProjectWorkspaceView.vue"),
-      meta: { requiresAuth: true },
+      // Also unguarded, for the same reason: a published project is readable signed out.
+      // What a visitor may see is RLS's decision, not the router's — the workspace shows
+      // "not found" for anything that comes back empty, which is what a private project
+      // looks like from outside.
       props: true,
       // `props: true` does not cascade, so each child repeats it to get `projectId`.
       children: [

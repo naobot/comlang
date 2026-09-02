@@ -16,6 +16,8 @@ import type { Phone } from "@/data/ipa";
 const props = defineProps<{
   isSelected: (ipa: string) => boolean;
   isAvailable?: (ipa: string) => boolean;
+  /** Renders the chart as a reference rather than a picker. See `PhoneToggle`. */
+  readOnly?: boolean;
 }>();
 defineEmits<{ toggle: [ipa: string] }>();
 
@@ -102,6 +104,7 @@ const centralLine = { x1: 50, x2: edgeAt(1) + (100 - edgeAt(1)) / 2 };
               <PhoneToggle
                 v-if="p.unrounded"
                 :phone="p.unrounded"
+                :read-only="readOnly"
                 :selected="isSelected(p.unrounded.ipa)"
                 @toggle="$emit('toggle', $event)"
               />
@@ -110,6 +113,7 @@ const centralLine = { x1: 50, x2: edgeAt(1) + (100 - edgeAt(1)) / 2 };
               <PhoneToggle
                 v-if="p.rounded"
                 :phone="p.rounded"
+                :read-only="readOnly"
                 :selected="isSelected(p.rounded.ipa)"
                 @toggle="$emit('toggle', $event)"
               />

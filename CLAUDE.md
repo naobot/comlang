@@ -509,6 +509,57 @@ reason it loads membership — pages that don't own the data still have to ask a
 `phonemes` policies grant all four verbs to any member. A collaborator who could not
 edit the language would have nothing to collaborate on.
 
+**A project can be published, and publishing changes only the read side (0026).**
+`projects.is_public` opens every linguistic-core table to `anon` *and* to signed-in
+non-members, through one new helper — `private.is_project_visible(project_id)`, which is
+member-or-public and is the third of the `private` helpers. The write policies are not
+touched and none of them names `anon`.
+
+That last sentence is the whole safety argument, so it is worth stating why: **`anon`
+already holds the table-level INSERT/UPDATE/DELETE grants** Supabase gives it by default,
+on every table. RLS is the only thing between an anonymous request and a write. It holds
+because every write policy is `to authenticated` with a membership check — a future policy
+that names `anon`, or that omits the role list entirely, would hand the database to the
+internet. Verified from outside with the publishable key: an anonymous insert is refused
+42501, an anonymous update matches zero rows, an anonymous delete removes nothing, and
+`import_corpus` is refused at the grant.
+
+`anon` is granted `usage` on the `private` schema and execute on **that one function**.
+`is_project_member` / `is_project_owner` stay revoked from it, which is why the member
+branch is inlined inside `is_project_visible` rather than delegating.
+
+**`project_members` and `profiles` stay member-only, published or not.** Who is working on
+a language is not part of the language, and the membership row embeds a profile — so
+publishing it would publish email addresses. A visitor therefore sees the conlang and
+nothing about the people behind it, and the Members tab says so rather than rendering an
+empty list.
+
+**RLS no longer answers "which projects are mine".** It answers "which are visible", which
+since 0026 includes every published project in the database. `fetchAll` therefore narrows
+with an explicit `project_members!inner` join on the user's id — the membership rows *are*
+the authority, and they are readable only to members. The store keeps two maps for the same
+reason: merging them would put strangers' languages on someone's dashboard under "your
+projects". Realtime routes by the same rule: a **private** row could only have reached this
+client if they are a member, so it goes to their own list; a **public** row proves nothing
+and goes to the published one.
+
+**Read-only is `members.canEdit`, and it is presentation, never a boundary.** It is
+`loaded && currentRole !== null` — false for a signed-out visitor and for a signed-in
+stranger alike, and false until membership has actually been fetched, which is why
+`ProjectWorkspaceView` now **awaits** that one fetch before rendering: a member watching
+their own controls appear a beat late reads as a bug. Each section hides its own write
+affordances rather than the workspace disabling everything centrally, because a blanket
+`fieldset[disabled]` would also kill the lexicon's entry list, the corpus's sub-view tabs
+and every search box — the things a reader most needs. Phonotactics is the one section that
+swaps rather than hides: `PhonotacticsSummary` states the classes, templates and
+constraints as text, because three editors with their controls removed is mostly empty
+boxes. The generator stays live for visitors; it writes nothing.
+
+The routes for `/` and `/projects/:id` dropped `requiresAuth` — what a visitor may see is
+RLS's decision, and the workspace already renders "doesn't exist, or you don't have access"
+for anything that comes back empty, which is exactly what a private project looks like from
+outside.
+
 **Realtime deletes are neither filtered nor authorized.** A subscription filtered to
 `project_id=eq.<id>` still receives DELETE events for rows in *every* project, and RLS
 is not applied to DELETE at all. With `replica identity full` under RLS, the `old`
@@ -712,6 +763,19 @@ and the RPC; `anon` refused at the grant; and the collaborator's write stamping
 `projects.last_activity_by` despite the owner-only UPDATE policy. `get_advisors` showed
 nothing new. xenic was confirmed intact afterwards: 60 lexicon entries, 27 phonemes, 16
 word classes.
+
+What was verified when projects could be published (2026-09-02), against the live project
+and from **outside the app** with the publishable key, on a throwaway public project since
+deleted: anonymously, the published project and its rows are readable while the private
+project is invisible; `project_members` and `profiles` return `[]`; an anonymous insert is
+refused with 42501, an anonymous update matches zero rows, an anonymous delete removes
+nothing (the row was re-read afterwards to confirm), `/rest/v1/rpc/is_project_member` is
+404 because the helpers are not in an exposed schema, and `import_corpus` is refused with
+"permission denied for function". Flipping `is_public` back to false made all of it
+disappear again in the same breath. Both of the store's new queries were exercised over
+PostgREST for shape — the `project_members!inner` narrowing and the `is_public=eq.true`
+listing — and `get_advisors` reports nothing new. xenic was confirmed untouched afterwards:
+558 lexicon entries, 23 phonemes, 38 corpus rows, and still private.
 
 What was verified when the corpus split in two (2026-09-02), against the live project:
 0025 applied, `kind` defaulting to `utterance` so all 38 existing rows stayed exactly where

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
+import { useAuthStore } from "@/stores/auth";
 import { useCorpusStore } from "@/stores/corpus";
 import { useGrammarRulesStore } from "@/stores/grammarRules";
 import { useLexiconStore } from "@/stores/lexicon";
@@ -12,6 +13,7 @@ import { useWordClassesStore } from "@/stores/wordClasses";
 
 const props = defineProps<{ projectId: string }>();
 
+const auth = useAuthStore();
 const projects = useProjectsStore();
 const members = useMembersStore();
 const lexicon = useLexiconStore();
@@ -37,9 +39,12 @@ const project = computed(() => projects.get(props.projectId));
  * word-class, lexicon and grammar routes is answered from this store, and those pages
  * would all read "no inventory" if only the phoneme tab ever fetched it.
  */
-function loadProjectData(projectId: string) {
+async function loadProjectData(projectId: string) {
   members.subscribe(projectId);
-  void members.fetchFor(projectId);
+  // Awaited, unlike everything below it: `members.canEdit` decides whether the whole
+  // workspace renders read-only, and a member watching their own controls appear a beat
+  // late reads as a bug. Nothing else here gates the page's shape.
+  const membership = members.fetchFor(projectId);
   phonemes.subscribe(projectId);
   void phonemes.fetchFor(projectId);
   phonotactics.subscribe(projectId);
@@ -55,6 +60,7 @@ function loadProjectData(projectId: string) {
   // that page does not own it.
   wordClasses.subscribe(projectId);
   void wordClasses.fetchFor(projectId);
+  await membership;
 }
 
 onMounted(async () => {
@@ -62,12 +68,20 @@ onMounted(async () => {
   // the note in DashboardView. A deep link lands here with an empty store, so fetch
   // before deciding the project is missing.
   projects.subscribe();
-  loadProjectData(props.projectId);
+  const data = loadProjectData(props.projectId);
+  // A deep link lands here with an empty store. `fetchAll` covers the signed-in case;
+  // `fetchPublic` is what makes a shared link work for someone who is not a member — or
+  // not signed in at all.
   if (!project.value) await projects.fetchAll();
+  if (!project.value) await projects.fetchPublic();
+  await data;
   resolving.value = false;
 });
 
-watch(() => props.projectId, loadProjectData);
+watch(
+  () => props.projectId,
+  (id) => void loadProjectData(id),
+);
 
 onUnmounted(() => {
   projects.unsubscribeAll();
@@ -93,7 +107,25 @@ onUnmounted(() => {
       <RouterLink :to="{ name: 'dashboard' }">Back to projects</RouterLink>
     </div>
 
-    <RouterView v-else />
+    <template v-else>
+      <!-- Said once, at the top, rather than as a disabled control in every section: a
+           visitor is reading a published conlang, and the sections below simply do not
+           offer the editing controls. RLS is the boundary either way — this is what stops
+           the page offering a button that would always fail. -->
+      <p v-if="!members.canEdit" class="read-only" role="status">
+        <strong>Read-only.</strong>
+        {{
+          auth.user
+            ? "This conlang is published; you're not a member of it, so nothing here can be changed."
+            : "This conlang is published. Sign in as a member to make changes."
+        }}
+        <RouterLink v-if="!auth.user" :to="{ name: 'login', query: { r: $route.fullPath } }">
+          Sign in
+        </RouterLink>
+      </p>
+
+      <RouterView />
+    </template>
   </main>
 </template>
 
@@ -114,5 +146,19 @@ h1 {
 
 .muted {
   color: var(--c-muted);
+}
+
+.read-only {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+  margin: 0 0 var(--sp-4);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--c-border);
+  border-left: 3px solid var(--c-accent);
+  border-radius: var(--radius);
+  background: var(--c-raised);
+  font-size: 0.875rem;
 }
 </style>

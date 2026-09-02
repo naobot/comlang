@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import type { Phone } from "@/data/ipa";
 
-defineProps<{ phone: Phone; selected: boolean }>();
+/**
+ * `readOnly` renders the symbol as a plain, unclickable chip. It is what a published
+ * conlang's visitor sees: the chart is still the clearest way to read an inventory, and
+ * only the toggling goes away.
+ */
+defineProps<{ phone: Phone; selected: boolean; readOnly?: boolean }>();
 defineEmits<{ toggle: [ipa: string] }>();
 </script>
 
@@ -9,11 +14,12 @@ defineEmits<{ toggle: [ipa: string] }>();
   <button
     type="button"
     class="phone"
-    :class="{ on: selected }"
     :aria-pressed="selected"
     :aria-label="phone.name"
     :title="`${phone.ipa} — ${phone.name}`"
-    @click="$emit('toggle', phone.ipa)"
+    :aria-disabled="readOnly || undefined"
+    :class="{ on: selected, still: readOnly }"
+    @click="!readOnly && $emit('toggle', phone.ipa)"
   >
     {{ phone.ipa }}
   </button>
@@ -53,5 +59,27 @@ defineEmits<{ toggle: [ipa: string] }>();
 
 .phone.on:hover:not(:disabled) {
   background: var(--c-raised);
+}
+
+/**
+ * Read-only: the symbol still reads, it just does not respond.
+ *
+ * `aria-disabled` rather than `disabled` — a disabled button is skipped by the keyboard
+ * and loses its tooltip, and the tooltip is the symbol's name. These rules come last
+ * because the hover rules above match at the same specificity, so source order is what
+ * decides them.
+ */
+.phone.still {
+  cursor: default;
+}
+
+.phone.still:hover {
+  background: transparent;
+  color: var(--c-faint);
+}
+
+.phone.still.on:hover {
+  background: transparent;
+  color: var(--c-text);
 }
 </style>

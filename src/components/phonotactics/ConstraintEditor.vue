@@ -2,7 +2,7 @@
 import { computed, ref } from "vue";
 
 import ConstraintForm from "@/components/phonotactics/ConstraintForm.vue";
-import { orphanedTerms } from "@/lib/phonotactics";
+import { describeConstraint, orphanedTerms } from "@/lib/phonotactics";
 import { usePhonemesStore } from "@/stores/phonemes";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
 import type { DraftConstraint } from "@/stores/phonotactics";
@@ -33,15 +33,7 @@ function commit(constraint: DraftConstraint) {
   editing.value = null;
 }
 
-function describe(c: DraftConstraint) {
-  const term = (cls: string | null, ipa: string | null) => cls ?? (ipa ? `/${ipa}/` : "?");
-  if (c.kind === "no_identical_adjacent") return "no identical adjacent segments";
-  if (c.kind === "forbid_in_role") {
-    return `${term(c.a_class_symbol, c.a_phoneme_ipa)} cannot be a ${c.role}`;
-  }
-  const where = c.seq_position === "anywhere" ? "" : ` ${c.seq_position?.replace("_", "-")}`;
-  return `${term(c.a_class_symbol, c.a_phoneme_ipa)}${term(c.b_class_symbol, c.b_phoneme_ipa)} not allowed${where}`;
-}
+const describe = describeConstraint;
 </script>
 
 <template>

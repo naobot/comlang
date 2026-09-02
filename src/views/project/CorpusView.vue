@@ -8,12 +8,14 @@ import UtteranceGrid from "@/components/corpus/UtteranceGrid.vue";
 import { useProjectExport } from "@/composables/useProjectExport";
 import { parseCorpusCsv, planCorpusImport } from "@/lib/corpusImport";
 import { useCorpusStore } from "@/stores/corpus";
+import { useMembersStore } from "@/stores/members";
 import { usePhonemesStore } from "@/stores/phonemes";
 import type { CorpusKind } from "@/types/models";
 
 const props = defineProps<{ projectId: string }>();
 
 const corpus = useCorpusStore();
+const members = useMembersStore();
 const phonemes = usePhonemesStore();
 
 // The same composable the header menu and the lexicon page use, so no two exports of the
@@ -146,7 +148,12 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
           <button type="button" :disabled="corpus.count === 0" @click="exporter.exportCorpusCsv()">
             Export CSV
           </button>
-          <button type="button" :disabled="importing || corpus.savingNew" @click="chooseFile">
+          <button
+            v-if="members.canEdit"
+            type="button"
+            :disabled="importing || corpus.savingNew"
+            @click="chooseFile"
+          >
             {{ importing ? "Importing…" : "Import CSV" }}
           </button>
           <!-- A real file input, kept out of the layout: a styled button that opens it is
@@ -222,7 +229,12 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
           <template v-else>{{ shown === 1 ? "sentence" : "sentences" }}</template>
           <span v-if="query.trim()">of {{ total }}</span>
         </p>
-        <button type="button" :disabled="!!corpus.pending" @click="corpus.startNew(view)">
+        <button
+          v-if="members.canEdit"
+          type="button"
+          :disabled="!!corpus.pending"
+          @click="corpus.startNew(view)"
+        >
           {{ view === "passage" ? "+ New passage" : "+ New sentence" }}
         </button>
       </div>

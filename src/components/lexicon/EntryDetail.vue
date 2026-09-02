@@ -2,10 +2,12 @@
 import { computed } from "vue";
 
 import { useLexiconStore } from "@/stores/lexicon";
+import { useMembersStore } from "@/stores/members";
 import { useWordClassesStore } from "@/stores/wordClasses";
 
 const props = defineProps<{ projectId: string }>();
 const lexicon = useLexiconStore();
+const members = useMembersStore();
 const wordClasses = useWordClassesStore();
 
 /**
@@ -73,12 +75,22 @@ async function remove() {
     <form @submit.prevent="save">
       <label class="wide">
         Lemma
-        <input v-model="lexicon.draft.lemma" class="mono" required aria-label="Lemma" />
+        <input
+          v-model="lexicon.draft.lemma"
+          class="mono"
+          :readonly="!members.canEdit"
+          required
+          aria-label="Lemma"
+        />
       </label>
 
       <label class="wide">
         Meaning
-        <input v-model="lexicon.draft.gloss" placeholder="English translation" />
+        <input
+          v-model="lexicon.draft.gloss"
+          :readonly="!members.canEdit"
+          placeholder="English translation"
+        />
       </label>
 
       <label>
@@ -88,6 +100,7 @@ async function remove() {
         <select
           v-if="defined.length"
           v-model="lexicon.draft.word_class"
+          :disabled="!members.canEdit"
           :class="{ orphan: orphaned }"
         >
           <option :value="null">—</option>
@@ -95,7 +108,11 @@ async function remove() {
           <option v-if="orphaned" :value="orphaned">{{ orphaned }} (not a class)</option>
         </select>
         <template v-else>
-          <input v-model="lexicon.draft.word_class" list="lexicon-word-classes" />
+          <input
+            v-model="lexicon.draft.word_class"
+            :readonly="!members.canEdit"
+            list="lexicon-word-classes"
+          />
           <datalist id="lexicon-word-classes">
             <option v-for="wc in lexicon.wordClasses" :key="wc ?? ''" :value="wc ?? ''" />
           </datalist>
@@ -107,15 +124,20 @@ async function remove() {
 
       <label>
         Key
-        <input v-model="lexicon.draft.entry_key" class="mono" placeholder="e.g. n_neck" />
+        <input
+          v-model="lexicon.draft.entry_key"
+          class="mono"
+          :readonly="!members.canEdit"
+          placeholder="e.g. n_neck"
+        />
       </label>
 
       <label class="wide">
         Notes
-        <textarea v-model="lexicon.draft.notes" rows="5"></textarea>
+        <textarea v-model="lexicon.draft.notes" :readonly="!members.canEdit" rows="5"></textarea>
       </label>
 
-      <div class="actions">
+      <div v-if="members.canEdit" class="actions">
         <button type="submit" :disabled="!lexicon.dirty || lexicon.saving">
           {{ lexicon.saving ? "Saving…" : "Save" }}
         </button>
@@ -137,7 +159,7 @@ async function remove() {
       </div>
     </form>
 
-    <p class="hint">
+    <p v-if="members.canEdit" class="hint">
       Fields are free-form for now. Word class becomes a real reference once that section is
       designed.
     </p>

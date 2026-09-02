@@ -8,12 +8,14 @@ import ClassCard from "@/components/wordClasses/ClassCard.vue";
 import { useDragReorder } from "@/composables/useDragReorder";
 import { entryCounts, orphanedClassNames } from "@/lib/wordClasses";
 import { useLexiconStore } from "@/stores/lexicon";
+import { useMembersStore } from "@/stores/members";
 import { usePhonemesStore } from "@/stores/phonemes";
 import { useWordClassesStore } from "@/stores/wordClasses";
 
 const props = defineProps<{ projectId: string }>();
 
 const classes = useWordClassesStore();
+const members = useMembersStore();
 const lexicon = useLexiconStore();
 const phonemes = usePhonemesStore();
 
@@ -87,7 +89,7 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
 
       <!-- A dangling class name is inert, not lost: the entry keeps it, so putting the
            class back restores the connection. That is why it warns instead of blocking. -->
-      <div v-if="orphans.length" class="impact" role="alert">
+      <div v-if="orphans.length && members.canEdit" class="impact" role="alert">
         <p class="impact-head">
           Some lexicon entries name a class that isn't here. They keep the name, so adding the class
           back reconnects them.
@@ -101,7 +103,7 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
         </ul>
       </div>
 
-      <div class="bar">
+      <div v-if="members.canEdit" class="bar">
         <span class="muted">
           {{ classes.draft.classes.length }}
           {{ classes.draft.classes.length === 1 ? "class" : "classes" }},
@@ -135,6 +137,7 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
               :count="classes.draft.classes.length"
               :entries="counts.get(cls.name.trim()) ?? 0"
               :categories="classes.draft.categories"
+              :read-only="!members.canEdit"
               :handle="classOrder.handle(i)"
               v-bind="classOrder.item(i)"
               @move="classes.moveClass"
@@ -142,7 +145,9 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
               @toggle="classes.toggleCategory"
             />
           </ul>
-          <button type="button" class="add" @click="classes.addClass()">+ Add class</button>
+          <button v-if="members.canEdit" type="button" class="add" @click="classes.addClass()">
+            + Add class
+          </button>
           <p v-if="classes.draft.classes.length === 0" class="muted empty">
             No classes yet. Noun and verb are the usual place to start.
           </p>
@@ -161,6 +166,7 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
                   .filter((c) => c.categories.includes(category.name))
                   .map((c) => c.name || 'unnamed')
               "
+              :read-only="!members.canEdit"
               :handle="categoryOrder.handle(i)"
               v-bind="categoryOrder.item(i)"
               @move="classes.moveCategory"
@@ -170,7 +176,9 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
               @remove-value="classes.removeValueAt"
             />
           </ul>
-          <button type="button" class="add" @click="classes.addCategory()">+ Add category</button>
+          <button v-if="members.canEdit" type="button" class="add" @click="classes.addCategory()">
+            + Add category
+          </button>
           <p v-if="classes.draft.categories.length === 0" class="muted empty">
             No categories yet — number, case and tense are the ones most languages need first.
           </p>

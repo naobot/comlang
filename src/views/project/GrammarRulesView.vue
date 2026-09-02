@@ -4,11 +4,13 @@ import { onBeforeRouteLeave } from "vue-router";
 
 import { useDragReorder } from "@/composables/useDragReorder";
 import { useGrammarRulesStore } from "@/stores/grammarRules";
+import { useMembersStore } from "@/stores/members";
 import { usePhonemesStore } from "@/stores/phonemes";
 
 const props = defineProps<{ projectId: string }>();
 
 const rules = useGrammarRulesStore();
+const members = useMembersStore();
 const phonemes = usePhonemesStore();
 
 // The store moves by delta, because that is what the arrow buttons ask for; a drop is
@@ -62,7 +64,7 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
 
       <p v-if="rules.error" class="error" role="alert">{{ rules.error }}</p>
 
-      <div class="bar">
+      <div v-if="members.canEdit" class="bar">
         <span class="muted">
           {{ rules.draft.length }} {{ rules.draft.length === 1 ? "rule" : "rules" }}
           <em v-if="rules.dirty"> · unsaved changes</em>
@@ -83,6 +85,7 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
             <!-- aria-hidden: dragging is mouse-only, and the arrows below are the
                  keyboard and touch route to the same move. -->
             <span
+              v-if="members.canEdit"
               class="drag-handle"
               aria-hidden="true"
               title="Drag to reorder"
@@ -93,23 +96,32 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
             <input
               v-model="rule.name"
               class="name"
+              :readonly="!members.canEdit"
               placeholder="rule_name"
               :aria-label="`Name of rule ${i + 1}`"
             />
-            <button type="button" title="Move earlier" @click="rules.move(i, -1)">↑</button>
-            <button type="button" title="Move later" @click="rules.move(i, 1)">↓</button>
-            <button type="button" title="Remove" @click="rules.removeAt(i)">×</button>
+            <template v-if="members.canEdit">
+              <button type="button" title="Move earlier" @click="rules.move(i, -1)">↑</button>
+              <button type="button" title="Move later" @click="rules.move(i, 1)">↓</button>
+              <button type="button" title="Remove" @click="rules.removeAt(i)">×</button>
+            </template>
           </div>
 
           <div class="fields">
             <label>
               Effect
-              <textarea v-model="rule.effect" rows="2" placeholder="what the rule does"></textarea>
+              <textarea
+                v-model="rule.effect"
+                :readonly="!members.canEdit"
+                rows="2"
+                placeholder="what the rule does"
+              ></textarea>
             </label>
             <label>
               Environment
               <textarea
                 v-model="rule.environment"
+                :readonly="!members.canEdit"
                 rows="2"
                 placeholder="where it applies"
               ></textarea>
@@ -118,6 +130,7 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
               Examples
               <textarea
                 v-model="rule.examples"
+                :readonly="!members.canEdit"
                 rows="3"
                 placeholder="derivations, one per line"
               ></textarea>
@@ -126,6 +139,7 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
               Notes
               <textarea
                 v-model="rule.notes"
+                :readonly="!members.canEdit"
                 rows="3"
                 placeholder="evidence, provenance, open questions"
               ></textarea>
@@ -134,7 +148,9 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
         </li>
       </ol>
 
-      <button type="button" class="add" @click="rules.add()">+ Add rule</button>
+      <button v-if="members.canEdit" type="button" class="add" @click="rules.add()">
+        + Add rule
+      </button>
 
       <p v-if="rules.draft.length === 0" class="muted empty">
         No rules yet. The first one you add applies first.

@@ -432,6 +432,29 @@ export function draftProblems(draft: Draft): string[] {
   return found;
 }
 
+/**
+ * One constraint in a short line of prose.
+ *
+ * Here rather than in a component because three of them render it — the constraint list,
+ * the phoneme inventory's removal warning, and the read-only summary a public visitor
+ * sees — and three copies of a phrasing drift. A term that is neither a class nor a
+ * segment shows as `?`: a half-filled constraint is a real draft state, and the list has
+ * to be able to say what it is looking at.
+ */
+export function describeConstraint(c: DraftConstraint): string {
+  const term = (cls: string | null, ipa: string | null) => cls ?? (ipa ? `/${ipa}/` : "?");
+  if (c.kind === "no_identical_adjacent") return "no identical adjacent segments";
+  if (c.kind === "forbid_in_role") {
+    return `${term(c.a_class_symbol, c.a_phoneme_ipa)} cannot be a ${c.role}`;
+  }
+  const where =
+    c.seq_position === "anywhere" || !c.seq_position ? "" : ` ${c.seq_position.replace("_", "-")}`;
+  return (
+    `${term(c.a_class_symbol, c.a_phoneme_ipa)}${term(c.b_class_symbol, c.b_phoneme_ipa)}` +
+    ` not allowed${where}`
+  );
+}
+
 export type RemovalImpact = {
   /** Classes that lose members, and which. */
   classes: { symbol: string; ipa: string[] }[];

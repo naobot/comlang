@@ -380,6 +380,7 @@ export type Database = {
           created_by: string
           description: string | null
           id: string
+          is_public: boolean
           last_activity_at: string
           last_activity_by: string | null
           name: string
@@ -390,6 +391,7 @@ export type Database = {
           created_by: string
           description?: string | null
           id?: string
+          is_public?: boolean
           last_activity_at?: string
           last_activity_by?: string | null
           name: string
@@ -400,6 +402,7 @@ export type Database = {
           created_by?: string
           description?: string | null
           id?: string
+          is_public?: boolean
           last_activity_at?: string
           last_activity_by?: string | null
           name?: string
@@ -695,6 +698,7 @@ export type Database = {
           created_by: string
           description: string | null
           id: string
+          is_public: boolean
           last_activity_at: string
           last_activity_by: string | null
           name: string

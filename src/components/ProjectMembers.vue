@@ -36,6 +36,13 @@ function label(m: (typeof members.members)[number]) {
 
     <p v-if="members.loading && members.members.length === 0" class="muted">Loading…</p>
 
+    <!-- `project_members` is not readable outside the project, published or not: who is
+         working on a language is not part of the language, and the row carries an email.
+         So a visitor gets an empty list, and this says why rather than looking broken. -->
+    <p v-else-if="!members.canEdit" class="muted">
+      The member list is private. It stays that way for a published conlang.
+    </p>
+
     <ul v-else class="list">
       <li v-for="m in members.members" :key="`${m.project_id}:${m.user_id}`">
         <span class="name">

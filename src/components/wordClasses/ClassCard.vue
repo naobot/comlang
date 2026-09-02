@@ -15,6 +15,8 @@ defineProps<{
    * card, so the list passes it down rather than reaching into the card's markup.
    */
   handle: DragHandleProps;
+  /** A visitor to a published conlang reads the card; nothing on it responds. */
+  readOnly?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -28,28 +30,47 @@ const emit = defineEmits<{
   <li class="card">
     <div class="head">
       <!-- aria-hidden: dragging is mouse-only; the arrows are the keyboard route. -->
-      <span class="drag-handle" aria-hidden="true" title="Drag to reorder" v-bind="handle">⠿</span>
+      <span
+        v-if="!readOnly"
+        class="drag-handle"
+        aria-hidden="true"
+        title="Drag to reorder"
+        v-bind="handle"
+        >⠿</span
+      >
       <input
         v-model="cls.name"
         class="name"
+        :readonly="readOnly"
         placeholder="class name"
         :aria-label="`Name of word class ${index + 1}`"
       />
       <!-- Open vs closed is a claim about the language, and upstream records that it is
            an open question for two of these — so it is editable, never inferred. -->
-      <select v-model="cls.kind" :aria-label="`Is ${cls.name || 'this class'} open or closed?`">
+      <select
+        v-model="cls.kind"
+        :disabled="readOnly"
+        :aria-label="`Is ${cls.name || 'this class'} open or closed?`"
+      >
         <option value="open">open</option>
         <option value="closed">closed</option>
       </select>
       <span class="entries" :title="`${entries} lexicon ${entries === 1 ? 'entry' : 'entries'}`">
         {{ entries }}
       </span>
-      <button type="button" title="Move up" @click="emit('move', index, -1)">↑</button>
-      <button type="button" title="Move down" @click="emit('move', index, 1)">↓</button>
-      <button type="button" title="Remove" @click="emit('remove', index)">×</button>
+      <template v-if="!readOnly">
+        <button type="button" title="Move up" @click="emit('move', index, -1)">↑</button>
+        <button type="button" title="Move down" @click="emit('move', index, 1)">↓</button>
+        <button type="button" title="Remove" @click="emit('remove', index)">×</button>
+      </template>
     </div>
 
-    <input v-model="cls.description" class="description" placeholder="what this class is" />
+    <input
+      v-model="cls.description"
+      class="description"
+      :readonly="readOnly"
+      placeholder="what this class is"
+    />
 
     <div class="categories">
       <p v-if="categories.length === 0" class="muted">
@@ -59,6 +80,7 @@ const emit = defineEmits<{
         <input
           type="checkbox"
           :checked="cls.categories.includes(category.name)"
+          :disabled="readOnly"
           @change="emit('toggle', index, category.name)"
         />
         {{ category.name || "unnamed" }}

@@ -70,10 +70,13 @@ const lastAt = computed(() => {
         <HeaderMenu>
           <template #trigger>
             <span class="project">{{ project?.name ?? "…" }}</span>
+            <!-- Worth carrying on every page: an owner should never have to open settings
+                 to find out whether what they are typing is public. -->
+            <span v-if="project?.is_public" class="badge">public</span>
             <span class="caret" aria-hidden="true">▾</span>
           </template>
 
-          <p class="label">{{ auth.user?.email }}</p>
+          <p class="label">{{ auth.user?.email ?? "Not signed in" }}</p>
           <hr />
           <button
             type="button"
@@ -100,14 +103,22 @@ const lastAt = computed(() => {
             Export lexicon.csv (full)
           </button>
           <hr />
-          <RouterLink :to="{ name: 'project-members', params: { projectId } }" role="menuitem">
-            Members
+          <!-- Membership and settings are for the people working on the language. A
+               visitor to a published conlang is not one, and `project_members` is not
+               readable to them anyway — the page would be an empty list. -->
+          <template v-if="members.canEdit">
+            <RouterLink :to="{ name: 'project-members', params: { projectId } }" role="menuitem">
+              Members
+            </RouterLink>
+            <RouterLink :to="{ name: 'project-settings', params: { projectId } }" role="menuitem">
+              Settings
+            </RouterLink>
+            <hr />
+          </template>
+          <button v-if="auth.user" type="button" role="menuitem" @click="signOut">Sign out</button>
+          <RouterLink v-else :to="{ name: 'login', query: { r: route.fullPath } }" role="menuitem">
+            Sign in
           </RouterLink>
-          <RouterLink :to="{ name: 'project-settings', params: { projectId } }" role="menuitem">
-            Settings
-          </RouterLink>
-          <hr />
-          <button type="button" role="menuitem" @click="signOut">Sign out</button>
         </HeaderMenu>
       </template>
 
@@ -118,9 +129,10 @@ const lastAt = computed(() => {
             <span class="sr-only">Account menu</span>
             <span class="caret" aria-hidden="true">▾</span>
           </template>
-          <p class="label">{{ auth.user?.email }}</p>
+          <p class="label">{{ auth.user?.email ?? "Not signed in" }}</p>
           <hr />
-          <button type="button" role="menuitem" @click="signOut">Sign out</button>
+          <button v-if="auth.user" type="button" role="menuitem" @click="signOut">Sign out</button>
+          <RouterLink v-else :to="{ name: 'login' }" role="menuitem">Sign in</RouterLink>
         </HeaderMenu>
       </template>
     </div>
@@ -161,6 +173,17 @@ const lastAt = computed(() => {
   align-items: center;
   gap: var(--sp-2);
   flex: none;
+}
+
+.badge {
+  padding: 1px var(--sp-2);
+  border: 1px solid var(--c-border);
+  border-radius: 999px;
+  color: var(--c-muted);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .home {

@@ -2,6 +2,7 @@
 import { computed } from "vue";
 
 import { type CorpusDraft, useCorpusStore } from "@/stores/corpus";
+import { useMembersStore } from "@/stores/members";
 import type { CorpusEntry } from "@/types/models";
 
 /**
@@ -15,6 +16,7 @@ import type { CorpusEntry } from "@/types/models";
 const props = defineProps<{ projectId: string; query: string }>();
 
 const corpus = useCorpusStore();
+const members = useMembersStore();
 
 // The store does the filtering, so this list and the count in the toolbar above it are
 // answering the same question.
@@ -100,6 +102,7 @@ function confirmDelete(id: string, english: string, conlang: string) {
             <div class="grow" :data-value="draft.english">
               <textarea
                 v-model="draft.english"
+                :readonly="!members.canEdit"
                 rows="1"
                 :aria-label="`English, row ${i + 1}`"
                 @keydown.enter.meta.prevent="corpus.saveRow(entry.id)"
@@ -111,6 +114,7 @@ function confirmDelete(id: string, english: string, conlang: string) {
             <div class="grow conlang" :data-value="draft.conlang">
               <textarea
                 v-model="draft.conlang"
+                :readonly="!members.canEdit"
                 rows="1"
                 :aria-label="`Conlang, row ${i + 1}`"
                 @keydown.enter.meta.prevent="corpus.saveRow(entry.id)"
@@ -119,46 +123,50 @@ function confirmDelete(id: string, english: string, conlang: string) {
             </div>
           </td>
           <td class="actions">
-            <template v-if="corpus.isDirty(entry.id)">
-              <button
-                type="button"
-                class="primary"
-                :disabled="corpus.savingIds.has(entry.id)"
-                @click="corpus.saveRow(entry.id)"
-              >
-                {{ corpus.savingIds.has(entry.id) ? "Saving…" : "Save" }}
-              </button>
-              <button type="button" @click="corpus.revert(entry.id)">Revert</button>
-            </template>
-            <template v-else>
-              <!-- The correction for a row that has grown past one sentence, and for an
-                   import's guess. It takes effect at once: it changes where the example
-                   is edited, not what it says. -->
-              <button
-                type="button"
-                title="Edit this as a passage instead"
-                @click="corpus.setKind(entry.id, 'passage')"
-              >
-                → Passage
-              </button>
-              <button
-                type="button"
-                class="danger-action"
-                @click="confirmDelete(entry.id, entry.english, entry.conlang)"
-              >
-                Delete
-              </button>
-            </template>
+            <!-- Nothing here for a visitor to a published conlang: every one of these is
+                 a write, and the row itself is already readable beside it. -->
+            <template v-if="members.canEdit">
+              <template v-if="corpus.isDirty(entry.id)">
+                <button
+                  type="button"
+                  class="primary"
+                  :disabled="corpus.savingIds.has(entry.id)"
+                  @click="corpus.saveRow(entry.id)"
+                >
+                  {{ corpus.savingIds.has(entry.id) ? "Saving…" : "Save" }}
+                </button>
+                <button type="button" @click="corpus.revert(entry.id)">Revert</button>
+              </template>
+              <template v-else>
+                <!-- The correction for a row that has grown past one sentence, and for an
+                     import's guess. It takes effect at once: it changes where the example
+                     is edited, not what it says. -->
+                <button
+                  type="button"
+                  title="Edit this as a passage instead"
+                  @click="corpus.setKind(entry.id, 'passage')"
+                >
+                  → Passage
+                </button>
+                <button
+                  type="button"
+                  class="danger-action"
+                  @click="confirmDelete(entry.id, entry.english, entry.conlang)"
+                >
+                  Delete
+                </button>
+              </template>
 
-            <!-- Held, not applied: someone else changed a row this client is in the
-                 middle of editing. Their version is one click away and nothing is
-                 lost either way. -->
-            <p v-if="corpus.incoming.has(entry.id)" class="held">
-              Changed by someone else.
-              <button type="button" class="link" @click="corpus.acceptIncoming(entry.id)">
-                Use theirs
-              </button>
-            </p>
+              <!-- Held, not applied: someone else changed a row this client is in the
+                   middle of editing. Their version is one click away and nothing is
+                   lost either way. -->
+              <p v-if="corpus.incoming.has(entry.id)" class="held">
+                Changed by someone else.
+                <button type="button" class="link" @click="corpus.acceptIncoming(entry.id)">
+                  Use theirs
+                </button>
+              </p>
+            </template>
           </td>
         </tr>
       </tbody>

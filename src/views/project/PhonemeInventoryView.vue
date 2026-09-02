@@ -5,13 +5,15 @@ import { onBeforeRouteLeave } from "vue-router";
 
 import ConsonantChart from "@/components/ipa/ConsonantChart.vue";
 import VowelChart from "@/components/ipa/VowelChart.vue";
-import { impactOfRemoving } from "@/lib/phonotactics";
+import { describeConstraint, impactOfRemoving } from "@/lib/phonotactics";
+import { useMembersStore } from "@/stores/members";
 import { usePhonemesStore } from "@/stores/phonemes";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
 
 const props = defineProps<{ projectId: string }>();
 
 const phonemes = usePhonemesStore();
+const members = useMembersStore();
 const phonotactics = usePhonotacticsStore();
 
 // Passed down rather than letting each chart reach for the store, so the charts stay
@@ -44,14 +46,6 @@ const destructive = computed(
     impact.value.orphaned.length > 0 ||
     impact.value.templates.length > 0,
 );
-
-function describeConstraint(c: (typeof impact.value.orphaned)[number]) {
-  const term = (cls: string | null, ipa: string | null) => cls ?? (ipa ? `/${ipa}/` : "?");
-  if (c.kind === "forbid_in_role") {
-    return `${term(c.a_class_symbol, c.a_phoneme_ipa)} cannot be a ${c.role}`;
-  }
-  return `${term(c.a_class_symbol, c.a_phoneme_ipa)}${term(c.b_class_symbol, c.b_phoneme_ipa)} not allowed`;
-}
 
 async function save() {
   // The panel above the button already spells this out, but the button is sticky and
@@ -146,7 +140,7 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
 
     <div class="bar">
       <span class="muted">{{ summary }}<em v-if="phonemes.dirty"> · unsaved changes</em></span>
-      <div class="actions">
+      <div v-if="members.canEdit" class="actions">
         <button
           type="button"
           :disabled="!phonemes.dirty || phonemes.saving"
@@ -160,8 +154,14 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
       </div>
     </div>
 
-    <ConsonantChart :is-selected="isSelected" @toggle="phonemes.toggle" />
-    <VowelChart :is-selected="isSelected" @toggle="phonemes.toggle" />
+    <!-- Read-only for a visitor to a published conlang: the chart is still the clearest
+         way to read an inventory, and only the toggling goes away. -->
+    <ConsonantChart
+      :is-selected="isSelected"
+      :read-only="!members.canEdit"
+      @toggle="phonemes.toggle"
+    />
+    <VowelChart :is-selected="isSelected" :read-only="!members.canEdit" @toggle="phonemes.toggle" />
   </section>
 </template>
 

@@ -5,15 +5,18 @@ import { onBeforeRouteLeave } from "vue-router";
 
 import ClassEditor from "@/components/phonotactics/ClassEditor.vue";
 import ConstraintEditor from "@/components/phonotactics/ConstraintEditor.vue";
+import PhonotacticsSummary from "@/components/phonotactics/PhonotacticsSummary.vue";
 import SampleOutput from "@/components/phonotactics/SampleOutput.vue";
 import TemplateEditor from "@/components/phonotactics/TemplateEditor.vue";
 import { orphanedConstraints, orphanedSlotMembers } from "@/lib/phonotactics";
+import { useMembersStore } from "@/stores/members";
 import { usePhonemesStore } from "@/stores/phonemes";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
 
 const props = defineProps<{ projectId: string }>();
 
 const phonemes = usePhonemesStore();
+const members = useMembersStore();
 const phonotactics = usePhonotacticsStore();
 
 // Rules kept alive past the segment they name. They are not enforced, so the language is
@@ -106,7 +109,7 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
 
       <p v-if="phonotactics.error" class="error" role="alert">{{ phonotactics.error }}</p>
 
-      <div class="bar">
+      <div v-if="members.canEdit" class="bar">
         <span class="muted">
           {{ phonotactics.draft.classes.length }} classes,
           {{ phonotactics.draft.templates.length }} templates,
@@ -131,9 +134,17 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
         </div>
       </div>
 
-      <ClassEditor />
-      <TemplateEditor />
-      <ConstraintEditor />
+      <!-- The three editors are editing and nothing else, so a visitor to a published
+           conlang gets the read-only summary instead. The generator stays: it is the
+           clearest statement of what this grammar actually produces, and it writes
+           nothing. -->
+      <template v-if="members.canEdit">
+        <ClassEditor />
+        <TemplateEditor />
+        <ConstraintEditor />
+      </template>
+      <PhonotacticsSummary v-else />
+
       <SampleOutput :project-id="projectId" />
     </template>
   </section>

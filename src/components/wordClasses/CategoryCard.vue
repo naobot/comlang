@@ -8,6 +8,8 @@ defineProps<{
   usedBy: string[];
   /** See `ClassCard`: the handle renders here, the dragging is the list's business. */
   handle: DragHandleProps;
+  /** A visitor to a published conlang reads the card; nothing on it responds. */
+  readOnly?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -23,33 +25,66 @@ const emit = defineEmits<{
   <li class="card">
     <div class="head">
       <!-- aria-hidden: dragging is mouse-only; the arrows are the keyboard route. -->
-      <span class="drag-handle" aria-hidden="true" title="Drag to reorder" v-bind="handle">⠿</span>
+      <span
+        v-if="!readOnly"
+        class="drag-handle"
+        aria-hidden="true"
+        title="Drag to reorder"
+        v-bind="handle"
+        >⠿</span
+      >
       <!-- Renaming goes through the store rather than v-model: the classes that inflect
            for this category refer to it by name, and those references have to move too. -->
       <input
         class="name"
         :value="category.name"
+        :readonly="readOnly"
         placeholder="category name"
         :aria-label="`Name of category ${index + 1}`"
         @input="emit('rename', index, ($event.target as HTMLInputElement).value)"
       />
-      <button type="button" title="Move up" @click="emit('move', index, -1)">↑</button>
-      <button type="button" title="Move down" @click="emit('move', index, 1)">↓</button>
-      <button type="button" title="Remove" @click="emit('remove', index)">×</button>
+      <template v-if="!readOnly">
+        <button type="button" title="Move up" @click="emit('move', index, -1)">↑</button>
+        <button type="button" title="Move down" @click="emit('move', index, 1)">↓</button>
+        <button type="button" title="Remove" @click="emit('remove', index)">×</button>
+      </template>
     </div>
 
-    <input v-model="category.description" class="description" placeholder="what it marks" />
+    <input
+      v-model="category.description"
+      class="description"
+      :readonly="readOnly"
+      placeholder="what it marks"
+    />
 
     <ul class="values">
       <li v-for="(value, j) in category.values" :key="j">
-        <input v-model="value.value" class="value" placeholder="value" aria-label="Value" />
-        <input v-model="value.notes" class="notes" placeholder="note (optional)" />
-        <button type="button" title="Remove value" @click="emit('removeValue', index, j)">×</button>
+        <input
+          v-model="value.value"
+          class="value"
+          :readonly="readOnly"
+          placeholder="value"
+          aria-label="Value"
+        />
+        <input
+          v-model="value.notes"
+          class="notes"
+          :readonly="readOnly"
+          placeholder="note (optional)"
+        />
+        <button
+          v-if="!readOnly"
+          type="button"
+          title="Remove value"
+          @click="emit('removeValue', index, j)"
+        >
+          ×
+        </button>
       </li>
     </ul>
 
     <div class="foot">
-      <button type="button" @click="emit('addValue', index)">+ Value</button>
+      <button v-if="!readOnly" type="button" @click="emit('addValue', index)">+ Value</button>
       <p v-if="usedBy.length" class="muted">{{ usedBy.join(", ") }}</p>
       <p v-else class="muted">No class inflects for this yet.</p>
     </div>

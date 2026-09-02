@@ -2,8 +2,10 @@
 import { computed, ref } from "vue";
 
 import { useLexiconStore } from "@/stores/lexicon";
+import { useMembersStore } from "@/stores/members";
 
 const lexicon = useLexiconStore();
+const members = useMembersStore();
 const emit = defineEmits<{ pick: [id: string]; create: [lemma: string] }>();
 
 const query = ref("");
@@ -69,15 +71,19 @@ const exactLemma = computed(() =>
 
     <!-- Offering the search text as the new lemma turns a failed lookup into the next
          action, which is usually what a miss means in a dictionary you are writing. -->
-    <button
-      v-if="query.trim() && !exactLemma"
-      type="button"
-      class="add"
-      @click="emit('create', query.trim())"
-    >
-      <span class="add-label">+ Add “{{ query.trim() }}”</span>
-    </button>
-    <button v-else type="button" class="add" @click="emit('create', '')">+ New entry</button>
+    <!-- Both hidden for a visitor to a published conlang: the list and its search are
+         the dictionary, and only writing a new word goes away. -->
+    <template v-if="members.canEdit">
+      <button
+        v-if="query.trim() && !exactLemma"
+        type="button"
+        class="add"
+        @click="emit('create', query.trim())"
+      >
+        <span class="add-label">+ Add “{{ query.trim() }}”</span>
+      </button>
+      <button v-else type="button" class="add" @click="emit('create', '')">+ New entry</button>
+    </template>
   </div>
 </template>
 
