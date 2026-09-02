@@ -12,6 +12,7 @@ import { useLexiconStore } from "@/stores/lexicon";
 import { usePhonemesStore } from "@/stores/phonemes";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
 import { useProjectsStore } from "@/stores/projects";
+import { useWordClassesStore } from "@/stores/wordClasses";
 
 /**
  * Gathers every section into one `ExportInput` and hands back download actions.
@@ -26,6 +27,7 @@ export function useProjectExport(projectId: () => string | null) {
   const phonotactics = usePhonotacticsStore();
   const lexicon = useLexiconStore();
   const grammarRules = useGrammarRulesStore();
+  const wordClasses = useWordClassesStore();
 
   /**
    * Built from what is **saved**, not from any in-progress draft. An export is a record
@@ -70,6 +72,17 @@ export function useProjectExport(projectId: () => string | null) {
         notes: e.notes,
       })),
       rules: grammarRules.persisted.map((r) => ({ ...r })),
+      wordClasses: wordClasses.persisted.classes.map((c) => ({
+        name: c.name,
+        kind: c.kind,
+        description: c.description,
+        categories: [...c.categories],
+      })),
+      categories: wordClasses.persisted.categories.map((c) => ({
+        name: c.name,
+        description: c.description,
+        values: c.values.map((v) => ({ value: v.value, notes: v.notes })),
+      })),
     };
   });
 
@@ -78,7 +91,8 @@ export function useProjectExport(projectId: () => string | null) {
     () =>
       input.value.phonemes.length > 0 ||
       input.value.lexicon.length > 0 ||
-      input.value.rules.length > 0,
+      input.value.rules.length > 0 ||
+      input.value.wordClasses.length > 0,
   );
 
   function download(filename: string, contents: string, mime: string) {

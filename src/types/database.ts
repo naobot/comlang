@@ -459,6 +459,167 @@ export type Database = {
           },
         ]
       }
+      word_classes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          kind: Database["public"]["Enums"]["word_class_kind"]
+          name: string
+          project_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["word_class_kind"]
+          name: string
+          project_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["word_class_kind"]
+          name?: string
+          project_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "word_classes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      grammatical_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          project_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          project_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          project_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grammatical_categories_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      category_values: {
+        Row: {
+          category_id: string
+          id: string
+          notes: string | null
+          project_id: string
+          sort_order: number
+          value: string
+        }
+        Insert: {
+          category_id: string
+          id?: string
+          notes?: string | null
+          project_id: string
+          sort_order?: number
+          value: string
+        }
+        Update: {
+          category_id?: string
+          id?: string
+          notes?: string | null
+          project_id?: string
+          sort_order?: number
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_values_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "grammatical_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_values_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      word_class_categories: {
+        Row: {
+          category_id: string
+          project_id: string
+          word_class_id: string
+        }
+        Insert: {
+          category_id: string
+          project_id: string
+          word_class_id: string
+        }
+        Update: {
+          category_id?: string
+          project_id?: string
+          word_class_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "word_class_categories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "grammatical_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "word_class_categories_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "word_class_categories_word_class_id_fkey"
+            columns: ["word_class_id"]
+            isOneToOne: false
+            referencedRelation: "word_classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -527,6 +688,10 @@ export type Database = {
         Args: { p_payload: Json; p_project_id: string }
         Returns: undefined
       }
+      save_word_classes: {
+        Args: { p_payload: Json; p_project_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       constraint_kind:
@@ -537,6 +702,7 @@ export type Database = {
       project_role: "owner" | "collaborator"
       sequence_position: "anywhere" | "word_initial" | "word_final"
       slot_role: "onset" | "nucleus" | "coda"
+      word_class_kind: "open" | "closed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -673,6 +839,7 @@ export const Constants = {
       project_role: ["owner", "collaborator"],
       sequence_position: ["anywhere", "word_initial", "word_final"],
       slot_role: ["onset", "nucleus", "coda"],
+      word_class_kind: ["open", "closed"],
     },
   },
 } as const

@@ -18,10 +18,9 @@ export const projectTabs = [
   { name: "project-grammar", label: "Grammar rules" },
 ] as const;
 
-// Word classes and Orthography are hidden from the header for now. Their routes stay
-// live, so a saved link still resolves and re-showing either is one line here — word
-// classes was designed and tabled rather than abandoned, and orthography is where
-// romanization goes once there is one.
+// Orthography is hidden from the header for now. Its route stays live, so a saved link
+// still resolves and re-showing it is one line here — orthography is where romanization
+// goes once there is one, and upstream has none.
 
 // Every tab renders the same placeholder until the linguistic core is designed. The
 // route shape is the point: `/projects/:id/lexicon` is where a real lexicon will live.
@@ -69,7 +68,7 @@ const router = createRouter({
         {
           path: "word-classes",
           name: "project-word-classes",
-          component: SectionPlaceholder,
+          component: () => import("@/views/project/WordClassesView.vue"),
           props: true,
           meta: { tab: "Word classes", requires: "phonemes" },
         },

@@ -46,6 +46,20 @@ const input = (over: Partial<ExportInput> = {}): ExportInput => ({
     { entry_key: "n_book", lemma: "miŋgwem", gloss: "book", word_class: "noun", notes: null },
     { entry_key: null, lemma: "ʔo", gloss: "leg", word_class: "noun", notes: "Compound." },
   ],
+  wordClasses: [
+    { name: "noun", kind: "open", description: "", categories: ["number"] },
+    { name: "case marker", kind: "closed", description: "Takes the case slot.", categories: [] },
+  ],
+  categories: [
+    {
+      name: "number",
+      description: "",
+      values: [
+        { value: "singular", notes: "" },
+        { value: "paucal", notes: "reduplication without numeral+counter" },
+      ],
+    },
+  ],
   rules: [
     {
       name: "vowel_harmony",
@@ -114,14 +128,50 @@ describe("toGrammarYaml", () => {
   });
 
   it("drops sections with no data instead of writing empty keys", () => {
-    const bare = toGrammarYaml(input({ templates: [], constraints: [], rules: [], lexicon: [] }));
+    const bare = toGrammarYaml(
+      input({
+        templates: [],
+        constraints: [],
+        rules: [],
+        lexicon: [],
+        wordClasses: [],
+        categories: [],
+      }),
+    );
     expect(bare).not.toContain("phonotactics:");
     expect(bare).not.toContain("lexicon:");
+    expect(bare).not.toContain("word_classes:");
     expect(bare).toContain("phonology:");
   });
 
   it("never leaves a triple blank line", () => {
     expect(yaml).not.toMatch(/\n\n\n/);
+  });
+});
+
+describe("word classes in the export", () => {
+  const yaml = toGrammarYaml(input());
+
+  it("emits each class with its kind and what it inflects for", () => {
+    const doc = parse(yaml) as { word_classes: Record<string, Record<string, unknown>> };
+    expect(doc.word_classes.noun).toEqual({ kind: "open", inflects_for: ["number"] });
+    expect(doc.word_classes["case marker"]).toEqual({
+      kind: "closed",
+      description: "Takes the case slot.",
+    });
+  });
+
+  // Shaped like the source's own `categories:` block, so a consumer reads it without a
+  // special case.
+  it("emits categories the way grammar.yaml does", () => {
+    const doc = parse(yaml) as { categories: Record<string, { values: string[] }> };
+    expect(doc.categories.number?.values).toEqual(["singular", "paucal"]);
+  });
+
+  it("keeps a value note as a comment rather than inventing a key for it", () => {
+    expect(yaml).toContain("# paucal: reduplication without numeral+counter");
+    const doc = parse(yaml) as { categories: Record<string, Record<string, unknown>> };
+    expect(Object.keys(doc.categories.number ?? {})).toEqual(["values"]);
   });
 });
 
@@ -233,6 +283,8 @@ describe("the emitted YAML actually parses", () => {
           constraints: [],
           lexicon: [],
           rules: [],
+          wordClasses: [],
+          categories: [],
         }),
       ),
     ) as Record<string, unknown>;

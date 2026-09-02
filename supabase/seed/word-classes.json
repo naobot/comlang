@@ -1,0 +1,342 @@
+{
+  "classes": [
+    {
+      "name": "adjective",
+      "kind": "open",
+      "description": "",
+      "categories": [],
+      "sort_order": 0
+    },
+    {
+      "name": "noun",
+      "kind": "open",
+      "description": "",
+      "categories": [
+        "number",
+        "case"
+      ],
+      "sort_order": 1
+    },
+    {
+      "name": "predicate",
+      "kind": "open",
+      "description": "",
+      "categories": [
+        "tense",
+        "force",
+        "evidential"
+      ],
+      "sort_order": 2
+    },
+    {
+      "name": "verb",
+      "kind": "open",
+      "description": "",
+      "categories": [
+        "tense",
+        "force",
+        "evidential"
+      ],
+      "sort_order": 3
+    },
+    {
+      "name": "case marker",
+      "kind": "closed",
+      "description": "Occupies the case slot on a nominal.",
+      "categories": [
+        "case"
+      ],
+      "sort_order": 4
+    },
+    {
+      "name": "semantic particle",
+      "kind": "closed",
+      "description": "Occupies the case slot instead of a case marker.",
+      "categories": [
+        "semantic_particle"
+      ],
+      "sort_order": 5
+    },
+    {
+      "name": "tense marker",
+      "kind": "closed",
+      "description": "",
+      "categories": [
+        "tense"
+      ],
+      "sort_order": 6
+    },
+    {
+      "name": "force marker",
+      "kind": "closed",
+      "description": "",
+      "categories": [
+        "force"
+      ],
+      "sort_order": 7
+    },
+    {
+      "name": "evidential",
+      "kind": "closed",
+      "description": "A final coda rather than a full morpheme.",
+      "categories": [
+        "evidential"
+      ],
+      "sort_order": 8
+    },
+    {
+      "name": "relativizer",
+      "kind": "closed",
+      "description": "All three do modifier duty; a modifier is a relativized predicate.",
+      "categories": [
+        "tense"
+      ],
+      "sort_order": 9
+    },
+    {
+      "name": "pronoun",
+      "kind": "closed",
+      "description": "",
+      "categories": [
+        "person",
+        "number"
+      ],
+      "sort_order": 10
+    },
+    {
+      "name": "demonstrative",
+      "kind": "closed",
+      "description": "",
+      "categories": [
+        "deixis"
+      ],
+      "sort_order": 11
+    },
+    {
+      "name": "particle",
+      "kind": "closed",
+      "description": "",
+      "categories": [],
+      "sort_order": 12
+    },
+    {
+      "name": "numeral",
+      "kind": "closed",
+      "description": "",
+      "categories": [],
+      "sort_order": 13
+    },
+    {
+      "name": "classifier",
+      "kind": "closed",
+      "description": "One general classifier; the system is deferred upstream.",
+      "categories": [],
+      "sort_order": 14
+    },
+    {
+      "name": "negation",
+      "kind": "closed",
+      "description": "A prefix on the predicate word, with three allomorphs.",
+      "categories": [],
+      "sort_order": 15
+    }
+  ],
+  "categories": [
+    {
+      "name": "person",
+      "description": "",
+      "sort_order": 0,
+      "values": [
+        {
+          "value": "first",
+          "notes": "",
+          "sort_order": 0
+        },
+        {
+          "value": "second",
+          "notes": "",
+          "sort_order": 1
+        },
+        {
+          "value": "third",
+          "notes": "",
+          "sort_order": 2
+        }
+      ]
+    },
+    {
+      "name": "number",
+      "description": "",
+      "sort_order": 1,
+      "values": [
+        {
+          "value": "singular",
+          "notes": "",
+          "sort_order": 0
+        },
+        {
+          "value": "plural",
+          "notes": "",
+          "sort_order": 1
+        },
+        {
+          "value": "paucal",
+          "notes": "reduplication without numeral+counter",
+          "sort_order": 2
+        }
+      ]
+    },
+    {
+      "name": "case",
+      "description": "",
+      "sort_order": 2,
+      "values": [
+        {
+          "value": "topic",
+          "notes": "",
+          "sort_order": 0
+        },
+        {
+          "value": "nominative",
+          "notes": "",
+          "sort_order": 1
+        },
+        {
+          "value": "accusative",
+          "notes": "",
+          "sort_order": 2
+        },
+        {
+          "value": "dative",
+          "notes": "",
+          "sort_order": 3
+        },
+        {
+          "value": "genitive",
+          "notes": "",
+          "sort_order": 4
+        },
+        {
+          "value": "locative",
+          "notes": "",
+          "sort_order": 5
+        },
+        {
+          "value": "instrumental",
+          "notes": "",
+          "sort_order": 6
+        }
+      ]
+    },
+    {
+      "name": "semantic_particle",
+      "description": "Occupies the case slot instead of a case marker; with the case cue gone the DP is expected in prototypical word order.",
+      "sort_order": 3,
+      "values": [
+        {
+          "value": "only",
+          "notes": "",
+          "sort_order": 0
+        },
+        {
+          "value": "with",
+          "notes": "",
+          "sort_order": 1
+        },
+        {
+          "value": "too",
+          "notes": "",
+          "sort_order": 2
+        }
+      ]
+    },
+    {
+      "name": "tense",
+      "description": "",
+      "sort_order": 4,
+      "values": [
+        {
+          "value": "past",
+          "notes": "",
+          "sort_order": 0
+        },
+        {
+          "value": "present",
+          "notes": "",
+          "sort_order": 1
+        },
+        {
+          "value": "future",
+          "notes": "",
+          "sort_order": 2
+        }
+      ]
+    },
+    {
+      "name": "force",
+      "description": "",
+      "sort_order": 5,
+      "values": [
+        {
+          "value": "declarative",
+          "notes": "no form; see meta.missing upstream",
+          "sort_order": 0
+        },
+        {
+          "value": "interrogative",
+          "notes": "",
+          "sort_order": 1
+        },
+        {
+          "value": "imperative",
+          "notes": "",
+          "sort_order": 2
+        }
+      ]
+    },
+    {
+      "name": "evidential",
+      "description": "",
+      "sort_order": 6,
+      "values": [
+        {
+          "value": "direct",
+          "notes": "",
+          "sort_order": 0
+        },
+        {
+          "value": "indirect",
+          "notes": "",
+          "sort_order": 1
+        },
+        {
+          "value": "unmarked",
+          "notes": "",
+          "sort_order": 2
+        }
+      ]
+    },
+    {
+      "name": "deixis",
+      "description": "",
+      "sort_order": 7,
+      "values": [
+        {
+          "value": "proximal",
+          "notes": "",
+          "sort_order": 0
+        },
+        {
+          "value": "medial",
+          "notes": "",
+          "sort_order": 1
+        },
+        {
+          "value": "distal",
+          "notes": "",
+          "sort_order": 2
+        }
+      ]
+    }
+  ]
+}

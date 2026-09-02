@@ -18,18 +18,25 @@ itself a repo:
 Built: the **access layer** (`projects`, `project_members`, RLS), auth, the dashboard,
 the project workspace *shell* — a navy-on-white header with the conlang name and a gear
 menu at the left, section tabs across the middle, and the app name at the right — and the
-first four linguistic-core sections: the **phoneme inventory**, **phonotactics**, the
-**lexicon** (seeded with the 60 entries from `grammar.yaml`), and **grammar rules**.
+first five linguistic-core sections: the **phoneme inventory**, **phonotactics**, **word
+classes**, the **lexicon** (seeded with the 60 entries from `grammar.yaml`), and **grammar
+rules**.
 
-**Word classes and Orthography are hidden from the header** — dropped from `projectTabs`
-in `src/router/index.ts` while their routes stay live, so a saved link still resolves and
-re-showing either is one line. Word classes was designed and then tabled: the source
-resists a slot model in five places
-(`phonological_word` splits a template across word boundaries, `semantic_particle` shares
-the case slot, plural is reduplication, evidentiality is a coda rather than a morpheme, and
-`categories` does not line up with `closed_class`). None of that had to be settled to start
-writing words down, which is why the lexicon jumped the queue. Orthography is where
-romanization goes once there is one; upstream has none.
+**Only Orthography is hidden from the header** — dropped from `projectTabs` in
+`src/router/index.ts` while its route stays live, so a saved link still resolves and
+re-showing it is one line. It is where romanization goes once there is one; upstream has
+none. (Note the commit that "hid the two unbuilt tabs" only ever removed Orthography —
+word classes stayed in `projectTabs` and rendered the placeholder until it was built.)
+
+**Word classes models classes and categories, and deliberately not morpheme order.** The
+first design was tabled because the obvious model — a class owns an ordered chain of slots
+— is one the source resists in five places: `phonological_word` splits a nominal template
+across a word boundary, `semantic_particle` occupies the case slot instead of a case
+marker, plural is reduplication rather than an affix, evidentiality is a final coda rather
+than a full morpheme, and `categories` does not line up with `closed_class`. What 0019
+builds is the part grammar.yaml states outright — which classes exist, open or closed, and
+which categories each inflects for — and the page says in prose what it is not modelling,
+so it does not read as a complete account of the morphology.
 
 **Grammar rules is free text apart from `name` and `rule_order`.** The field names match
 grammar.yaml's own (`effect`, `environment`, `examples`, `notes`) so tightening later is a
@@ -87,10 +94,20 @@ homographs — `gwan` is both "meaning" (noun) and "become" (verb) in the import
 `exceptions` in grammar.yaml carries "homograph" as a sentinel. Uniqueness is on
 `(project_id, entry_key)` and only `where entry_key is not null`.
 
-**`word_class` is free text on purpose.** It becomes a foreign key when word classes is
-designed; a key now would have to invent the table it points at. The editor offers a
-`datalist` of values already in use rather than a `<select>`, for the same reason. Don't
-"fix" this in passing.
+**`word_class` stayed text after word classes was built, reversing what 0014 expected.**
+0014 said it "becomes a foreign key when word classes is designed". It did not, and the
+reversal is deliberate: 0012 and 0013 settled the opposite policy in between. A foreign key
+would make deleting a class either delete every word in it or be blocked by them, and
+neither is right — a class is a label someone is still deciding on. Storing the name lets
+the reference dangle, so the entry survives and both pages flag it:
+`orphanedClassNames` in `src/lib/wordClasses.ts` drives a red banner on the word-classes
+page (with an "add as a class" button that reconnects it) and a red outline in the entry
+editor. Verified live: deleting every class left `lexicon_entries.word_class` intact.
+
+The entry editor's field is a `<select>` over the defined classes **once the project has
+any**, and falls back to free text with a `datalist` when it has none — a new project must
+still be able to write a word down. An orphaned value stays selectable rather than being
+silently cleared.
 
 **Never `structuredClone` a store draft.** It throws `DataCloneError` on a Vue reactive
 proxy, and `usePhonotacticsStore().save()` cloned as its first statement — so every save
@@ -109,11 +126,25 @@ trusting the comment; that guard was checked to actually fail when violated.
 the only nucleus class — has no satisfying word, and an unbounded resample would hang the
 tab. `generateWord` returns `{ ok: false, reason }` instead. Keep failure as data.
 
-**Two different echo-detection strategies, deliberately.** `phonemes.ts` tracks the ids it
-wrote (`ownWrites`); `phonotactics.ts` debounces a re-fetch and *compares* against what it
-holds. The second is provably right rather than approximately right, and it exists because
-one phonotactics save writes across five tables at once, where id bookkeeping would be
-fragile. Copy the comparison approach for any future multi-table page.
+**`save_word_classes` prunes by name and rebuilds the links, and a failed save changes
+nothing.** Classes and categories upsert on `(project_id, name)` so their ids survive a
+save that reorders, renames and deletes — verified live. Values and the class/category
+links are cleared and rebuilt, because that is what lets a value be renamed. A class naming
+a category the payload does not contain **raises** rather than dropping the link silently,
+so `removeCategoryAt` and `renameCategory` in the store have to carry the links with them;
+that is why neither is a plain splice or a `v-model`.
+
+Note that two classes with the same name in one payload would upsert onto one row rather
+than erroring, so `problems()` in `src/lib/wordClasses.ts` is the only thing that catches
+it. It returns *every* problem rather than the first, so fixing one does not just reveal
+the next.
+
+**Three different echo-detection strategies, deliberately.** `phonemes.ts` tracks the ids it
+wrote (`ownWrites`); `phonotactics.ts`, `grammarRules.ts` and `wordClasses.ts` debounce a
+re-fetch and *compare* against what they hold; the lexicon compares against `baseline`. The
+comparison is provably right rather than approximately right, and it exists because one
+phonotactics save writes across five tables at once (word classes, four) where id
+bookkeeping would be fragile. Copy the comparison approach for any future multi-table page.
 
 **`save_phonotactics` clears slots before it deletes classes.** `syllable_slots.class_id`
 is `on delete restrict` so a class cannot vanish from under a live template — which also
@@ -375,6 +406,31 @@ What was verified for export and activity (2026-09-01): a collaborator's write s
 delete stamps it too. The exporter was run against the real project's 18 phonemes and 60
 lexicon entries and the output re-parsed — which is how the flow-context comma bug was
 found.
+
+What was verified when word classes went in (2026-09-02), as a **collaborator** against
+the live project: one call to `save_word_classes` writes all four tables (3 classes, 3
+categories, 5 values, 4 links); a re-save that reorders, renames, drops a class and drops a
+whole category keeps the surviving classes' **ids stable** and rebuilds the links; a class
+naming an undefined category is refused with 23503, a non-member with 42501, a blank class
+name with 23514 — and after all three failures the section was **still intact**, which is
+the transaction guarantee the RPC exists for; an empty payload clears all four tables;
+`anon` cannot execute the function while `authenticated` can; and the collaborator's write
+stamped `projects.last_activity_by` despite the owner-only UPDATE policy. Crucially,
+deleting every class left a lexicon entry's `word_class` untouched — the whole point of it
+being text. The seed was then loaded into the real project: 16 classes, 8 categories, 28
+values, 17 links, and **all 60 lexicon entries resolve to a defined class** (32 noun / 16
+verb / 9 adjective / 3 predicate), so the orphan banner is correctly empty. The exporter
+was run over the real seed and re-parsed, with every class description intact.
+
+The word-class seed is generated the same way the lexicon's is: `pnpm import:word-classes`
+writes `supabase/seed/word-classes.json`. It combines **two** parts of grammar.yaml that
+neither alone answers — the open classes are the distinct `pos` values on the lexicon
+entries, the closed ones are the *keys* of `closed_class` mapped to class names by hand
+(`case` there is a category whose members are case markers; `numerals` is a class) — plus
+`categories` verbatim. It writes explicit `sort_order`s, because a file loaded straight
+into the RPC would otherwise land every row at 0 and read back in arbitrary order. Two
+inline YAML *comments* carrying real information (`paucal`, declarative `force`) are
+transcribed by hand, since `parse` cannot see them.
 
 What was verified when grammar rules went in (2026-09-01), through the store: create,
 whole-page save, **reorder persisting across a re-fetch**, ids stable across a save that

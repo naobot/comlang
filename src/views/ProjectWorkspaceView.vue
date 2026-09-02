@@ -7,6 +7,7 @@ import { useMembersStore } from "@/stores/members";
 import { usePhonemesStore } from "@/stores/phonemes";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
 import { useProjectsStore } from "@/stores/projects";
+import { useWordClassesStore } from "@/stores/wordClasses";
 
 const props = defineProps<{ projectId: string }>();
 
@@ -16,6 +17,7 @@ const lexicon = useLexiconStore();
 const grammarRules = useGrammarRulesStore();
 const phonemes = usePhonemesStore();
 const phonotactics = usePhonotacticsStore();
+const wordClasses = useWordClassesStore();
 const resolving = ref(true);
 
 const project = computed(() => projects.get(props.projectId));
@@ -44,6 +46,11 @@ function loadProjectData(projectId: string) {
   void lexicon.fetchFor(projectId);
   grammarRules.subscribe(projectId);
   void grammarRules.fetchFor(projectId);
+  // Loaded here rather than only on its own tab, for the same reason as the inventory:
+  // the lexicon's class picker and its orphan warning both need the class list, and
+  // that page does not own it.
+  wordClasses.subscribe(projectId);
+  void wordClasses.fetchFor(projectId);
 }
 
 onMounted(async () => {
@@ -65,6 +72,7 @@ onUnmounted(() => {
   phonotactics.unsubscribeAll();
   lexicon.unsubscribeAll();
   grammarRules.unsubscribeAll();
+  wordClasses.unsubscribeAll();
 });
 </script>
 

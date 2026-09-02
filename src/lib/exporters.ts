@@ -9,10 +9,10 @@
  * devDependency used by the import script and must not reach the browser bundle, and
  * writing it out gives control over matching the source document's shape.
  *
- * What is deliberately absent: `categories`, `alignment`, `morpheme_order`,
- * `closed_class`, `exceptions` and `samples`. The app has no data for any of them — word
- * classes is tabled — and inventing empty keys would make the export look like a complete
- * grammar when it is a partial one.
+ * What is deliberately absent: `alignment`, `morpheme_order`, `closed_class`, `exceptions`
+ * and `samples`. The app has no data for any of them — morpheme order in particular is
+ * still an open design question — and inventing empty keys would make the export look like
+ * a complete grammar when it is a partial one.
  */
 
 export type ExportPhoneme = { ipa: string; kind: "consonant" | "vowel" };
@@ -35,6 +35,17 @@ export type ExportEntry = {
   word_class: string | null;
   notes: string | null;
 };
+export type ExportWordClass = {
+  name: string;
+  kind: string;
+  description: string;
+  categories: string[];
+};
+export type ExportCategory = {
+  name: string;
+  description: string;
+  values: { value: string; notes: string }[];
+};
 export type ExportRule = {
   name: string;
   effect: string;
@@ -52,6 +63,8 @@ export type ExportInput = {
   constraints: ExportConstraint[];
   lexicon: ExportEntry[];
   rules: ExportRule[];
+  wordClasses: ExportWordClass[];
+  categories: ExportCategory[];
 };
 
 // YAML scalars ------------------------------------------------------------------------
@@ -147,6 +160,33 @@ export function toGrammarYaml(input: ExportInput): string {
     if (input.constraints.length) {
       push("  constraints:");
       for (const c of input.constraints) push(`    - ${yamlScalar(describeConstraint(c))}`);
+    }
+    push("");
+  }
+
+  // word classes and categories -------------------------------------------------------
+  if (input.wordClasses.length) {
+    push("word_classes:");
+    for (const cls of input.wordClasses) {
+      push(`  ${yamlScalar(cls.name)}:`);
+      push(`    kind: ${cls.kind}`);
+      if (cls.description) push(`    description: ${yamlScalar(cls.description)}`);
+      if (cls.categories.length) push(`    inflects_for: ${list(cls.categories)}`);
+    }
+    push("");
+  }
+
+  // Emitted under the source's own key, and shaped like it: a mapping of category name to
+  // its values, so a consumer of grammar.yaml reads this without a special case.
+  if (input.categories.length) {
+    push("categories:");
+    for (const category of input.categories) {
+      push(`  ${yamlScalar(category.name)}:`);
+      push(`    values: ${list(category.values.map((v) => v.value))}`);
+      if (category.description) push(`    description: ${yamlScalar(category.description)}`);
+      for (const value of category.values) {
+        if (value.notes) push(`    # ${value.value}: ${value.notes.replace(/\n+/g, " ")}`);
+      }
     }
     push("");
   }

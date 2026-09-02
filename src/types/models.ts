@@ -26,8 +26,12 @@ export type ConstraintKind = Enums<"constraint_kind">;
 export type SequencePosition = Enums<"sequence_position">;
 
 /**
- * One dictionary entry. `word_class` is free text on purpose — the word-classes design is
- * tabled, and a foreign key would have to invent the table it points at. See 0014.
+ * One dictionary entry.
+ *
+ * `word_class` is still **text, not a foreign key**, now that `word_classes` exists — 0014
+ * expected it to become one, and 0012/0013 settled the opposite policy in the meantime.
+ * A key would make deleting a class either delete the words in it or be blocked by them;
+ * a dangling name lets the entry survive and be shown in red. See lib/wordClasses.ts.
  */
 export type LexiconEntry = Tables<"lexicon_entries">;
 
@@ -36,6 +40,18 @@ export type LexiconEntry = Tables<"lexicon_entries">;
  * not — the source's rule_order is a feeding pipeline, not a display preference.
  */
 export type GrammarRule = Tables<"grammar_rules">;
+
+/**
+ * Word classes and the inflectional categories they carry.
+ *
+ * `word_class_categories` is the join. Note there is deliberately no morpheme-order
+ * table: see 0019 for the five places the source resists a slot model.
+ */
+export type WordClass = Tables<"word_classes">;
+export type WordClassKind = Enums<"word_class_kind">;
+export type GrammaticalCategory = Tables<"grammatical_categories">;
+export type CategoryValue = Tables<"category_values">;
+export type WordClassCategory = Tables<"word_class_categories">;
 
 /** A membership joined to the person it belongs to, as the members list renders it. */
 export type ProjectMemberWithProfile = ProjectMember & {

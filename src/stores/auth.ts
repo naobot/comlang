@@ -52,12 +52,14 @@ export const useAuthStore = defineStore("auth", () => {
           import("@/stores/phonotactics"),
           import("@/stores/lexicon"),
           import("@/stores/grammarRules"),
-        ]).then(([members, phonemes, phonotactics, lexicon, grammarRules]) => {
+          import("@/stores/wordClasses"),
+        ]).then(([members, phonemes, phonotactics, lexicon, grammarRules, wordClasses]) => {
           members.useMembersStore().reset();
           phonemes.usePhonemesStore().reset();
           phonotactics.usePhonotacticsStore().reset();
           lexicon.useLexiconStore().reset();
           grammarRules.useGrammarRulesStore().reset();
+          wordClasses.useWordClassesStore().reset();
         });
       }
     });
