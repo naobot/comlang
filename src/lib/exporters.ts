@@ -15,6 +15,8 @@
  * a complete grammar when it is a partial one.
  */
 
+import { csvField } from "./csv";
+
 export type ExportPhoneme = { ipa: string; kind: "consonant" | "vowel" };
 export type ExportClass = { symbol: string; label: string | null; phoneme_ipa: string[] };
 export type ExportSlot = { role: string; optional: boolean; class_symbol: string };
@@ -46,6 +48,9 @@ export type ExportCategory = {
   description: string;
   values: { value: string; notes: string }[];
 };
+/** One corpus example: two columns of prose and nothing else. See 0022. */
+export type ExportCorpusEntry = { english: string; conlang: string };
+
 export type ExportRule = {
   name: string;
   effect: string;
@@ -65,6 +70,7 @@ export type ExportInput = {
   rules: ExportRule[];
   wordClasses: ExportWordClass[];
   categories: ExportCategory[];
+  corpus: ExportCorpusEntry[];
 };
 
 // YAML scalars ------------------------------------------------------------------------
@@ -253,10 +259,6 @@ function describeConstraint(c: ExportConstraint): string {
 
 // lexicon CSV --------------------------------------------------------------------------
 
-function csvField(value: string): string {
-  return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
-}
-
 /**
  * Two columns, no header — the shape of `vocab_beta_1.csv` and `dict_1.1.csv`, so this
  * drops straight into whatever already reads those.
@@ -278,6 +280,21 @@ export function toLexiconCsvFull(input: ExportInput): string {
       .join(","),
   );
   return `key,lemma,pos,gloss,notes\n${rows.join("\n")}\n`;
+}
+
+// corpus CSV ---------------------------------------------------------------------------
+
+/**
+ * `english,conlang`, with that header.
+ *
+ * The lexicon's two-column export is headerless because it has to drop into tools that
+ * already read `vocab_beta_1.csv`. Nothing pre-existing reads the corpus, so it gets a
+ * header: it costs one line, it says which column is which in a file where both are
+ * prose and neither is guessable, and `parseCorpusCsv` skips it on the way back in.
+ */
+export function toCorpusCsv(input: ExportInput): string {
+  const rows = input.corpus.map((e) => `${csvField(e.english)},${csvField(e.conlang)}`);
+  return `english,conlang\n${rows.join("\n")}\n`;
 }
 
 /** A filename stem safe on every platform, derived from the project name. */

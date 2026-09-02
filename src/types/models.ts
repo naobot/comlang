@@ -36,6 +36,13 @@ export type SequencePosition = Enums<"sequence_position">;
 export type LexiconEntry = Tables<"lexicon_entries">;
 
 /**
+ * One corpus example: an English utterance beside its conlang counterpart, and nothing
+ * else. Both columns are `not null default ''` rather than nullable — the editor is a
+ * grid, where a cell is empty or it is not. See 0022.
+ */
+export type CorpusEntry = Tables<"corpus_entries">;
+
+/**
  * One grammar rule. Every field but the name is free text this round; `rule_order` is
  * not — the source's rule_order is a feeding pipeline, not a display preference.
  */

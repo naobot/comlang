@@ -13,6 +13,7 @@ import {
 } from "./exporters";
 
 const input = (over: Partial<ExportInput> = {}): ExportInput => ({
+  corpus: [],
   projectName: "xenic",
   generatedAt: new Date("2026-09-01T14:00:00Z"),
   phonemes: [

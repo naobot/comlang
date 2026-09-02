@@ -2,8 +2,9 @@
  * Reading the lexicon CSVs back in.
  *
  * Pure, like `exporters.ts` and for the same reason: no `vue`, no `pinia`, no Supabase
- * client. `lexiconImport.test.ts` asserts the import list is empty rather than trusting
- * this comment.
+ * client. `lexiconImport.test.ts` asserts there is no package import rather than trusting
+ * this comment; `./csv`, which holds the parser this shares with the corpus, is relative
+ * and so is allowed.
  *
  * The two shapes it accepts are exactly the two `exporters.ts` writes:
  *
@@ -16,6 +17,8 @@
  * gloss, and treating an absent column as "clear it" would silently empty 60 glosses on
  * import. So the result reports which `fields` it found, and the write applies only those.
  */
+
+import { parseCsv } from "./csv";
 
 export type ImportRow = {
   entry_key: string | null;
@@ -34,67 +37,6 @@ export type ParsedImport = {
   /** Blocking: nothing is written while any of these stand. */
   problems: string[];
 };
-
-/**
- * RFC 4180-ish CSV, to the extent `csvField` in `exporters.ts` emits it: comma-separated,
- * `"` quoting, `""` for a literal quote inside a quoted field, and newlines allowed inside
- * quotes — which a lexicon `notes` field really does contain.
- *
- * Hand-written for the same reason the YAML emitter is: a parser is a dependency in the
- * browser bundle, and this is thirty lines.
- */
-export function parseCsv(text: string): string[][] {
-  const rows: string[][] = [];
-  let row: string[] = [];
-  let field = "";
-  let quoted = false;
-  // Strip a BOM: Excel writes one, and it would otherwise become part of the first header
-  // cell and stop the header being recognised.
-  const src = text.replace(/^﻿/, "");
-
-  for (let i = 0; i < src.length; i++) {
-    const ch = src[i];
-
-    if (quoted) {
-      if (ch === '"') {
-        if (src[i + 1] === '"') {
-          field += '"';
-          i++;
-        } else {
-          quoted = false;
-        }
-      } else {
-        field += ch;
-      }
-      continue;
-    }
-
-    if (ch === '"') {
-      quoted = true;
-    } else if (ch === ",") {
-      row.push(field);
-      field = "";
-    } else if (ch === "\n" || ch === "\r") {
-      // Treat CRLF as one break rather than an empty row.
-      if (ch === "\r" && src[i + 1] === "\n") i++;
-      row.push(field);
-      rows.push(row);
-      row = [];
-      field = "";
-    } else {
-      field += ch;
-    }
-  }
-
-  // A file not ending in a newline still has a last row.
-  if (field !== "" || row.length > 0) {
-    row.push(field);
-    rows.push(row);
-  }
-
-  // A trailing newline produces one empty row; so does a blank line in the middle.
-  return rows.filter((r) => r.some((cell) => cell.trim() !== ""));
-}
 
 const FULL_HEADER = ["key", "lemma", "pos", "gloss", "notes"];
 

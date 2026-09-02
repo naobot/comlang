@@ -229,6 +229,44 @@ export type Database = {
           },
         ]
       }
+      corpus_entries: {
+        Row: {
+          conlang: string
+          created_at: string
+          english: string
+          id: string
+          project_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          conlang?: string
+          created_at?: string
+          english?: string
+          id?: string
+          project_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          conlang?: string
+          created_at?: string
+          english?: string
+          id?: string
+          project_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "corpus_entries_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lexicon_entries: {
         Row: {
           created_at: string
@@ -662,6 +700,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      import_corpus: {
+        Args: { p_project_id: string; p_rows: Json }
+        Returns: Json
       }
       import_lexicon: {
         Args: { p_fields: string[]; p_project_id: string; p_rows: Json }

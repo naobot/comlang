@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 
+import { useCorpusStore } from "@/stores/corpus";
 import { useGrammarRulesStore } from "@/stores/grammarRules";
 import { useLexiconStore } from "@/stores/lexicon";
 import { useMembersStore } from "@/stores/members";
@@ -15,6 +16,7 @@ const projects = useProjectsStore();
 const members = useMembersStore();
 const lexicon = useLexiconStore();
 const grammarRules = useGrammarRulesStore();
+const corpus = useCorpusStore();
 const phonemes = usePhonemesStore();
 const phonotactics = usePhonotacticsStore();
 const wordClasses = useWordClassesStore();
@@ -46,6 +48,8 @@ function loadProjectData(projectId: string) {
   void lexicon.fetchFor(projectId);
   grammarRules.subscribe(projectId);
   void grammarRules.fetchFor(projectId);
+  corpus.subscribe(projectId);
+  void corpus.fetchFor(projectId);
   // Loaded here rather than only on its own tab, for the same reason as the inventory:
   // the lexicon's class picker and its orphan warning both need the class list, and
   // that page does not own it.
@@ -73,6 +77,7 @@ onUnmounted(() => {
   lexicon.unsubscribeAll();
   grammarRules.unsubscribeAll();
   wordClasses.unsubscribeAll();
+  corpus.unsubscribeAll();
 });
 </script>
 

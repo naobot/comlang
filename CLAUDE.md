@@ -18,9 +18,9 @@ itself a repo:
 Built: the **access layer** (`projects`, `project_members`, RLS), auth, the dashboard,
 the project workspace *shell* — a navy-on-white header with the conlang name and a gear
 menu at the left, section tabs across the middle, and the app name at the right — and the
-first five linguistic-core sections: the **phoneme inventory**, **phonotactics**, **word
-classes**, the **lexicon** (seeded with the 60 entries from `grammar.yaml`), and **grammar
-rules**.
+first six linguistic-core sections: the **phoneme inventory**, **phonotactics**, **word
+classes**, the **lexicon** (seeded with the 60 entries from `grammar.yaml`), **grammar
+rules**, and the **corpus**.
 
 **Only Orthography is hidden from the header** — dropped from `projectTabs` in
 `src/router/index.ts` while its route stays live, so a saved link still resolves and
@@ -77,6 +77,62 @@ found. Note the two-column format cannot represent "no key" — `toLexiconCsv` w
 lemma there instead — so re-importing it gives a previously unkeyed entry a key and adds a
 row rather than matching one. That is inherent to the format, not a bug to fix, and it is
 why the confirmation states the create/update split before anything is written.
+
+**The corpus is two columns and nothing else, and that is a decision rather than a
+starting point.** `corpus_entries` (0022) holds `english`, `conlang` and a `sort_order`. A
+gloss line, a grammaticality flag and a link to the rule an example illustrates are all
+plausible and all deferred, because each one is a thing to fill in before you are allowed
+to write a sentence down, and the value of a notebook is that writing in it is free.
+
+Both columns are `not null default ''`, the opposite of the lexicon's blank-is-null
+convention: the editor is a grid, where a cell is empty or it is not, and there is no third
+state for "never filled in" to mean. A check constraint keeps out a row blank on *both*
+sides. One side alone is allowed on purpose — a sentence awaiting a translation and a
+translation awaiting a sentence are both real working states.
+
+`sort_order` exists because `now()` is transaction time: sorting on `created_at` would give
+every row of an import one timestamp and read them back in arbitrary order. Same trap the
+word-class seed hit. There is no reordering UI yet; the column is there so the order an
+import laid down survives.
+
+**`import_corpus` (0022) only ever inserts, because the format has no key column.** The CSV
+is `english,conlang` and nothing else, so nothing in a file can say "this is the row you
+already have, changed" — the only candidate is the text, and the text is exactly what an
+edit changes. Matching on it would be guessing, and a wrong guess overwrites a sentence
+somebody wrote. So:
+
+- A row already present **verbatim on both sides** is skipped, which is what makes
+  re-importing your own export a no-op rather than a doubling.
+- Anything else is added, **including a corrected sentence** — it arrives as a second row
+  beside the original. That is inherent to a keyless format, not a bug to fix, and it is
+  why the confirmation states the add/skip counts before anything is written.
+- Nothing is ever updated or deleted.
+
+Deduplication is a courtesy of the import, **not** a constraint on the table: two examples
+may legitimately share an English translation, and one conlang sentence may be glossed two
+ways. A unique index would reject real data.
+
+**The corpus store generalises the lexicon's protections from one open entry to every
+visible row.** Every row in `byId` has an entry in `drafts` — `fetchFor` and `upsert` are
+the only two places a row arrives and both set the pair together — and the view *reads*
+that map rather than calling a materialise-on-demand helper, because creating a draft
+during render is a write to the store mid-render. The baseline for row X is `byId.get(X)`,
+the row itself: a different type from its draft, so the aliasing bug the lexicon hit cannot
+recur. On a realtime event the previous row is captured **before** the map is overwritten,
+which is what makes "was this client's cell actually edited?" answerable without any id
+bookkeeping.
+
+**The corpus cell is a textarea that grows with its content, with no JavaScript in the
+loop.** `.grow` is a 1x1 grid holding the textarea and a hidden `::after` carrying the same
+string via `attr(data-value)`, stacked in the same cell: the pseudo-element sets the row
+height and the textarea stretches to it. A sentence is the unit of content on that page, so
+a fixed-height input scrolling its own single line would hide exactly what the page is for.
+Both must share every font and padding declaration or the two heights drift.
+
+**`src/lib/csv.ts` is the CSV parser and quoter, shared.** It lived inside
+`lexiconImport.ts` until the corpus needed it; splitting it out rather than importing the
+lexicon's module from the corpus's keeps the two sections independent — they share a file
+format, not a domain. `exporters.ts` takes `csvField` from there too.
 
 **The export is built from what is saved, never from a draft.** An archive of half-typed
 edits is worse than making someone press Save first.
@@ -305,7 +361,7 @@ nothing to announce it by. `ProjectMembers` and `ProjectSettings` keep visible h
 they hang off the name menu, not the tab bar, so nothing else names them.
 
 **Sections declare dependencies with `meta.requires`.** Phonotactics, word classes,
-lexicon and grammar all carry `requires: "phonemes"`, and `SectionPlaceholderView`
+lexicon, corpus and grammar all carry `requires: "phonemes"`, and `SectionPlaceholderView`
 renders a "set up the inventory first" notice instead of the generic placeholder when
 the inventory is empty. Soft gate on purpose: the tab stays navigable, so the header
 never shows a dead control. `ProjectWorkspaceView` loads the inventory for the same
@@ -494,6 +550,19 @@ being text. The seed was then loaded into the real project: 16 classes, 8 catego
 values, 17 links, and **all 60 lexicon entries resolve to a defined class** (32 noun / 16
 verb / 9 adjective / 3 predicate), so the orphan banner is correctly empty. The exporter
 was run over the real seed and re-parsed, with every class description intact.
+
+What was verified when the corpus went in (2026-09-02), as a **collaborator** against the
+live project on a throwaway project since deleted: insert, update and delete; a row filled
+in on one side only accepted; a row blank on both refused with 23514; `import_corpus`
+adding two of five rows and skipping the one already stored, the one duplicated inside the
+same file and the one blank on both sides (`{"created":1,"skipped":4}` on a later run);
+**re-importing the identical file adding nothing**; a corrected sentence landing as a new
+row with the original left intact; `sort_order` continuing from the project's current max
+rather than restarting; a non-member seeing zero rows and refused 42501 on both the insert
+and the RPC; `anon` refused at the grant; and the collaborator's write stamping
+`projects.last_activity_by` despite the owner-only UPDATE policy. `get_advisors` showed
+nothing new. xenic was confirmed intact afterwards: 60 lexicon entries, 27 phonemes, 16
+word classes.
 
 The word-class seed is generated the same way the lexicon's is: `pnpm import:word-classes`
 writes `supabase/seed/word-classes.json`. It combines **two** parts of grammar.yaml that

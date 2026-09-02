@@ -15,6 +15,7 @@ export const projectTabs = [
   { name: "project-phonotactics", label: "Phonotactics" },
   { name: "project-word-classes", label: "Word classes" },
   { name: "project-lexicon", label: "Lexicon" },
+  { name: "project-corpus", label: "Corpus" },
   { name: "project-grammar", label: "Grammar rules" },
 ] as const;
 
@@ -78,6 +79,13 @@ const router = createRouter({
           component: () => import("@/views/project/LexiconView.vue"),
           props: true,
           meta: { tab: "Lexicon", requires: "phonemes" },
+        },
+        {
+          path: "corpus",
+          name: "project-corpus",
+          component: () => import("@/views/project/CorpusView.vue"),
+          props: true,
+          meta: { tab: "Corpus", requires: "phonemes" },
         },
         {
           path: "grammar",

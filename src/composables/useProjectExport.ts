@@ -3,10 +3,12 @@ import { computed } from "vue";
 import {
   type ExportInput,
   slugify,
+  toCorpusCsv,
   toGrammarYaml,
   toLexiconCsv,
   toLexiconCsvFull,
 } from "@/lib/exporters";
+import { useCorpusStore } from "@/stores/corpus";
 import { useGrammarRulesStore } from "@/stores/grammarRules";
 import { useLexiconStore } from "@/stores/lexicon";
 import { usePhonemesStore } from "@/stores/phonemes";
@@ -19,7 +21,7 @@ import { useWordClassesStore } from "@/stores/wordClasses";
  *
  * Split from `lib/exporters.ts` on purpose: the formatting is pure and unit-tested, and
  * everything that touches a store or the DOM lives here. That is also why the header stays
- * thin despite export needing data from five stores.
+ * thin despite export needing data from every section's store.
  */
 export function useProjectExport(projectId: () => string | null) {
   const projects = useProjectsStore();
@@ -28,6 +30,7 @@ export function useProjectExport(projectId: () => string | null) {
   const lexicon = useLexiconStore();
   const grammarRules = useGrammarRulesStore();
   const wordClasses = useWordClassesStore();
+  const corpus = useCorpusStore();
 
   /**
    * Built from what is **saved**, not from any in-progress draft. An export is a record
@@ -83,6 +86,7 @@ export function useProjectExport(projectId: () => string | null) {
         description: c.description,
         values: c.values.map((v) => ({ value: v.value, notes: v.notes })),
       })),
+      corpus: corpus.entries.map((e) => ({ english: e.english, conlang: e.conlang })),
     };
   });
 
@@ -92,7 +96,8 @@ export function useProjectExport(projectId: () => string | null) {
       input.value.phonemes.length > 0 ||
       input.value.lexicon.length > 0 ||
       input.value.rules.length > 0 ||
-      input.value.wordClasses.length > 0,
+      input.value.wordClasses.length > 0 ||
+      input.value.corpus.length > 0,
   );
 
   function download(filename: string, contents: string, mime: string) {
@@ -118,5 +123,6 @@ export function useProjectExport(projectId: () => string | null) {
       download(`${stem()}-lexicon.csv`, toLexiconCsv(input.value), "text/csv"),
     exportLexiconCsvFull: () =>
       download(`${stem()}-lexicon-full.csv`, toLexiconCsvFull(input.value), "text/csv"),
+    exportCorpusCsv: () => download(`${stem()}-corpus.csv`, toCorpusCsv(input.value), "text/csv"),
   };
 }
