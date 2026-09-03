@@ -329,34 +329,42 @@ export const useCorpusStore = defineStore("corpus", () => {
   }
 
   /**
-   * Apply a parsed CSV.
+   * Apply a resolved import: rows to write and stored ids to delete, both already decided
+   * by the review dialog against `corpusMerge.ts`'s plan.
    *
-   * Through `import_corpus` rather than a loop of inserts, for the reason `import_lexicon`
+   * Through `import_corpus` rather than a loop of writes, for the reason `import_lexicon`
    * exists: an import is one act over many rows, and a file half-applied is worse than one
-   * refused. The RPC only ever inserts — there is no key column in this format, so nothing
-   * in a file can identify a row to change — and it reports counts rather than rows, which
-   * is why the refetch afterwards is not optional.
+   * refused. The RPC matches each row by its English — the key, since 0028 — and decides
+   * insert versus update for itself; it reports counts rather than rows, which is why the
+   * refetch afterwards is not optional.
    */
-  async function importRows(projectId: string, rows: CorpusRow[]) {
+  async function importRows(projectId: string, rows: CorpusRow[], deleteIds: string[]) {
     savingNew.value = true;
     error.value = null;
     try {
       const { data, error: rpcError } = await supabase.rpc("import_corpus", {
         p_project_id: projectId,
         p_rows: rows,
+        p_delete_ids: deleteIds,
       });
       if (rpcError) {
         error.value = rpcError.message;
         return null;
       }
       await fetchFor(projectId);
-      // `passages` is what the RPC inferred from the shape of each row; the client's own
-      // `planCorpusImport` predicts the same split, and this is the count that actually
-      // landed.
-      const result = (data ?? {}) as { created?: number; skipped?: number; passages?: number };
+      // `passages` is what the RPC inferred for the rows it actually inserted; the
+      // client's own `inferKind` predicts the same split for its preview, and this is
+      // the count that actually landed.
+      const result = (data ?? {}) as {
+        created?: number;
+        updated?: number;
+        deleted?: number;
+        passages?: number;
+      };
       return {
         created: result.created ?? 0,
-        skipped: result.skipped ?? 0,
+        updated: result.updated ?? 0,
+        deleted: result.deleted ?? 0,
         passages: result.passages ?? 0,
       };
     } finally {

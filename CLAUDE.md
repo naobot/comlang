@@ -172,55 +172,86 @@ every row of an import one timestamp and read them back in arbitrary order. Same
 word-class seed hit. There is no reordering UI yet; the column is there so the order an
 import laid down survives.
 
-**`import_corpus` (0022) only ever inserts, because the format has no key column.** The CSV
-is `english,conlang` and nothing else, so nothing in a file can say "this is the row you
-already have, changed" — the only candidate is the text, and the text is exactly what an
-edit changes. Matching on it would be guessing, and a wrong guess overwrites a sentence
-somebody wrote. So:
+**`import_corpus` matches on the English sentence (0028), reversing what 0022 and 0025 said
+was the whole character of this format.** The CSV is still `english,conlang` and nothing
+else, but English is now the key, matched trimmed and exact — the same way `entry_key`
+keys a lexicon row — rather than the pair only ever being deduped. That is a deliberate
+trade, made when asked for directly, and what it buys is real: a typo in a stored conlang
+translation can now be fixed by correcting the CSV and re-importing, landing as an update
+instead of a second row beside the original.
 
-- A row already present **verbatim on both sides** is skipped, which is what makes
-  re-importing your own export a no-op rather than a doubling.
-- Anything else is added, **including a corrected sentence** — it arrives as a second row
-  beside the original. That is inherent to a keyless format, not a bug to fix, and it is
-  why the review states the add/skip split before anything is written.
-- Nothing is ever updated or deleted.
-- The dedup is **not** narrowed by kind: the same text filed in the other view is the same
-  example, and adding it again because it is filed differently would be a doubling.
+**What it costs is stated rather than hidden, because `corpus_entries` still has no
+unique constraint on English and still should not** — two examples legitimately sharing an
+English gloss is exactly what an alternate phrasing *is*, and this project has six such
+pairs. A file can only ever name one row per English key, though, so where two stored rows
+share one, only the first the RPC finds (`order by created_at`, so at least deterministic)
+is reachable at all; the second falls out of every file's keys and lands in the review
+dialog's "not in this file" section, indistinguishable there from a row that was
+genuinely dropped. Nothing deletes it on its own — that section still defaults to kept,
+same as any row a partial file doesn't mention — but a full-corpus round trip will flag
+it on every re-import. `corpusMerge.test.ts` pins the sharper edge of this: **without a
+`claimed`-ids set, `buildMergePlan` used to make the second such row vanish from the plan
+entirely** — not matched, not listed absent — because `fileKeys.has(key)` is true for
+both rows sharing a key even though only one of them was ever actually looked up. That
+was a real bug caught before it shipped, not a hypothetical.
 
-Deduplication is a courtesy of the import, **not** a constraint on the table: two examples
-may legitimately share an English translation, and one conlang sentence may be glossed two
-ways. A unique index would reject real data.
+`import_corpus` (0028):
 
-**The corpus import is reviewed before it is applied too, on the same footing as the
-lexicon's (0027) — a review dialog instead of a `window.confirm`, both outcomes rendered
-inline instead of in an `alert()`.** `buildCorpusImportPlan` in `corpusImport.ts` is
-`buildMergePlan`'s counterpart: given the parsed rows and what is already stored, it
-partitions the file into `additions` (new rows, each carrying the kind `inferKind` gives
-it) and `skipped` (already there, verbatim, in the project or earlier in the same file).
-`src/components/corpus/ImportReviewDialog.vue` renders each row instead of the lexicon's
-per-field diff, because a two-column pair has nothing to diff — there is no stored version
-of a new row to compare it against.
+- Looks a row's English up among the project's stored rows; a match **updates only
+  `conlang`** — English is the key that found the row, so a file cannot change it out
+  from under itself, and `kind` is left exactly as it was, since an import updating a row
+  should not silently move it between sub-views.
+- No match **inserts**, with `kind` inferred the same way it always was (0025) — only for
+  a genuinely new row, never for one being updated.
+- A row whose English is blank **is never looked up, only ever inserted** — a translation
+  waiting for its sentence is a real working state, and there is nothing in it to key on,
+  the same reasoning `import_lexicon` applies to a row with no `entry_key`.
+- `p_delete_ids` (added in the same migration, on the footing 0027 gave `import_lexicon`)
+  deletes ids the review dialog was handed and the user ticked, one at a time, and nothing
+  is ever inferred from a file's absence.
 
-**What did not carry over is the point.** The lexicon's dialog exists to turn a bare count
-into a set of *decisions* — a conflict to resolve, a duplicate key to pick between, a
-deletion to opt into. None of those situations can arise here: there is no key, so nothing
-can conflict, nothing can be claimed twice, and nothing a file omits can be told apart from
-a sentence nobody has written yet — so there is no delete section, no default to state, no
-`unresolved()` to block Import on. Building that machinery anyway to look like the lexicon
-would be decoration, not parity; `planCorpusImport`'s own tests (`corpusImport.test.ts`)
-already establish that two rows differing only by a typo fix are two rows, not a conflict,
-and the review dialog has to agree with that, not paper over it. The one thing shown that
-is not a decision either is the inferred kind per row — a preview of what `import_corpus`
-will do, not a choice made in the dialog, since flipping it there with nothing to send it
-to would just delay the one-click fix the sub-view's own → Passage / → Sentence control
-already gives a wrongly-guessed row.
+Deduplication on the pair is gone with it: a corrected sentence is now a targeted update,
+not a second row to be caught by a later re-import.
 
-`planCorpusImport` stays as the counts-only summary and is now implemented on top of
-`buildCorpusImportPlan` rather than its own pass over the rows, so the two cannot drift on
-what "added" and "skipped" mean — the same reason `tally()` and `resolveImport()` are
-pinned together on the lexicon side. `ParsedCorpusRow` gained a `line` field to match
-`lexiconImport.ts`'s `ParsedRow`, for the same reason: so the dialog can say which line a
-row came from, not just repeat its text.
+**The corpus import is reviewed before it is applied, the same dialog shape the lexicon's
+(0027) uses and for the same reason — say what a file will do before it does it, rather
+than a `window.confirm` giving only a count, with both outcomes rendered inline instead of
+in an `alert()`.** `src/lib/corpusMerge.ts` is `lexiconMerge.ts`'s counterpart line for
+line: `buildMergePlan` partitions a parsed file into `conflicts` (English matches, conlang
+does not — defaulting to *take imported*, the file the user just chose), `duplicates` (one
+English claimed twice in the file, blocking Import until resolved, no default), `unkeyed`
+(blank English, always added, decided per row), `additions` (a new English, added, no
+decision to make), `identical` (a no-op, counted), and `absent` (a stored row the file's
+keys never claimed, kept unless deletion is opted into). `decideConflict` / `decideUnkeyed`
+/ `decideAbsent` / `decideDuplicate`, `resolveImport`, `tally` and `unresolved` are the
+same functions under the same names, doing the same jobs.
+
+What differs from the lexicon is narrow and named in the module comment rather than left
+to be discovered: a conflict here has one field to show, not four, since English is the
+key and cannot itself change without becoming a different row — so `ImportReviewDialog.vue`
+renders a `before`/`after` pair instead of a diff table. And the kind shown on a new row is
+a preview of what `import_corpus` will infer for it, not a decision made in the dialog —
+`inferKind` and the RPC agree on the same rule for the same brand-new rows, and a row
+matched to something already stored keeps that row's own kind untouched, so it carries
+none to show.
+
+`ParsedCorpusRow` (in `corpusImport.ts`, which stayed pure parsing — the merge logic lives
+in `corpusMerge.ts` now, mirroring the lexicon's own split) carries a `line`, for the same
+reason `lexiconImport.ts`'s `ParsedRow` does: so the dialog can say which line a row came
+from, not just repeat its text.
+
+What was verified when the corpus import switched to the English key (2026-09-03), as a
+**collaborator** against the live project (xenic), via the RPC directly with a crafted
+JWT claim rather than through the store — no signed-in session was available here: a fresh
+English inserted with the correct inferred kind (one utterance, one passage); a second call
+reusing that same English **updated the existing row's id and left its kind untouched**
+while changing only `conlang`; `p_delete_ids` removed both rows in one call; a non-member
+claim was refused 42501 and inserted nothing; and the project was confirmed back at its
+original 72 corpus rows afterward with zero leftover test rows. `get_advisors` showed
+nothing new beyond the two documented `create_project` / `add_project_member` warnings.
+Not verified live: the `select ... into` picking the *oldest* of two same-English rows
+under `order by created_at` — asserted by the SQL, not exercised against real duplicate
+rows in this pass.
 
 **The corpus store generalises the lexicon's protections from one open entry to every
 visible row.** Every row in `byId` has an entry in `drafts` — `fetchFor` and `upsert` are

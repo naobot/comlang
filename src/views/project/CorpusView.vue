@@ -7,7 +7,8 @@ import ImportReviewDialog from "@/components/corpus/ImportReviewDialog.vue";
 import PassageList from "@/components/corpus/PassageList.vue";
 import UtteranceGrid from "@/components/corpus/UtteranceGrid.vue";
 import { useProjectExport } from "@/composables/useProjectExport";
-import { type CorpusImportPlan, buildCorpusImportPlan, parseCorpusCsv } from "@/lib/corpusImport";
+import { parseCorpusCsv } from "@/lib/corpusImport";
+import { type MergePlan, type ResolvedImport, buildMergePlan } from "@/lib/corpusMerge";
 import { useCorpusStore } from "@/stores/corpus";
 import { useMembersStore } from "@/stores/members";
 import { usePhonemesStore } from "@/stores/phonemes";
@@ -38,7 +39,7 @@ const fileInput = ref<HTMLInputElement | null>(null);
 const importing = ref(false);
 // The parsed file, held between picking it and pressing Import in the review dialog.
 // Nothing is written while this is set — same rule the lexicon's own review follows.
-const review = ref<{ plan: CorpusImportPlan; fileName: string } | null>(null);
+const review = ref<{ plan: MergePlan; fileName: string } | null>(null);
 const outcome = ref<string | null>(null);
 // Read off the store at the moment of failure rather than rendered from it, for the same
 // reason the lexicon does this: the dialog stays open so nothing scrolled to is lost.
@@ -79,21 +80,17 @@ async function onFile(event: Event) {
   }
 
   review.value = {
-    plan: buildCorpusImportPlan(parsed.rows, corpus.entries),
+    plan: buildMergePlan(parsed.rows, corpus.entries),
     fileName: file.name,
   };
 }
 
-async function applyImport() {
+async function applyImport(resolved: ResolvedImport) {
   if (!review.value) return;
   importing.value = true;
   importError.value = null;
   try {
-    const rows = review.value.plan.additions.map((r) => ({
-      english: r.english,
-      conlang: r.conlang,
-    }));
-    const result = await corpus.importRows(props.projectId, rows);
+    const result = await corpus.importRows(props.projectId, resolved.rows, resolved.deleteIds);
     if (!result) {
       importError.value = corpus.error ?? "That import could not be applied.";
       return;
@@ -104,8 +101,9 @@ async function applyImport() {
     // this line should say.
     const parts = [
       result.created ? `${result.created} added` : null,
+      result.updated ? `${result.updated} updated` : null,
       result.passages ? `${result.passages} as passages` : null,
-      result.skipped ? `${result.skipped} skipped` : null,
+      result.deleted ? `${result.deleted} deleted` : null,
     ].filter(Boolean);
     outcome.value = parts.length ? `Imported: ${parts.join(", ")}.` : "Nothing changed.";
   } finally {

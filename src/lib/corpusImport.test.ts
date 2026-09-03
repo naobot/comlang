@@ -4,13 +4,7 @@ import { describe, expect, it } from "vite-plus/test";
 // deliberately has no Node types, and Vite resolves the raw import in both.
 import source from "./corpusImport.ts?raw";
 
-import {
-  CORPUS_PASSAGE_MIN_LENGTH,
-  buildCorpusImportPlan,
-  inferKind,
-  parseCorpusCsv,
-  planCorpusImport,
-} from "./corpusImport";
+import { CORPUS_PASSAGE_MIN_LENGTH, inferKind, parseCorpusCsv } from "./corpusImport";
 import { type ExportInput, toCorpusCsv } from "./exporters";
 
 const parse = parseCorpusCsv;
@@ -66,90 +60,6 @@ describe("parseCorpusCsv", () => {
   });
 });
 
-describe("planCorpusImport", () => {
-  const rows = [
-    { english: "I see you", conlang: "mi kan yu" },
-    { english: "I see the book", conlang: "mi kan miŋgwem" },
-  ];
-
-  it("adds what is not already there", () => {
-    expect(planCorpusImport(rows, [])).toEqual({ add: 2, skip: 0, passages: 0 });
-  });
-
-  // The property that makes re-importing your own export safe.
-  it("skips a row already present verbatim", () => {
-    expect(planCorpusImport(rows, rows)).toEqual({ add: 0, skip: 2, passages: 0 });
-  });
-
-  // Inherent to a keyless format: nothing in the file can say "the row you have, changed".
-  it("treats a corrected sentence as a new row rather than an update", () => {
-    const fixed = [{ english: "I see you", conlang: "mi kan yu." }];
-    expect(planCorpusImport(fixed, rows)).toEqual({ add: 1, skip: 0, passages: 0 });
-  });
-
-  it("counts a duplicate inside the file once", () => {
-    expect(planCorpusImport([...rows, rows[0]!], [])).toEqual({ add: 2, skip: 1, passages: 0 });
-  });
-
-  // "a b" + "c" and "a" + "b c" are different examples and must not collide on one key.
-  it("does not conflate rows that differ only in where the split falls", () => {
-    const a = [{ english: "a b", conlang: "c" }];
-    const b = [{ english: "a", conlang: "b c" }];
-    expect(planCorpusImport(b, a)).toEqual({ add: 1, skip: 0, passages: 0 });
-  });
-});
-
-describe("buildCorpusImportPlan", () => {
-  const line = (i: number, r: { english: string; conlang: string }) => ({ line: i, ...r });
-
-  it("puts new rows in additions, each carrying its inferred kind", () => {
-    const rows = [
-      line(1, { english: "one line", conlang: "x" }),
-      line(2, { english: "two\nlines", conlang: "y" }),
-    ];
-    const plan = buildCorpusImportPlan(rows, []);
-    expect(plan.additions).toEqual([
-      { line: 1, english: "one line", conlang: "x", kind: "utterance" },
-      { line: 2, english: "two\nlines", conlang: "y", kind: "passage" },
-    ]);
-    expect(plan.skipped).toEqual([]);
-  });
-
-  // Same property `planCorpusImport` pins, checked here at the row level: the two must
-  // count the story the same way or the summary and the dialog it feeds would disagree.
-  it("puts a row already present verbatim, or repeated in the file, in skipped", () => {
-    const existing = [{ english: "I see you", conlang: "mi kan yu" }];
-    const rows = [
-      line(1, existing[0]!),
-      line(2, { english: "I see the book", conlang: "mi kan miŋgwem" }),
-      line(3, { english: "I see the book", conlang: "mi kan miŋgwem" }),
-    ];
-    const plan = buildCorpusImportPlan(rows, existing);
-    expect(plan.additions).toEqual([
-      { line: 2, english: "I see the book", conlang: "mi kan miŋgwem", kind: "utterance" },
-    ]);
-    expect(plan.skipped).toEqual([line(1, existing[0]!), line(3, rows[2]!)]);
-  });
-
-  it("agrees with planCorpusImport's counts", () => {
-    const existing = [{ english: "I see you", conlang: "mi kan yu" }];
-    const rows = [
-      { english: "I see you", conlang: "mi kan yu" },
-      { english: "two\nlines", conlang: "y" },
-      { english: "two\nlines", conlang: "y" },
-    ];
-    const plan = buildCorpusImportPlan(
-      rows.map((r, i) => line(i + 1, r)),
-      existing,
-    );
-    expect(planCorpusImport(rows, existing)).toEqual({
-      add: plan.additions.length,
-      skip: plan.skipped.length,
-      passages: plan.additions.filter((r) => r.kind === "passage").length,
-    });
-  });
-});
-
 describe("the corpus CSV round-trip", () => {
   const input = {
     projectName: "xenic",
@@ -176,11 +86,6 @@ describe("the corpus CSV round-trip", () => {
     expect(parsed.header).toBe(true);
     expect(parsed.rows).toEqual(input.corpus.map((row, i) => ({ line: i + 2, ...row })));
   });
-
-  it("adds nothing when its own export is re-imported", () => {
-    const parsed = parse(toCorpusCsv(input));
-    expect(planCorpusImport(parsed.rows, input.corpus)).toEqual({ add: 0, skip: 3, passages: 0 });
-  });
 });
 
 describe("inferKind", () => {
@@ -202,26 +107,6 @@ describe("inferKind", () => {
 
   it("judges each side, since one may be translated and the other not yet", () => {
     expect(inferKind({ english: "", conlang: "a\nb" })).toBe("passage");
-  });
-});
-
-describe("the import plan's split", () => {
-  it("counts how many added rows would open as passages", () => {
-    const plan = planCorpusImport(
-      [
-        { english: "one line", conlang: "x" },
-        { english: "two\nlines", conlang: "y" },
-      ],
-      [],
-    );
-    expect(plan).toEqual({ add: 2, skip: 0, passages: 1 });
-  });
-
-  // A skipped row is already stored; it is not landing anywhere, so it cannot be counted
-  // in the split without the numbers ceasing to add up.
-  it("does not count a skipped row", () => {
-    const existing = [{ english: "two\nlines", conlang: "y" }];
-    expect(planCorpusImport(existing, existing)).toEqual({ add: 0, skip: 1, passages: 0 });
   });
 });
 

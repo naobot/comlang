@@ -24,10 +24,234 @@ export type Database = {
   }
   public: {
     Tables: {
+      category_values: {
+        Row: {
+          category_id: string
+          id: string
+          notes: string | null
+          project_id: string
+          sort_order: number
+          value: string
+        }
+        Insert: {
+          category_id: string
+          id?: string
+          notes?: string | null
+          project_id: string
+          sort_order?: number
+          value: string
+        }
+        Update: {
+          category_id?: string
+          id?: string
+          notes?: string | null
+          project_id?: string
+          sort_order?: number
+          value?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_values_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "grammatical_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_values_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      corpus_entries: {
+        Row: {
+          conlang: string
+          created_at: string
+          english: string
+          id: string
+          kind: Database["public"]["Enums"]["corpus_kind"]
+          project_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          conlang?: string
+          created_at?: string
+          english?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["corpus_kind"]
+          project_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          conlang?: string
+          created_at?: string
+          english?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["corpus_kind"]
+          project_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "corpus_entries_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      grammar_rules: {
+        Row: {
+          created_at: string
+          effect: string | null
+          environment: string | null
+          examples: string | null
+          id: string
+          name: string
+          notes: string | null
+          project_id: string
+          rule_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          effect?: string | null
+          environment?: string | null
+          examples?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          project_id: string
+          rule_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          effect?: string | null
+          environment?: string | null
+          examples?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          project_id?: string
+          rule_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grammar_rules_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      grammatical_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          project_id: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          project_id: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          project_id?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grammatical_categories_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lexicon_entries: {
+        Row: {
+          created_at: string
+          entry_key: string | null
+          gloss: string | null
+          id: string
+          lemma: string
+          notes: string | null
+          project_id: string
+          updated_at: string
+          word_class: string | null
+        }
+        Insert: {
+          created_at?: string
+          entry_key?: string | null
+          gloss?: string | null
+          id?: string
+          lemma: string
+          notes?: string | null
+          project_id: string
+          updated_at?: string
+          word_class?: string | null
+        }
+        Update: {
+          created_at?: string
+          entry_key?: string | null
+          gloss?: string | null
+          id?: string
+          lemma?: string
+          notes?: string | null
+          project_id?: string
+          updated_at?: string
+          word_class?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lexicon_entries_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       phoneme_class_members: {
-        Row: { class_id: string; ipa: string; project_id: string }
-        Insert: { class_id: string; ipa: string; project_id: string }
-        Update: { class_id?: string; ipa?: string; project_id?: string }
+        Row: {
+          class_id: string
+          ipa: string
+          project_id: string
+        }
+        Insert: {
+          class_id: string
+          ipa: string
+          project_id: string
+        }
+        Update: {
+          class_id?: string
+          ipa?: string
+          project_id?: string
+        }
         Relationships: [
           {
             foreignKeyName: "phoneme_class_members_class_id_fkey"
@@ -175,138 +399,6 @@ export type Database = {
           },
           {
             foreignKeyName: "phonotactic_constraints_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      grammar_rules: {
-        Row: {
-          created_at: string
-          effect: string | null
-          environment: string | null
-          examples: string | null
-          id: string
-          name: string
-          notes: string | null
-          project_id: string
-          rule_order: number
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          effect?: string | null
-          environment?: string | null
-          examples?: string | null
-          id?: string
-          name: string
-          notes?: string | null
-          project_id: string
-          rule_order?: number
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          effect?: string | null
-          environment?: string | null
-          examples?: string | null
-          id?: string
-          name?: string
-          notes?: string | null
-          project_id?: string
-          rule_order?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "grammar_rules_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      corpus_entries: {
-        Row: {
-          conlang: string
-          created_at: string
-          english: string
-          id: string
-          kind: Database["public"]["Enums"]["corpus_kind"]
-          project_id: string
-          sort_order: number
-          updated_at: string
-        }
-        Insert: {
-          conlang?: string
-          created_at?: string
-          english?: string
-          id?: string
-          kind?: Database["public"]["Enums"]["corpus_kind"]
-          project_id: string
-          sort_order?: number
-          updated_at?: string
-        }
-        Update: {
-          conlang?: string
-          created_at?: string
-          english?: string
-          id?: string
-          kind?: Database["public"]["Enums"]["corpus_kind"]
-          project_id?: string
-          sort_order?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "corpus_entries_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      lexicon_entries: {
-        Row: {
-          created_at: string
-          entry_key: string | null
-          gloss: string | null
-          id: string
-          lemma: string
-          notes: string | null
-          project_id: string
-          updated_at: string
-          word_class: string | null
-        }
-        Insert: {
-          created_at?: string
-          entry_key?: string | null
-          gloss?: string | null
-          id?: string
-          lemma: string
-          notes?: string | null
-          project_id: string
-          updated_at?: string
-          word_class?: string | null
-        }
-        Update: {
-          created_at?: string
-          entry_key?: string | null
-          gloss?: string | null
-          id?: string
-          lemma?: string
-          notes?: string | null
-          project_id?: string
-          updated_at?: string
-          word_class?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "lexicon_entries_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -506,6 +598,46 @@ export type Database = {
           },
         ]
       }
+      word_class_categories: {
+        Row: {
+          category_id: string
+          project_id: string
+          word_class_id: string
+        }
+        Insert: {
+          category_id: string
+          project_id: string
+          word_class_id: string
+        }
+        Update: {
+          category_id?: string
+          project_id?: string
+          word_class_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "word_class_categories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "grammatical_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "word_class_categories_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "word_class_categories_word_class_id_fkey"
+            columns: ["word_class_id"]
+            isOneToOne: false
+            referencedRelation: "word_classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       word_classes: {
         Row: {
           created_at: string
@@ -543,126 +675,6 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      grammatical_categories: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          project_id: string
-          sort_order: number
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          project_id: string
-          sort_order?: number
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-          project_id?: string
-          sort_order?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "grammatical_categories_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      category_values: {
-        Row: {
-          category_id: string
-          id: string
-          notes: string | null
-          project_id: string
-          sort_order: number
-          value: string
-        }
-        Insert: {
-          category_id: string
-          id?: string
-          notes?: string | null
-          project_id: string
-          sort_order?: number
-          value: string
-        }
-        Update: {
-          category_id?: string
-          id?: string
-          notes?: string | null
-          project_id?: string
-          sort_order?: number
-          value?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "category_values_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "grammatical_categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "category_values_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      word_class_categories: {
-        Row: {
-          category_id: string
-          project_id: string
-          word_class_id: string
-        }
-        Insert: {
-          category_id: string
-          project_id: string
-          word_class_id: string
-        }
-        Update: {
-          category_id?: string
-          project_id?: string
-          word_class_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "word_class_categories_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "grammatical_categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "word_class_categories_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "word_class_categories_word_class_id_fkey"
-            columns: ["word_class_id"]
-            isOneToOne: false
-            referencedRelation: "word_classes"
             referencedColumns: ["id"]
           },
         ]
@@ -712,7 +724,7 @@ export type Database = {
         }
       }
       import_corpus: {
-        Args: { p_project_id: string; p_rows: Json }
+        Args: { p_delete_ids?: string[]; p_project_id: string; p_rows: Json }
         Returns: Json
       }
       import_lexicon: {
@@ -780,12 +792,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -809,11 +821,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -834,11 +846,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -859,11 +871,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -876,11 +888,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
