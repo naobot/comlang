@@ -716,7 +716,12 @@ export type Database = {
         Returns: Json
       }
       import_lexicon: {
-        Args: { p_fields: string[]; p_project_id: string; p_rows: Json }
+        Args: {
+          p_delete_ids?: string[]
+          p_fields: string[]
+          p_project_id: string
+          p_rows: Json
+        }
         Returns: Json
       }
       save_grammar_rules: {

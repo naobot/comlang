@@ -148,7 +148,7 @@ const availableManners = computed(() =>
 h2 {
   margin: 0 0 var(--sp-1);
   font-size: 0.875rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--c-muted);
 }

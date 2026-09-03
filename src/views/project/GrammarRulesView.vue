@@ -263,7 +263,7 @@ label {
   gap: var(--sp-1);
   color: var(--c-muted);
   font-size: 0.75rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   min-width: 0;
 }

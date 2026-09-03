@@ -4,6 +4,19 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      The two webfont families behind `--font-display` and `--font-ui` in tokens.css.
+      Only 400/500/600 of each: nothing in the app asks a sans face for 700 — the one bold
+      weight on the page is a selected phoneme, and that is mono, which is not loaded here.
+      `display=swap` renders in the system stack until they arrive, which is what the
+      fallbacks in both tokens are for.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
     <title>community language</title>
   </head>
   <body>

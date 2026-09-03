@@ -216,7 +216,7 @@ header p {
 h2 {
   margin: 0 0 var(--sp-3);
   font-size: 0.75rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--c-muted);
 }

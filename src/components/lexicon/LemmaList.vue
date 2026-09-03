@@ -124,7 +124,9 @@ const exactLemma = computed(() =>
   background: transparent;
   text-align: left;
   text-transform: none;
-  /* Content, not a control: a lemma and its gloss are prose and have to wrap. */
+  /* Content, not a control: a lemma and its gloss are prose and have to wrap — and read
+     in the UI face, not the display one. */
+  font-family: var(--font-ui);
   white-space: normal;
   letter-spacing: normal;
   font-size: 0.875rem;

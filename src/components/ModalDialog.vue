@@ -122,13 +122,14 @@ h2 {
   min-width: 0;
   margin: 0;
   font-size: 0.875rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--c-muted);
 }
 
 .close {
   /* Content, not a label: the glyph must not be tracked out or uppercased. */
+  font-family: var(--font-ui);
   font-size: 1.125rem;
   line-height: 1;
   font-weight: 400;

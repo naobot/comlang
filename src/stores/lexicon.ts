@@ -291,6 +291,14 @@ export const useLexiconStore = defineStore("lexicon", () => {
     return message;
   }
 
+  /** The same translation where there is no one key to name — an import is many rows. */
+  function describeKeyClash(message: string) {
+    if (message.includes("lexicon_entries_key_idx")) {
+      return "Two entries would end up sharing a key. Nothing was imported.";
+    }
+    return message;
+  }
+
   /**
    * Insert one entry **without opening it**, for callers outside the lexicon page.
    *
@@ -336,10 +344,19 @@ export const useLexiconStore = defineStore("lexicon", () => {
    * file carried, and the RPC writes only those — the two-column export has no gloss
    * column, and treating its absence as "clear it" would empty every gloss in the project.
    *
+   * `deleteIds` are entries the user ticked in the review dialog, one at a time, having
+   * been shown each of them. The RPC still infers nothing from absence — an import that is
+   * simply a partial file goes on deleting nothing at all.
+   *
    * The re-fetch afterwards is not optional. This is the one write the store cannot patch
    * from its own return value: the RPC reports counts, not rows.
    */
-  async function importRows(projectId: string, rows: ImportRow[], fields: ImportField[]) {
+  async function importRows(
+    projectId: string,
+    rows: ImportRow[],
+    fields: ImportField[],
+    deleteIds: string[] = [],
+  ) {
     saving.value = true;
     error.value = null;
     try {
@@ -347,14 +364,21 @@ export const useLexiconStore = defineStore("lexicon", () => {
         p_project_id: projectId,
         p_rows: rows,
         p_fields: fields,
+        p_delete_ids: deleteIds,
       });
       if (rpcError) {
-        error.value = rpcError.message;
+        // The same translation the single-entry saves get: the partial unique index is the
+        // one failure here a user can actually act on, and its raw message names an index.
+        error.value = describeKeyClash(rpcError.message);
         return null;
       }
       await fetchFor(projectId);
-      const result = (data ?? {}) as { created?: number; updated?: number };
-      return { created: result.created ?? 0, updated: result.updated ?? 0 };
+      const result = (data ?? {}) as { created?: number; updated?: number; deleted?: number };
+      return {
+        created: result.created ?? 0,
+        updated: result.updated ?? 0,
+        deleted: result.deleted ?? 0,
+      };
     } finally {
       saving.value = false;
     }

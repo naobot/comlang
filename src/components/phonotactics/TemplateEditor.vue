@@ -191,7 +191,7 @@ function add() {
 h2 {
   margin: var(--sp-8) 0 var(--sp-1);
   font-size: 0.875rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--c-muted);
 }
@@ -287,6 +287,7 @@ h2 {
 
 .phonemes {
   /* Content, not a label: a count reads worse tracked out and uppercased. */
+  font-family: var(--font-ui);
   text-transform: none;
   letter-spacing: normal;
   font-weight: 400;

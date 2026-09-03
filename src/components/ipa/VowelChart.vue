@@ -129,7 +129,7 @@ const centralLine = { x1: 50, x2: edgeAt(1) + (100 - edgeAt(1)) / 2 };
 h2 {
   margin: var(--sp-8) 0 var(--sp-1);
   font-size: 0.875rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--c-muted);
 }

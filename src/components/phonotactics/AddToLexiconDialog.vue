@@ -167,8 +167,8 @@ label {
   min-width: 0;
   color: var(--c-muted);
   font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 

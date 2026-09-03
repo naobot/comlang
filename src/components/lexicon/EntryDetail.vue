@@ -212,7 +212,7 @@ h2 {
   color: var(--c-accent);
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -230,7 +230,7 @@ label {
   gap: var(--sp-1);
   color: var(--c-muted);
   font-size: 0.75rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   min-width: 0;
 }

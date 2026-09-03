@@ -28,11 +28,18 @@ export type ImportRow = {
   notes: string;
 };
 
+/**
+ * A row with the line it came from, kept so the review dialog can say *which* two lines
+ * are fighting over a key. The line is the one a person sees in a spreadsheet, header
+ * counted. Stripped again before the payload reaches the RPC.
+ */
+export type ParsedRow = ImportRow & { line: number };
+
 /** The columns a file supplied, and therefore the only ones an import may overwrite. */
 export type ImportField = "lemma" | "gloss" | "word_class" | "notes";
 
 export type ParsedImport = {
-  rows: ImportRow[];
+  rows: ParsedRow[];
   fields: ImportField[];
   /** Blocking: nothing is written while any of these stand. */
   problems: string[];
@@ -66,8 +73,7 @@ export function parseLexiconCsv(text: string): ParsedImport {
   }
 
   const fields: ImportField[] = full ? ["lemma", "gloss", "word_class", "notes"] : ["lemma"];
-  const out: ImportRow[] = [];
-  const seen = new Map<string, number>();
+  const out: ParsedRow[] = [];
 
   body.forEach((cells, i) => {
     // The line a person would see in a spreadsheet, header included.
@@ -75,25 +81,20 @@ export function parseLexiconCsv(text: string): ParsedImport {
     const at = (index: number) => (cells[index] ?? "").trim();
 
     const key = at(0);
-    const lemma = full ? at(1) : at(1);
+    const lemma = at(1);
 
     if (!lemma) {
+      // Still blocking, unlike a repeated key: a line with no lemma has no second version
+      // to choose between, so there is nothing for the review dialog to ask about.
       problems.push(`Line ${line} has no lemma.`);
       return;
     }
 
-    if (key) {
-      const first = seen.get(key);
-      if (first !== undefined) {
-        // Two rows claiming one key would fight over the same entry, and which one won
-        // would depend on file order — worth refusing rather than resolving.
-        problems.push(`Line ${line} repeats the key “${key}” from line ${first}.`);
-        return;
-      }
-      seen.set(key, line);
-    }
-
+    // Two rows claiming one key used to be refused here. They are not any more: which one
+    // wins is a question the user can answer in one click, and refusing the file threw
+    // away every good row with it. `buildMergePlan` groups them instead.
     out.push({
+      line,
       entry_key: key || null,
       lemma,
       gloss: full ? at(3) : "",
@@ -103,37 +104,4 @@ export function parseLexiconCsv(text: string): ParsedImport {
   });
 
   return { rows: out, fields, problems };
-}
-
-/**
- * What applying this file would do, given what is already stored.
- *
- * Matching is on `entry_key` **only**. Not on lemma: the language has homographs — `gwan`
- * is both "meaning" (noun) and "become" (verb) — which is exactly why `lexicon_entries`
- * has no unique constraint on lemma, and matching on one would merge two real words.
- * A row with no key is therefore always new.
- */
-export type ImportPlan = { create: number; update: number; unkeyed: number };
-
-export function planImport(
-  rows: readonly ImportRow[],
-  existing: readonly { entry_key: string | null }[],
-): ImportPlan {
-  const keys = new Set(existing.map((e) => e.entry_key).filter((k): k is string => !!k));
-  let create = 0;
-  let update = 0;
-  let unkeyed = 0;
-
-  for (const row of rows) {
-    if (!row.entry_key) {
-      unkeyed++;
-      create++;
-    } else if (keys.has(row.entry_key)) {
-      update++;
-    } else {
-      create++;
-    }
-  }
-
-  return { create, update, unkeyed };
 }

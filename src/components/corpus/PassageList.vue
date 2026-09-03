@@ -270,9 +270,10 @@ function confirmDelete(entry: CorpusEntry) {
 
 .pane-label {
   color: var(--c-muted);
+  font-family: var(--font-display);
   font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.07em;
+  font-weight: 500;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 
@@ -310,6 +311,8 @@ function confirmDelete(entry: CorpusEntry) {
   background: none;
   color: var(--c-accent);
   text-decoration: underline;
+  /* Content, not a control: a link inside a sentence keeps the sentence's face. */
+  font-family: var(--font-ui);
   text-transform: none;
   letter-spacing: normal;
   font-size: inherit;

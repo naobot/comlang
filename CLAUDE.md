@@ -57,8 +57,8 @@ the fixture had no commas; exporting the real project found it in seconds. `yaml
 takes a `flow` flag for exactly this, and the tests round-trip through the real parser
 rather than asserting on substrings.
 
-**Import is the lexicon's one whole-file write, and `import_lexicon` (0021) is where its
-three rules live.** Everything else on that page saves per entry; an import is one act over
+**Import is the lexicon's one whole-file write, and `import_lexicon` (0021, 0027) is where
+its rules live.** Everything else on that page saves per entry; an import is one act over
 many rows, and a file half-applied is worse than one refused.
 
 - **Matching is on `entry_key` only, never on lemma.** The language has homographs — `gwan`
@@ -69,14 +69,60 @@ many rows, and a file half-applied is worse than one refused.
   The two-column export has no gloss column, so treating an absent column as "clear it"
   would empty every gloss in the project on import. Verified live: a `fields: ["lemma"]`
   import renamed a lemma and left its gloss and word class untouched.
-- **Nothing is ever deleted.** A partial file is a normal thing to import; inferring
-  deletions from absence would silently turn an import into a whole-project replace.
+- **Nothing is ever deleted by inference.** 0027 added `p_delete_ids`, and the distinction
+  it turns on is the whole rule: the function deletes ids it is *handed*, one at a time,
+  each of which the user was shown and ticked in the review dialog. It still infers nothing
+  from absence — a partial file deletes nothing at all — because that inference is what
+  would silently turn an import into a whole-project replace.
 
 `parseLexiconCsv` accepts exactly the two shapes `exporters.ts` writes and reports which it
 found. Note the two-column format cannot represent "no key" — `toLexiconCsv` writes the
 lemma there instead — so re-importing it gives a previously unkeyed entry a key and adds a
 row rather than matching one. That is inherent to the format, not a bug to fix, and it is
-why the confirmation states the create/update split before anything is written.
+why the review dialog lists what is about to be added before anything is written.
+
+**The import is reviewed before it is applied, and the review is where every disagreement
+between the file and the lexicon is settled (0027).** It replaced a `window.confirm` that
+said "This will add 12 and update 30 entries" — a count, not a description. It could not
+say *which* thirty, and in particular could not say that one of them was about to have its
+lemma replaced under an existing key, which the old flow did without a word.
+
+`buildMergePlan` in `src/lib/lexiconMerge.ts` sorts the file into conflicts, additions,
+unkeyed rows, duplicated keys, entries already identical, and stored entries the file does
+not carry; `ImportReviewDialog.vue` renders each as a decision and `resolveImport` turns the
+answers back into a payload. Both are pure and unit-tested, with the same `?raw` purity
+guard `lexiconImport.ts` has.
+
+- **Resolution is per row, not per field.** A conflict resolved as "keep stored" is simply
+  **left out of the payload** — which is why row-level resolution needed nothing from the
+  RPC at all. Per-field merging would, since `p_fields` is one list for the whole call.
+- **Every default lives in `lexiconMerge.ts`**, behind `decideConflict` / `decideUnkeyed` /
+  `decideAbsent`, so the component never restates one. Conflicts default to **take
+  imported** (the user just chose that file), unkeyed rows to **add**, absent entries to
+  **keep**. A duplicated key has **no default**: `unresolved()` is what disables Import,
+  and it is the only thing that does.
+- **`tally()` and `resolveImport()` must agree**, and a test pins it. The footer's counts
+  are a claim about the payload; if they drift, one of them is lying to the user at exactly
+  the moment they press the button.
+- **Diffs cover only the columns the file carried.** The two-column export has no gloss, so
+  diffing it would both describe a write the RPC will not make and turn every entry in the
+  project into a conflict.
+- **A key claimed twice in one file no longer refuses the file.** `parseLexiconCsv` used to
+  push a blocking problem per offending line, which threw away every good row over a
+  question that has an answer. `ParsedRow` carries its spreadsheet `line` so the dialog can
+  name the two rows in conflict; `line` is stripped again before the payload is sent.
+  What is still blocking there is only what has no second version to choose between: a file
+  of the wrong shape, and a line with no lemma.
+- **A stored entry with no key at all counts as "not in this file",** since no file can
+  ever match it. It is listed with the rest rather than hidden — hiding a row from a list
+  headed "not in this file" would make Delete all mean less than it says — and Delete all
+  asks a second time before it fires.
+
+The view now renders the outcome and the failure. `lexicon.error` is read into a local ref
+at the moment of failure rather than rendered from the store: the entry editor already
+renders that same ref, and one message in two places reads as two problems. Before this, an
+import refused by the RPC set `error` and the view showed nothing at all — a denied import
+looked exactly like a successful one.
 
 **The corpus has two sub-views and one table, and the CSV knows about neither (0025).**
 `corpus_entries.kind` is `utterance` or `passage`: the sentence grid and the long-form
@@ -458,6 +504,39 @@ positioned box anchored that way gets no width to grow into — the height label
 as "Cl" and "Near-op", and "Back" (at `left: 100%`) vanished entirely. Both label rules
 therefore set an explicit `width`. Symbol pairs are opaque so the rules pass behind them,
 which is also why the axis labels need clearance: an overlapping pair paints over them.
+
+**There are two sans faces, and the split is about kind of text, not size or emphasis.**
+`--font-ui` (IBM Plex Sans) is everything read as language: body copy, hints, summaries,
+warnings, and the value inside a field. `--font-display` (Space Grotesk) is everything that
+*names* something: the project name and brand, the tabs, section heads, the consonant
+chart's column and row headers, and button labels. `--font-mono` is deliberately untouched
+by both — it is what carries the IPA.
+
+The display face is applied **once, by element** — `h1`–`h6`, `th`, `label` and `button` in
+`tokens.css` — rather than restated in twenty scoped blocks, because the moment it is a
+per-component decision the two faces start appearing in the wrong places. `th` is safe as a
+bare element selector: the consonant chart is the only table in the app with header cells.
+Weight is 500 everywhere the display face lands, not the browser's bold — the grotesk reads
+about a step heavier than the old system stack, so 600 shouts. Tracking is *not* set by
+that rule: an uppercase section head wants 0.08em, a 1.25rem title wants none, and the
+brand wants 0.10em because it is a wordmark rather than a label.
+
+Two opt-outs follow from it and are easy to miss:
+
+- **A `<label>` carries the face; its contents do not.** `label > *` puts every element
+  child back to the UI face at 400 with no tracking or casing — the control is a thing
+  someone typed and the `small` under it is a hint, neither of which is the label. The
+  selector is exact because a label's own text is a bare text node. A span that genuinely
+  *is* the label text (`.pane-label`) overrides it by class.
+- **A button that is really content opts out of the face as well as the casing.** The
+  existing convention was `text-transform: none`; it now needs `font-family: var(--font-ui)`
+  beside it (a menu item, a lemma in the list, an inline link, the modal's close glyph).
+  Buttons that already name a face of their own — the phones, terms and symbols, all mono —
+  need nothing.
+
+Verified in the built app under headless Chrome: both families load, and on the workspace
+shell the tabs, the active tab, the brand and the `Not found` title render in Space Grotesk
+while the body copy and links render in IBM Plex Sans.
 
 **Dark mode is a palette swap and nothing else, which is the whole point of the
 tokens.** `@media (prefers-color-scheme: dark)` in `src/styles/tokens.css` redefines the
@@ -860,6 +939,22 @@ collaborator: this round's only RPC change is additive (`import_corpus` now sets
 returns one extra count), and no signed-in collaborator session was available here — so the
 member guard, the import counts and the realtime path are covered by 0022's verification
 and by the unit tests, not by a fresh live run.
+
+What was verified when the import review went in (2026-09-03), as a **collaborator**
+against the live project on two throwaway projects since deleted: one call to the new
+four-argument `import_lexicon` updated one entry, added one and deleted two, returning
+`{"created":1,"deleted":2,"updated":1}`; the entry the file did not mention was left
+untouched; a `p_delete_ids` carrying an id from **another project the same user is also a
+member of** deleted nothing, which is the `project_id` predicate doing its job rather than
+RLS; a non-member was refused 42501 and, having raised before the delete, left the row
+intact; `anon` was refused at the grant; a follow-up `fields: ["lemma"]` import renamed a
+lemma and left its gloss and word class alone, so 0021's `p_fields` rule still holds
+alongside the deletes; and the collaborator's import stamped `projects.last_activity_by`
+despite the owner-only UPDATE policy. `pg_proc` was checked to hold **one** signature, not
+two — the three-argument version is dropped, so there is no way to import without the
+review. `get_advisors` showed nothing new beyond the two documented `create_project` /
+`add_project_member` warnings. xenic was confirmed untouched afterwards: 559 lexicon
+entries, 23 phonemes, 64 corpus rows, 16 word classes.
 
 The word-class seed is generated the same way the lexicon's is: `pnpm import:word-classes`
 writes `supabase/seed/word-classes.json`. It combines **two** parts of grammar.yaml that

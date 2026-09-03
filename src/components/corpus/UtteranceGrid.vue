@@ -218,8 +218,8 @@ thead th {
   padding: var(--sp-2) var(--sp-3);
   text-align: left;
   font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.07em;
+  font-weight: 500;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--c-muted);
 }
@@ -331,6 +331,8 @@ tbody td {
   background: none;
   color: var(--c-accent);
   text-decoration: underline;
+  /* Content, not a control: a link inside a sentence keeps the sentence's face. */
+  font-family: var(--font-ui);
   text-transform: none;
   letter-spacing: normal;
   font-size: inherit;

@@ -5,7 +5,7 @@ import { describe, expect, it } from "vite-plus/test";
 import source from "./lexiconImport.ts?raw";
 
 import { type ExportInput, toLexiconCsv, toLexiconCsvFull } from "./exporters";
-import { parseLexiconCsv, planImport } from "./lexiconImport";
+import { parseLexiconCsv } from "./lexiconImport";
 
 describe("parseLexiconCsv", () => {
   it("reads the full export, header and all", () => {
@@ -13,7 +13,14 @@ describe("parseLexiconCsv", () => {
     expect(parsed.problems).toEqual([]);
     expect(parsed.fields).toEqual(["lemma", "gloss", "word_class", "notes"]);
     expect(parsed.rows).toEqual([
-      { entry_key: "n_book", lemma: "miŋgwem", gloss: "book", word_class: "noun", notes: "" },
+      {
+        line: 2,
+        entry_key: "n_book",
+        lemma: "miŋgwem",
+        gloss: "book",
+        word_class: "noun",
+        notes: "",
+      },
     ]);
   });
 
@@ -45,44 +52,21 @@ describe("parseLexiconCsv", () => {
     expect(parsed.problems).toEqual(["Line 2 has no lemma."]);
   });
 
-  // Which row won would otherwise depend on file order.
-  it("refuses two rows claiming the same key", () => {
+  // This used to refuse the whole file — and every good row in it — over a question with
+  // an answer. `buildMergePlan` groups the two and the review dialog asks which wins.
+  it("keeps both rows when two claim the same key", () => {
     const parsed = parseLexiconCsv("key,lemma,pos,gloss,notes\nk,a,,,\nk,b,,,\n");
-    expect(parsed.problems).toEqual(["Line 3 repeats the key “k” from line 2."]);
+    expect(parsed.problems).toEqual([]);
+    expect(parsed.rows.map((r) => [r.line, r.lemma])).toEqual([
+      [2, "a"],
+      [3, "b"],
+    ]);
   });
 
   it("allows several rows with no key at all", () => {
     const parsed = parseLexiconCsv("key,lemma,pos,gloss,notes\n,a,,,\n,b,,,\n");
     expect(parsed.problems).toEqual([]);
     expect(parsed.rows).toHaveLength(2);
-  });
-});
-
-describe("planImport", () => {
-  const existing = [{ entry_key: "n_book" }, { entry_key: null }];
-
-  it("updates a matching key and creates a new one", () => {
-    const plan = planImport(
-      [
-        { entry_key: "n_book", lemma: "x", gloss: "", word_class: "", notes: "" },
-        { entry_key: "n_pen", lemma: "y", gloss: "", word_class: "", notes: "" },
-      ],
-      existing,
-    );
-    expect(plan).toEqual({ create: 1, update: 1, unkeyed: 0 });
-  });
-
-  /**
-   * Never matched on lemma: `gwan` is both "meaning" (noun) and "become" (verb) in the real
-   * data, which is why lexicon_entries has no unique constraint on lemma. Matching on it
-   * would merge two different words.
-   */
-  it("counts an unkeyed row as new even when its lemma already exists", () => {
-    const plan = planImport(
-      [{ entry_key: null, lemma: "gwan", gloss: "", word_class: "", notes: "" }],
-      [{ entry_key: "v_become" }],
-    );
-    expect(plan).toEqual({ create: 1, update: 0, unkeyed: 1 });
   });
 });
 
@@ -125,6 +109,7 @@ describe("round trip", () => {
     expect(parsed.problems).toEqual([]);
     expect(parsed.rows).toEqual([
       {
+        line: 2,
         entry_key: "v_exist",
         lemma: "ga",
         gloss: "exist, there is",
@@ -132,13 +117,14 @@ describe("round trip", () => {
         notes: "",
       },
       {
+        line: 3,
         entry_key: "n_neck",
         lemma: "pamŋwathoŋ",
         gloss: "neck",
         word_class: "noun",
         notes: 'Compound of pam + ŋwathoŋ. Says "frozen".',
       },
-      { entry_key: null, lemma: "ʔo", gloss: "leg", word_class: "noun", notes: "" },
+      { line: 4, entry_key: null, lemma: "ʔo", gloss: "leg", word_class: "noun", notes: "" },
     ]);
   });
 
@@ -146,8 +132,8 @@ describe("round trip", () => {
    * Worth knowing rather than fixing: the two-column format cannot represent "no key", so
    * `toLexiconCsv` writes the lemma in the key column. Re-importing it therefore gives a
    * previously unkeyed entry a key, and creates a second row rather than matching the
-   * first. That is inherent to the format being lossy, which is why the confirmation
-   * shows the create/update split before anything is written.
+   * first. That is inherent to the format being lossy, which is why the review dialog
+   * lists what is about to be added before anything is written.
    */
   it("reads back the two-column export, which substitutes the lemma for a missing key", () => {
     const parsed = parseLexiconCsv(toLexiconCsv(input()));

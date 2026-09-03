@@ -4,9 +4,11 @@ import { onMounted, ref, watch } from "vue";
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 
 import EntryDetail from "@/components/lexicon/EntryDetail.vue";
+import ImportReviewDialog from "@/components/lexicon/ImportReviewDialog.vue";
 import LemmaList from "@/components/lexicon/LemmaList.vue";
 import { useProjectExport } from "@/composables/useProjectExport";
-import { parseLexiconCsv, planImport } from "@/lib/lexiconImport";
+import { parseLexiconCsv } from "@/lib/lexiconImport";
+import { type MergePlan, type ResolvedImport, buildMergePlan } from "@/lib/lexiconMerge";
 import { useLexiconStore } from "@/stores/lexicon";
 import { useMembersStore } from "@/stores/members";
 import { usePhonemesStore } from "@/stores/phonemes";
@@ -28,6 +30,14 @@ const exporter = useProjectExport(() => props.projectId);
 
 const fileInput = ref<HTMLInputElement | null>(null);
 const importing = ref(false);
+// The parsed file, held between picking it and pressing Import in the review dialog.
+// Nothing is written while this is set — the dialog is the whole point of the change.
+const review = ref<{ plan: MergePlan; fileName: string } | null>(null);
+const outcome = ref<string | null>(null);
+// Read off the store at the moment of failure rather than rendered from it: `lexicon.error`
+// is already shown by the entry editor, and one message in two places at once reads as two
+// problems. The dialog stays open so the resolved choices are not lost.
+const importError = ref<string | null>(null);
 
 function chooseFile() {
   fileInput.value?.click();
@@ -40,46 +50,45 @@ async function onFile(event: Event) {
   input.value = "";
   if (!file) return;
 
+  outcome.value = null;
+  importError.value = null;
+  const parsed = parseLexiconCsv(await file.text());
+  if (parsed.problems.length) {
+    // What is left here is only what the dialog cannot ask about: a file of the wrong
+    // shape, and a line with no lemma — neither is a choice between two versions. Every
+    // problem at once, because fixing one in a spreadsheet to find the next is miserable.
+    window.alert(`That file can't be imported:\n\n${parsed.problems.join("\n")}`);
+    return;
+  }
+
+  review.value = {
+    plan: buildMergePlan(parsed.rows, lexicon.entries, parsed.fields),
+    fileName: file.name,
+  };
+}
+
+async function applyImport(resolved: ResolvedImport) {
+  if (!review.value) return;
   importing.value = true;
+  importError.value = null;
   try {
-    const parsed = parseLexiconCsv(await file.text());
-    if (parsed.problems.length) {
-      // Every problem at once: fixing one in a spreadsheet and re-importing to find the
-      // next is a miserable loop.
-      window.alert(`That file can't be imported:\n\n${parsed.problems.join("\n")}`);
+    const result = await lexicon.importRows(
+      props.projectId,
+      resolved.rows,
+      review.value.plan.fields,
+      resolved.deleteIds,
+    );
+    if (!result) {
+      importError.value = lexicon.error ?? "That import could not be applied.";
       return;
     }
-
-    const plan = planImport(parsed.rows, lexicon.entries);
+    review.value = null;
     const parts = [
-      plan.create ? `add ${plan.create}` : null,
-      plan.update ? `update ${plan.update}` : null,
+      result.created ? `${result.created} added` : null,
+      result.updated ? `${result.updated} updated` : null,
+      result.deleted ? `${result.deleted} deleted` : null,
     ].filter(Boolean);
-    // Says what it will do before it does it. Entries are matched by key, so a file of
-    // unkeyed rows adds rather than updates — worth seeing before, not after.
-    const unkeyed = plan.unkeyed
-      ? `\n\n${plan.unkeyed} row${plan.unkeyed === 1 ? " has" : "s have"} no key, so ` +
-        `${plan.unkeyed === 1 ? "it is" : "they are"} added as new entries rather than matched.`
-      : "";
-    const missing = parsed.fields.includes("gloss")
-      ? ""
-      : "\n\nThis file has only key and lemma columns, so meanings, word classes and " +
-        "notes on existing entries are left as they are.";
-
-    if (
-      !window.confirm(
-        `Import ${file.name}? This will ${parts.join(" and ")} ${
-          plan.create + plan.update === 1 ? "entry" : "entries"
-        }. Nothing is deleted.${unkeyed}${missing}`,
-      )
-    ) {
-      return;
-    }
-
-    const result = await lexicon.importRows(props.projectId, parsed.rows, parsed.fields);
-    if (result) {
-      window.alert(`Imported: ${result.created} added, ${result.updated} updated.`);
-    }
+    outcome.value = parts.length ? `Imported: ${parts.join(", ")}.` : "Nothing changed.";
   } finally {
     importing.value = false;
   }
@@ -152,10 +161,10 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
           <button
             v-if="members.canEdit"
             type="button"
-            :disabled="importing || lexicon.saving"
+            :disabled="review !== null || lexicon.saving"
             @click="chooseFile"
           >
-            {{ importing ? "Importing…" : "Import CSV" }}
+            Import CSV
           </button>
           <!-- A real file input, kept out of the layout: a styled button that opens it is
                the only way to get the app's own button styling on a file picker.
@@ -172,7 +181,24 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
           />
         </div>
       </div>
+
+      <!-- The old flow ended in an alert() and swallowed RPC failures entirely: the store
+           set `error` and this view never rendered it, so a refused import looked exactly
+           like a successful one. Both outcomes land here now. -->
+      <p v-if="importError && !review" class="status danger" role="alert">{{ importError }}</p>
+      <p v-else-if="outcome" class="status muted" role="status">{{ outcome }}</p>
     </header>
+
+    <ImportReviewDialog
+      v-if="review"
+      :open="true"
+      :plan="review.plan"
+      :file-name="review.fileName"
+      :busy="importing"
+      :error="importError"
+      @close="review = null"
+      @confirm="applyImport"
+    />
 
     <!-- The same soft gate the placeholder had. -->
     <div v-if="phonemes.count === 0" class="gate">
@@ -224,6 +250,16 @@ header p {
   display: flex;
   gap: var(--sp-2);
   flex: none;
+}
+
+.status {
+  width: 100%;
+  margin: 0 0 var(--sp-6);
+  font-size: 0.875rem;
+}
+
+.danger {
+  color: var(--c-danger);
 }
 
 /**

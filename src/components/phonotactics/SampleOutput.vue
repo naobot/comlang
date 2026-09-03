@@ -141,7 +141,7 @@ const failure = computed(() => {
 h2 {
   margin: var(--sp-8) 0 var(--sp-3);
   font-size: 0.875rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--c-muted);
 }

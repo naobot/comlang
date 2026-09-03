@@ -148,6 +148,9 @@ function close() {
   border-radius: calc(var(--radius) - 2px);
   background: transparent;
   color: var(--c-text);
+  /* A menu item is a sentence you pick, not a control label — so it undoes the whole of
+     the base button rule's label treatment, the display face included. */
+  font-family: var(--font-ui);
   font-size: 0.875rem;
   font-weight: 400;
   letter-spacing: normal;

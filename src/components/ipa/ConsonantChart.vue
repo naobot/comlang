@@ -152,7 +152,7 @@ const otherSymbols = computed(() => groups(OTHER_SYMBOLS));
 h2 {
   margin: var(--sp-8) 0 var(--sp-1);
   font-size: 0.875rem;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--c-muted);
 }
@@ -182,7 +182,7 @@ table {
 }
 
 th {
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.75rem;
   color: var(--c-muted);
   text-align: left;
@@ -191,6 +191,9 @@ th {
 }
 
 thead th {
+  /* Tighter than a section head: these sit above the grid at 0.75rem and a place of
+     articulation is a long word to track out over five columns. */
+  letter-spacing: 0.04em;
   border-bottom: 1px solid var(--c-border);
   vertical-align: bottom;
 }
@@ -242,7 +245,7 @@ tbody tr + tr td {
 h3 {
   margin: 0 0 var(--sp-1);
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--c-muted);
 }
 

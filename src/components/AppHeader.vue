@@ -190,13 +190,16 @@ const lastAt = computed(() => {
 
 .badge {
   padding: 1px var(--sp-2);
+  margin-left: var(--sp-2);
   border: 1px solid var(--c-border);
   border-radius: 999px;
   color: var(--c-muted);
+  font-family: var(--font-display);
   font-size: 0.625rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-weight: 500;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+  line-height: 1.5;
 }
 
 .home {
@@ -208,8 +211,12 @@ const lastAt = computed(() => {
   color: var(--c-text);
 }
 
+/* The project name, the tabs and the brand are the three places the header names
+   something, so all three take the display face. 500 rather than 600 for the reason the
+   base button rule gives: the grotesk already reads a step heavier here. */
 .project {
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-weight: 500;
   white-space: nowrap;
 }
 
@@ -243,6 +250,7 @@ const lastAt = computed(() => {
   padding: 0 var(--sp-3);
   border-bottom: 2px solid transparent;
   color: var(--c-muted);
+  font-family: var(--font-display);
   font-size: 0.875rem;
   white-space: nowrap;
   text-decoration: none;
@@ -255,7 +263,7 @@ const lastAt = computed(() => {
 .tabs a.router-link-active {
   border-bottom-color: var(--c-accent);
   color: var(--c-text);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 /* Sits left of the brand so the app name still anchors the far right, as it has since the
@@ -268,11 +276,14 @@ const lastAt = computed(() => {
   white-space: nowrap;
 }
 
+/* The one place tracked wider than the 0.08em every other label uses: the brand is a
+   wordmark rather than a label, and it is the only text on the page that is. */
 .brand {
   flex: none;
   color: var(--c-muted);
+  font-family: var(--font-display);
   font-size: 0.8125rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
 }
 
 .sr-only {

@@ -15,6 +15,12 @@
      unselected symbol on the IPA chart. */
   --c-faint: #9aa8bf;
   --c-danger: #a4232a;
+  /* The two sides of a diff. Tints only — the text stays --c-text, because a lemma in a
+     conlang is the content of the cell and recolouring it would fight the IPA it may
+     contain. Deliberately quiet: a whole imported file is mostly diff, and GitHub-strength
+     green and red across sixty rows is a wall rather than a signal. */
+  --c-diff-old: #fdf0f0;
+  --c-diff-new: #eef7ef;
   /* A token because a navy-tinted shadow is invisible on a near-black ground. */
   --c-shadow: rgb(22 35 63 / 12%);
 
@@ -27,8 +33,19 @@
 
   --radius: 6px;
   --header-h: 3.25rem;
-  --font-ui: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  /* The lexicon renders IPA and ⟨ŋ⟩ / ⟨ʔ⟩; pick stacks with real coverage. */
+  /* Two sans faces, and the split between them is a rule about *kind of text*, not about
+     size or emphasis. --font-ui is everything anyone reads as language: body copy, hints,
+     summaries, warnings, the value inside a field. --font-display is everything that names
+     something: the project name and brand, the tabs, section heads, the chart's column and
+     row headers, and button labels. Nothing is in both, and no rule picks between them at
+     render time — a selector either sets one or inherits.
+
+     Both keep the old system stack behind them, so the page is legible before the webfonts
+     land (and if they never do). */
+  --font-ui: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* The lexicon renders IPA and ⟨ŋ⟩ / ⟨ʔ⟩; pick stacks with real coverage. Deliberately
+     unchanged by the two faces above: mono is what carries the IPA. */
   --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, monospace;
 }
 
@@ -70,6 +87,10 @@
     --c-faint: #59637a;
     /* The light palette's #a4232a is unreadable here; danger has to lighten, not darken. */
     --c-danger: #ff9a9a;
+    /* Tints lift off the near-black ground rather than darkening into it, the same
+       inversion --c-accent makes. */
+    --c-diff-old: #33222a;
+    --c-diff-new: #1e2c22;
     --c-shadow: rgb(0 0 0 / 55%);
   }
 }
@@ -86,15 +107,57 @@ body {
   line-height: 1.5;
 }
 
+/**
+ * The display face, applied once by element rather than restated in twenty scoped blocks.
+ *
+ * These four are the whole of "text that names something": headings are the section heads,
+ * `th` is the consonant chart's column and row headers (the only table in the app with
+ * them), and `label` names the field beside it. Buttons are the fourth and are handled in
+ * their own rule below, since they carry a size and a transform too.
+ *
+ * 500, not the browser's bold: the grotesk reads about a step heavier than the system
+ * stack at these sizes, so 600 here would shout. Tracking stays with each rule — a
+ * 0.875rem uppercase section head wants 0.08em and a 1.25rem title wants none, and a
+ * blanket value would be wrong for one of them.
+ */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+th,
+label {
+  font-family: var(--font-display);
+  font-weight: 500;
+}
+
+/**
+ * ...but a label's *contents* are not the label. A field's value, and any hint under it,
+ * are things a person wrote or has to read, so they drop back to the UI face and shed the
+ * label's weight, tracking and casing. `label > *` is exact here: the label's own text is
+ * a bare text node, and every element child is either the control or a hint.
+ *
+ * A span that genuinely *is* the label text (`.pane-label`) overrides this by class.
+ */
+label > * {
+  font-family: var(--font-ui);
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
 button {
   font: inherit;
   /* Compact, uppercase and tracked out: actions read as controls rather than as prose,
      and stay out of the way of the content they act on. Anything that is a button but
      is really content — a phone on the IPA chart, a menu item — opts out with
-     `text-transform: none`. */
+     `text-transform: none`, and out of the display face with `font-family: var(--font-ui)`
+     unless it already names a face of its own (the phonemes are mono). */
+  font-family: var(--font-display);
   font-size: 0.6875rem;
-  font-weight: 600;
-  letter-spacing: 0.07em;
+  font-weight: 500;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   /* A control's label is one line. Wrapping turns a button into a paragraph with a
      border round it, and a two-line button in a row of one-line ones makes the whole
