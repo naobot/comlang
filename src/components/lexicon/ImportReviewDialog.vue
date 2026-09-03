@@ -161,8 +161,8 @@ const fieldsOf = (fields: ImportField[]) => fields.map((f) => FIELD_LABEL[f]).jo
             from what is stored
           </button>
           <div class="bulk">
-            <button type="button" @click="takeAll('take')">Take all imported</button>
             <button type="button" @click="takeAll('keep')">Keep all stored</button>
+            <button type="button" @click="takeAll('take')">Take all imported</button>
           </div>
         </header>
         <div v-if="shown.conflicts" class="rows">
