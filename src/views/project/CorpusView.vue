@@ -3,10 +3,11 @@ import { useEventListener } from "@vueuse/core";
 import { computed, ref } from "vue";
 import { onBeforeRouteLeave } from "vue-router";
 
+import ImportReviewDialog from "@/components/corpus/ImportReviewDialog.vue";
 import PassageList from "@/components/corpus/PassageList.vue";
 import UtteranceGrid from "@/components/corpus/UtteranceGrid.vue";
 import { useProjectExport } from "@/composables/useProjectExport";
-import { parseCorpusCsv, planCorpusImport } from "@/lib/corpusImport";
+import { type CorpusImportPlan, buildCorpusImportPlan, parseCorpusCsv } from "@/lib/corpusImport";
 import { useCorpusStore } from "@/stores/corpus";
 import { useMembersStore } from "@/stores/members";
 import { usePhonemesStore } from "@/stores/phonemes";
@@ -35,6 +36,13 @@ const view = ref<CorpusKind>("passage");
 const query = ref("");
 const fileInput = ref<HTMLInputElement | null>(null);
 const importing = ref(false);
+// The parsed file, held between picking it and pressing Import in the review dialog.
+// Nothing is written while this is set — same rule the lexicon's own review follows.
+const review = ref<{ plan: CorpusImportPlan; fileName: string } | null>(null);
+const outcome = ref<string | null>(null);
+// Read off the store at the moment of failure rather than rendered from it, for the same
+// reason the lexicon does this: the dialog stays open so nothing scrolled to is lost.
+const importError = ref<string | null>(null);
 
 const shown = computed(() => corpus.matching(view.value, query.value).length);
 const total = computed(
@@ -59,59 +67,47 @@ async function onFile(event: Event) {
   input.value = "";
   if (!file) return;
 
+  outcome.value = null;
+  importError.value = null;
+  const parsed = parseCorpusCsv(await file.text());
+  if (parsed.problems.length) {
+    // What is left here is only what the dialog cannot show a decision about: a file of
+    // the wrong shape, or every row empty on both sides. Every problem at once, since
+    // fixing one in a spreadsheet to find the next is miserable.
+    window.alert(`That file can't be imported:\n\n${parsed.problems.join("\n")}`);
+    return;
+  }
+
+  review.value = {
+    plan: buildCorpusImportPlan(parsed.rows, corpus.entries),
+    fileName: file.name,
+  };
+}
+
+async function applyImport() {
+  if (!review.value) return;
   importing.value = true;
+  importError.value = null;
   try {
-    const parsed = parseCorpusCsv(await file.text());
-    if (parsed.problems.length) {
-      // Every problem at once: fixing one in a spreadsheet and re-importing to find the
-      // next is a miserable loop.
-      window.alert(`That file can't be imported:\n\n${parsed.problems.join("\n")}`);
+    const rows = review.value.plan.additions.map((r) => ({
+      english: r.english,
+      conlang: r.conlang,
+    }));
+    const result = await corpus.importRows(props.projectId, rows);
+    if (!result) {
+      importError.value = corpus.error ?? "That import could not be applied.";
       return;
     }
-
-    const plan = planCorpusImport(parsed.rows, corpus.entries);
-    if (plan.add === 0) {
-      window.alert(
-        `Every one of those ${parsed.rows.length} rows is already in the corpus, so there ` +
-          "is nothing to add.",
-      );
-      return;
-    }
-
-    // Says what it will do before it does it. This format has no key column, so an import
-    // only ever adds — a corrected sentence arrives as a second row rather than replacing
-    // the first, and that is worth seeing before, not after.
-    const skipped = plan.skip
-      ? ` ${plan.skip} ${plan.skip === 1 ? "row is" : "rows are"} already in the corpus and ` +
-        "will be skipped."
-      : "";
-
-    // The file has no kind column either, so where each row lands is inferred from its
-    // shape. Stated up front, because it is a guess and correcting one is a click.
-    const split = plan.passages
-      ? ` ${plan.passages} of them ${plan.passages === 1 ? "looks" : "look"} long enough to ` +
-        `be ${plan.passages === 1 ? "a passage" : "passages"} and will open there; the rest ` +
-        "go to sentences."
-      : " All of them will go to sentences.";
-
-    if (
-      !window.confirm(
-        `Import ${file.name}? This will add ${plan.add} ` +
-          `${plan.add === 1 ? "example" : "examples"}.${skipped}${split} Nothing is changed ` +
-          "or deleted — examples are matched only by being identical on both sides, since " +
-          "the file has no key column.",
-      )
-    ) {
-      return;
-    }
-
-    const result = await corpus.importRows(props.projectId, parsed.rows);
-    if (result) {
-      window.alert(
-        `Imported: ${result.created} added (${result.passages} as passages), ` +
-          `${result.skipped} skipped.`,
-      );
-    }
+    review.value = null;
+    // The server's own counts, not the plan's: a collaborator's write in the gap between
+    // review and confirm can make the two disagree, and what actually landed is what
+    // this line should say.
+    const parts = [
+      result.created ? `${result.created} added` : null,
+      result.passages ? `${result.passages} as passages` : null,
+      result.skipped ? `${result.skipped} skipped` : null,
+    ].filter(Boolean);
+    outcome.value = parts.length ? `Imported: ${parts.join(", ")}.` : "Nothing changed.";
   } finally {
     importing.value = false;
   }
@@ -151,10 +147,10 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
           <button
             v-if="members.canEdit"
             type="button"
-            :disabled="importing || corpus.savingNew"
+            :disabled="review !== null || importing || corpus.savingNew"
             @click="chooseFile"
           >
-            {{ importing ? "Importing…" : "Import CSV" }}
+            Import CSV
           </button>
           <!-- A real file input, kept out of the layout: a styled button that opens it is
                the only way to get the app's own button styling on a file picker. -->
@@ -169,7 +165,23 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
           />
         </div>
       </div>
+
+      <!-- Both outcomes land here rather than in an alert(), same as the lexicon: a
+           refused import used to vanish silently once the confirm dialog closed. -->
+      <p v-if="importError && !review" class="status danger" role="alert">{{ importError }}</p>
+      <p v-else-if="outcome" class="status muted" role="status">{{ outcome }}</p>
     </header>
+
+    <ImportReviewDialog
+      v-if="review"
+      :open="true"
+      :plan="review.plan"
+      :file-name="review.fileName"
+      :busy="importing"
+      :error="importError"
+      @close="review = null"
+      @confirm="applyImport"
+    />
 
     <!-- The same soft gate every other section has. -->
     <div v-if="phonemes.count === 0" class="gate">
@@ -290,6 +302,16 @@ header p {
   display: flex;
   gap: var(--sp-2);
   flex: none;
+}
+
+.status {
+  width: 100%;
+  margin: var(--sp-3) 0 0;
+  font-size: 0.875rem;
+}
+
+.status.danger {
+  color: var(--c-danger);
 }
 
 .tabs {

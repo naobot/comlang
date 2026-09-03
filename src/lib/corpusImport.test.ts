@@ -6,6 +6,7 @@ import source from "./corpusImport.ts?raw";
 
 import {
   CORPUS_PASSAGE_MIN_LENGTH,
+  buildCorpusImportPlan,
   inferKind,
   parseCorpusCsv,
   planCorpusImport,
@@ -18,7 +19,7 @@ describe("parseCorpusCsv", () => {
   it("skips the header the exporter writes", () => {
     const result = parse("english,conlang\nI see you,mi kan yu\n");
     expect(result.header).toBe(true);
-    expect(result.rows).toEqual([{ english: "I see you", conlang: "mi kan yu" }]);
+    expect(result.rows).toEqual([{ line: 2, english: "I see you", conlang: "mi kan yu" }]);
     expect(result.problems).toEqual([]);
   });
 
@@ -40,7 +41,7 @@ describe("parseCorpusCsv", () => {
   // will actually make.
   it("keeps a comma inside a quoted sentence", () => {
     const result = parse('english,conlang\n"Yes, I see you",mi kan yu\n');
-    expect(result.rows).toEqual([{ english: "Yes, I see you", conlang: "mi kan yu" }]);
+    expect(result.rows).toEqual([{ line: 2, english: "Yes, I see you", conlang: "mi kan yu" }]);
   });
 
   it("refuses a file whose rows are not two columns, and says why", () => {
@@ -54,8 +55,8 @@ describe("parseCorpusCsv", () => {
   it("accepts a row with only one side filled in", () => {
     const result = parse("english,conlang\nI see you,\n,mi kan yu\n");
     expect(result.rows).toEqual([
-      { english: "I see you", conlang: "" },
-      { english: "", conlang: "mi kan yu" },
+      { line: 2, english: "I see you", conlang: "" },
+      { line: 3, english: "", conlang: "mi kan yu" },
     ]);
     expect(result.problems).toEqual([]);
   });
@@ -98,6 +99,57 @@ describe("planCorpusImport", () => {
   });
 });
 
+describe("buildCorpusImportPlan", () => {
+  const line = (i: number, r: { english: string; conlang: string }) => ({ line: i, ...r });
+
+  it("puts new rows in additions, each carrying its inferred kind", () => {
+    const rows = [
+      line(1, { english: "one line", conlang: "x" }),
+      line(2, { english: "two\nlines", conlang: "y" }),
+    ];
+    const plan = buildCorpusImportPlan(rows, []);
+    expect(plan.additions).toEqual([
+      { line: 1, english: "one line", conlang: "x", kind: "utterance" },
+      { line: 2, english: "two\nlines", conlang: "y", kind: "passage" },
+    ]);
+    expect(plan.skipped).toEqual([]);
+  });
+
+  // Same property `planCorpusImport` pins, checked here at the row level: the two must
+  // count the story the same way or the summary and the dialog it feeds would disagree.
+  it("puts a row already present verbatim, or repeated in the file, in skipped", () => {
+    const existing = [{ english: "I see you", conlang: "mi kan yu" }];
+    const rows = [
+      line(1, existing[0]!),
+      line(2, { english: "I see the book", conlang: "mi kan miŋgwem" }),
+      line(3, { english: "I see the book", conlang: "mi kan miŋgwem" }),
+    ];
+    const plan = buildCorpusImportPlan(rows, existing);
+    expect(plan.additions).toEqual([
+      { line: 2, english: "I see the book", conlang: "mi kan miŋgwem", kind: "utterance" },
+    ]);
+    expect(plan.skipped).toEqual([line(1, existing[0]!), line(3, rows[2]!)]);
+  });
+
+  it("agrees with planCorpusImport's counts", () => {
+    const existing = [{ english: "I see you", conlang: "mi kan yu" }];
+    const rows = [
+      { english: "I see you", conlang: "mi kan yu" },
+      { english: "two\nlines", conlang: "y" },
+      { english: "two\nlines", conlang: "y" },
+    ];
+    const plan = buildCorpusImportPlan(
+      rows.map((r, i) => line(i + 1, r)),
+      existing,
+    );
+    expect(planCorpusImport(rows, existing)).toEqual({
+      add: plan.additions.length,
+      skip: plan.skipped.length,
+      passages: plan.additions.filter((r) => r.kind === "passage").length,
+    });
+  });
+});
+
 describe("the corpus CSV round-trip", () => {
   const input = {
     projectName: "xenic",
@@ -122,7 +174,7 @@ describe("the corpus CSV round-trip", () => {
   it("survives being exported and read back", () => {
     const parsed = parse(toCorpusCsv(input));
     expect(parsed.header).toBe(true);
-    expect(parsed.rows).toEqual(input.corpus);
+    expect(parsed.rows).toEqual(input.corpus.map((row, i) => ({ line: i + 2, ...row })));
   });
 
   it("adds nothing when its own export is re-imported", () => {

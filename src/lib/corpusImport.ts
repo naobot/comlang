@@ -13,7 +13,14 @@
  * **There is no key column, and that is the whole character of this format.** Nothing in
  * a file can say "this is the row you already have, changed": the only candidate is the
  * text, and the text is what an edit changes. So an import adds and never updates, and
- * `planCorpusImport` exists to say so in numbers before anything is written.
+ * `buildCorpusImportPlan` exists to say so, row by row, before anything is written — the
+ * lexicon's review dialog by the same logic, minus the machinery that logic has no use
+ * for here. There are no conflicts (nothing to match a change against), no duplicated
+ * keys (there is no key), and no deletes (a file that omits a row says nothing about it,
+ * the same as the lexicon's own "absent" rows default to keep — except here that default
+ * cannot be overridden, because there is nothing to identify the row *by*). What is left
+ * to show is exactly the two things this format can actually tell you: which rows are
+ * new, and which are already there.
  */
 
 import { parseCsv } from "./csv";
@@ -21,6 +28,13 @@ import { parseCsv } from "./csv";
 export type CorpusRow = { english: string; conlang: string };
 
 export type CorpusKind = "utterance" | "passage";
+
+/**
+ * A row with the line it came from, kept for the same reason `lexiconImport.ts`'s
+ * `ParsedRow` keeps one: so the review dialog can say *which* line a row is, not just
+ * list its text. The line is what a person sees in a spreadsheet, header counted.
+ */
+export type ParsedCorpusRow = CorpusRow & { line: number };
 
 /**
  * Longer than this on either side and a row is treated as a passage on import.
@@ -51,7 +65,7 @@ export function inferKind(row: CorpusRow): CorpusKind {
 }
 
 export type ParsedCorpusImport = {
-  rows: CorpusRow[];
+  rows: ParsedCorpusRow[];
   /** Whether a header row was found and skipped — it changes which line a problem cites. */
   header: boolean;
   /** Blocking: nothing is written while any of these stand. */
@@ -90,7 +104,7 @@ export function parseCorpusCsv(text: string): ParsedCorpusImport {
   }
 
   const problems: string[] = [];
-  const out: CorpusRow[] = [];
+  const out: ParsedCorpusRow[] = [];
 
   body.forEach((cells, i) => {
     // The line a person would see in a spreadsheet, header included.
@@ -104,54 +118,80 @@ export function parseCorpusCsv(text: string): ParsedCorpusImport {
       problems.push(`Line ${line} is empty on both sides.`);
       return;
     }
-    out.push({ english, conlang });
+    out.push({ line, english, conlang });
   });
 
   return { rows: out, header, problems };
 }
 
+/** A row this import would add, carrying the kind `inferKind` gives it. */
+export type CorpusImportRow = ParsedCorpusRow & { kind: CorpusKind };
+
 export type CorpusImportPlan = {
-  add: number;
-  skip: number;
-  /** How many of the added rows land in the passages view. See `inferKind`. */
-  passages: number;
+  /** New rows this file would add, in file order. No decision to make — nothing here can
+   *  conflict with anything, since there is no key to conflict *on*. */
+  additions: CorpusImportRow[];
+  /** Rows already present verbatim, in the project or earlier in this same file, and so
+   *  left alone. Also nothing to decide: the row is already there. */
+  skipped: ParsedCorpusRow[];
 };
 
 /**
- * What applying this file would do, given what is already stored.
+ * What applying this file would do, row by row, so a review dialog can show it before
+ * anything is written — the counts `planCorpusImport` returns, unpacked into the rows
+ * that make them up.
  *
  * A row already present **verbatim** on both sides is skipped, which is what makes
  * re-importing the same file a no-op rather than a doubling. Anything else is added —
  * including a row that differs only in a typo fix, because with no key there is no way to
  * tell a correction from a new example, and guessing wrong overwrites someone's sentence.
  *
- * Duplicates inside the file count once, so the numbers shown match what actually lands.
- *
- * The passage count is part of the plan because the kind is inferred rather than carried:
- * a person is owed the split before the import, not a surprise afterwards.
+ * Duplicates inside the file land in `skipped` after their first occurrence, so the two
+ * lists partition the file exactly once each and any count drawn from them cannot drift
+ * from what actually lands.
  */
-export function planCorpusImport(
-  rows: readonly CorpusRow[],
+export function buildCorpusImportPlan(
+  rows: readonly ParsedCorpusRow[],
   existing: readonly CorpusRow[],
 ): CorpusImportPlan {
   // Joined on a character prose cannot contain, so "a b" + "c" and "a" + "b c" stay
   // distinct pairs rather than colliding on one key.
   const pairOf = (r: CorpusRow) => `${r.english.trim()}\u0000${r.conlang.trim()}`;
   const seen = new Set(existing.map(pairOf));
-  let add = 0;
-  let skip = 0;
-  let passages = 0;
+  const additions: CorpusImportRow[] = [];
+  const skipped: ParsedCorpusRow[] = [];
 
   for (const row of rows) {
     const pair = pairOf(row);
     if (seen.has(pair)) {
-      skip++;
+      skipped.push(row);
       continue;
     }
     seen.add(pair);
-    add++;
-    if (inferKind(row) === "passage") passages++;
+    additions.push({ ...row, kind: inferKind(row) });
   }
 
-  return { add, skip, passages };
+  return { additions, skipped };
+}
+
+export type CorpusImportSummary = { add: number; skip: number; passages: number };
+
+/**
+ * The counts alone, for a caller with no use for the row list. Built on
+ * `buildCorpusImportPlan` rather than its own pass over the rows, so the two cannot
+ * silently disagree about what "added" and "skipped" mean.
+ */
+export function planCorpusImport(
+  rows: readonly CorpusRow[],
+  existing: readonly CorpusRow[],
+): CorpusImportSummary {
+  const plan = buildCorpusImportPlan(
+    rows.map((row, i) => ({ ...row, line: i + 1 })),
+    existing,
+  );
+  return {
+    add: plan.additions.length,
+    skip: plan.skipped.length,
+    passages: plan.additions.filter((r) => r.kind === "passage").length,
+  };
 }

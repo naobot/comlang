@@ -147,8 +147,8 @@ that has no line breaks in it. So exporting a short passage and importing it aga
 it back as an utterance. Same family of loss as the missing key column, one click to
 correct, and cheaper than a third column every other tool reading these files would have
 to learn. `inferKind` in `src/lib/corpusImport.ts` and the `case` in `import_corpus` are
-the same rule written twice; the duplication buys the confirmation dialog's *"3 of them
-look long enough to be passages"* before the import runs, and the two must be kept in step.
+the same rule written twice; the duplication buys the review dialog's *"3 of them look
+long enough to be passages"* before the import runs, and the two must be kept in step.
 
 The two panes of a passage are two blocks of text and are deliberately **not aligned line
 by line**. That would need a third representation and a rule for one side having more lines
@@ -182,7 +182,7 @@ somebody wrote. So:
   re-importing your own export a no-op rather than a doubling.
 - Anything else is added, **including a corrected sentence** — it arrives as a second row
   beside the original. That is inherent to a keyless format, not a bug to fix, and it is
-  why the confirmation states the add/skip counts before anything is written.
+  why the review states the add/skip split before anything is written.
 - Nothing is ever updated or deleted.
 - The dedup is **not** narrowed by kind: the same text filed in the other view is the same
   example, and adding it again because it is filed differently would be a doubling.
@@ -190,6 +190,37 @@ somebody wrote. So:
 Deduplication is a courtesy of the import, **not** a constraint on the table: two examples
 may legitimately share an English translation, and one conlang sentence may be glossed two
 ways. A unique index would reject real data.
+
+**The corpus import is reviewed before it is applied too, on the same footing as the
+lexicon's (0027) — a review dialog instead of a `window.confirm`, both outcomes rendered
+inline instead of in an `alert()`.** `buildCorpusImportPlan` in `corpusImport.ts` is
+`buildMergePlan`'s counterpart: given the parsed rows and what is already stored, it
+partitions the file into `additions` (new rows, each carrying the kind `inferKind` gives
+it) and `skipped` (already there, verbatim, in the project or earlier in the same file).
+`src/components/corpus/ImportReviewDialog.vue` renders each row instead of the lexicon's
+per-field diff, because a two-column pair has nothing to diff — there is no stored version
+of a new row to compare it against.
+
+**What did not carry over is the point.** The lexicon's dialog exists to turn a bare count
+into a set of *decisions* — a conflict to resolve, a duplicate key to pick between, a
+deletion to opt into. None of those situations can arise here: there is no key, so nothing
+can conflict, nothing can be claimed twice, and nothing a file omits can be told apart from
+a sentence nobody has written yet — so there is no delete section, no default to state, no
+`unresolved()` to block Import on. Building that machinery anyway to look like the lexicon
+would be decoration, not parity; `planCorpusImport`'s own tests (`corpusImport.test.ts`)
+already establish that two rows differing only by a typo fix are two rows, not a conflict,
+and the review dialog has to agree with that, not paper over it. The one thing shown that
+is not a decision either is the inferred kind per row — a preview of what `import_corpus`
+will do, not a choice made in the dialog, since flipping it there with nothing to send it
+to would just delay the one-click fix the sub-view's own → Passage / → Sentence control
+already gives a wrongly-guessed row.
+
+`planCorpusImport` stays as the counts-only summary and is now implemented on top of
+`buildCorpusImportPlan` rather than its own pass over the rows, so the two cannot drift on
+what "added" and "skipped" mean — the same reason `tally()` and `resolveImport()` are
+pinned together on the lexicon side. `ParsedCorpusRow` gained a `line` field to match
+`lexiconImport.ts`'s `ParsedRow`, for the same reason: so the dialog can say which line a
+row came from, not just repeat its text.
 
 **The corpus store generalises the lexicon's protections from one open entry to every
 visible row.** Every row in `byId` has an entry in `drafts` — `fetchFor` and `upsert` are
