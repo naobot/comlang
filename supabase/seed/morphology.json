@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "rules": {
+    "vowels": "aeiou",
+    "glides": "jw",
+    "digraphs": ["ng", "ts"],
+    "reduplication": { "enabled": true },
+    "harmony": { "enabled": false, "pairs": { "i": "u", "e": "o" }, "neutral": "a" },
+    "elision": { "enabled": false },
+    "lowering": { "enabled": false, "after": "w", "map": { "u": "o" } }
+  },
+  "slots": {
+    "nominal": ["numeral", "classifier", "STEM", "plural", "case", "semanticParticle"],
+    "predicate": ["negation", "STEM", "tense", "force", "evidential", "conjunction"]
+  },
+  "affixes": [
+    { "match": { "entryKeyPrefix": "p_neg" }, "role": "negation", "position": "prefix" },
+    { "match": { "wordClass": "negation" }, "role": "negation", "position": "prefix" },
+    {
+      "match": { "entryKey": ["p_top", "p_nom", "p_acc", "p_dat", "p_gen", "p_loc", "p_ins"] },
+      "role": "case",
+      "position": "suffix"
+    },
+    { "match": { "wordClass": "case marker" }, "role": "case", "position": "suffix" },
+    {
+      "match": { "entryKey": ["p_also", "p_only", "p_with"] },
+      "role": "semanticParticle",
+      "position": "suffix"
+    },
+    { "match": { "wordClass": "semantic particle" }, "role": "semanticParticle", "position": "suffix" },
+    {
+      "match": { "entryKey": ["p_conj", "p_disj", "p_cause", "p_cond", "p_temp"] },
+      "role": "conjunction",
+      "position": "suffix"
+    },
+    { "match": { "wordClass": "conjunction" }, "role": "conjunction", "position": "suffix" },
+    { "match": { "entryKeyPrefix": "t_" }, "role": "tense", "position": "suffix" },
+    { "match": { "wordClass": "tense marker" }, "role": "tense", "position": "suffix" },
+    { "match": { "entryKeyPrefix": "f_" }, "role": "force", "position": "suffix" },
+    { "match": { "wordClass": "force marker" }, "role": "force", "position": "suffix" },
+    { "match": { "entryKeyPrefix": "e_" }, "role": "evidential", "position": "suffix" },
+    { "match": { "wordClass": "evidential" }, "role": "evidential", "position": "suffix" },
+    { "match": { "entryKey": "q_class" }, "role": "classifier", "position": "prefix" },
+    { "match": { "wordClass": "classifier" }, "role": "classifier", "position": "prefix" }
+  ],
+  "stems": [
+    {
+      "wordClass": ["noun", "pronoun", "quantifier", "demonstrative", "interrogative", "numeral"],
+      "slotClass": "nominal"
+    },
+    { "wordClass": ["verb", "adjective", "predicate"], "slotClass": "predicate" },
+    { "wordClass": ["modal", "adverb", "particle", "conjunction", "negation"], "slotClass": "both" }
+  ]
+}

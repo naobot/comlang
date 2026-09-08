@@ -33,6 +33,10 @@
 
   --radius: 6px;
   --header-h: 3.25rem;
+  /* The one named layer. Everything else stacks ad hoc — the sticky header is 10, the
+     header's own dropdown 20 — but the corpus word-preview card is teleported to <body>
+     and has to clear both, so it gets a token rather than a fourth loose number. */
+  --z-popover: 30;
   /* Two sans faces, and the split between them is a rule about *kind of text*, not about
      size or emphasis. --font-ui is everything anyone reads as language: body copy, hints,
      summaries, warnings, the value inside a field. --font-display is everything that names

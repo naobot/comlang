@@ -55,16 +55,29 @@ export const useAuthStore = defineStore("auth", () => {
           import("@/stores/lexicon"),
           import("@/stores/grammarRules"),
           import("@/stores/wordClasses"),
+          import("@/stores/morphology"),
           import("@/stores/corpus"),
-        ]).then(([members, phonemes, phonotactics, lexicon, grammarRules, wordClasses, corpus]) => {
-          members.useMembersStore().reset();
-          phonemes.usePhonemesStore().reset();
-          phonotactics.usePhonotacticsStore().reset();
-          lexicon.useLexiconStore().reset();
-          grammarRules.useGrammarRulesStore().reset();
-          wordClasses.useWordClassesStore().reset();
-          corpus.useCorpusStore().reset();
-        });
+        ]).then(
+          ([
+            members,
+            phonemes,
+            phonotactics,
+            lexicon,
+            grammarRules,
+            wordClasses,
+            morphology,
+            corpus,
+          ]) => {
+            members.useMembersStore().reset();
+            phonemes.usePhonemesStore().reset();
+            phonotactics.usePhonotacticsStore().reset();
+            lexicon.useLexiconStore().reset();
+            grammarRules.useGrammarRulesStore().reset();
+            wordClasses.useWordClassesStore().reset();
+            morphology.useMorphologyStore().reset();
+            corpus.useCorpusStore().reset();
+          },
+        );
       }
     });
 

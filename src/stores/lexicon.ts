@@ -111,6 +111,32 @@ export const useLexiconStore = defineStore("lexicon", () => {
     [...new Set([...byId.value.values()].map((e) => e.word_class).filter(Boolean))].sort(),
   );
 
+  /**
+   * Lookup by `entry_key` and by `lemma`, both to arrays: the lexicon has homographs and
+   * no unique constraint on either column (see 0014). The morphology engine (`useMorphology`)
+   * groups by `entry_key`; a hovered corpus word resolves by `lemma`.
+   */
+  const byEntryKey = computed(() => {
+    const map = new Map<string, LexiconEntry[]>();
+    for (const row of byId.value.values()) {
+      if (!row.entry_key) continue;
+      const list = map.get(row.entry_key);
+      if (list) list.push(row);
+      else map.set(row.entry_key, [row]);
+    }
+    return map;
+  });
+
+  const byLemma = computed(() => {
+    const map = new Map<string, LexiconEntry[]>();
+    for (const row of byId.value.values()) {
+      const list = map.get(row.lemma);
+      if (list) list.push(row);
+      else map.set(row.lemma, [row]);
+    }
+    return map;
+  });
+
   function upsert(row: LexiconEntry) {
     byId.value.set(row.id, row);
 
@@ -416,6 +442,8 @@ export const useLexiconStore = defineStore("lexicon", () => {
     entries,
     count,
     wordClasses,
+    byEntryKey,
+    byLemma,
     loading,
     saving,
     error,

@@ -142,6 +142,13 @@ const router = createRouter({
           component: () => import("@/views/project/ProjectSettingsView.vue"),
           props: true,
         },
+        {
+          // Owner-authored config, reached from the name menu beside Settings — not a tab.
+          path: "morphology",
+          name: "project-morphology",
+          component: () => import("@/views/project/MorphologyPluginView.vue"),
+          props: true,
+        },
       ],
     },
     {

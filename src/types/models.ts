@@ -80,6 +80,13 @@ export type GrammaticalCategory = Tables<"grammatical_categories">;
 export type CategoryValue = Tables<"category_values">;
 export type WordClassCategory = Tables<"word_class_categories">;
 
+/**
+ * The per-project morphology plugin: one jsonb document the owner authors, read by the
+ * corpus word-hover recogniser. Shape is validated in `src/lib/morphologySpec.ts`
+ * (`parseSpec`), not by the database — see 0029 for why this one is a blob.
+ */
+export type ProjectMorphology = Tables<"project_morphology">;
+
 /** A membership joined to the person it belongs to, as the members list renders it. */
 export type ProjectMemberWithProfile = ProjectMember & {
   profile: Pick<Profile, "id" | "email" | "display_name"> | null;

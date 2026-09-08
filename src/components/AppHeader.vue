@@ -117,6 +117,9 @@ const lastAt = computed(() => {
             <RouterLink :to="{ name: 'project-settings', params: { projectId } }" role="menuitem">
               Settings
             </RouterLink>
+            <RouterLink :to="{ name: 'project-morphology', params: { projectId } }" role="menuitem">
+              Morphology plugin
+            </RouterLink>
             <hr />
           </template>
           <template v-if="auth.user">

@@ -466,6 +466,35 @@ export type Database = {
           },
         ]
       }
+      project_morphology: {
+        Row: {
+          created_at: string
+          project_id: string
+          spec: Json
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          project_id: string
+          spec?: Json
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          project_id?: string
+          spec?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_morphology_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: true
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           created_at: string
@@ -738,6 +767,10 @@ export type Database = {
       }
       save_grammar_rules: {
         Args: { p_project_id: string; p_rules: Json }
+        Returns: undefined
+      }
+      save_morphology: {
+        Args: { p_project_id: string; p_spec: Json }
         Returns: undefined
       }
       save_phoneme_inventory: {

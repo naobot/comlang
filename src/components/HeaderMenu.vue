@@ -1,68 +1,21 @@
 <script setup lang="ts">
 import { onClickOutside } from "@vueuse/core";
-import { computed, onScopeDispose, ref, useTemplateRef } from "vue";
+import { useTemplateRef } from "vue";
+
+import { useHoverIntent } from "@/composables/useHoverIntent";
 
 /**
  * Hover-opened dropdown with a click/keyboard path alongside it.
  *
  * Hover alone would make this unreachable by keyboard and unusable on touch, where
  * there is no hover state at all. So a click *pins* it: hovering away no longer closes
- * it, and Escape or a click outside releases the pin.
+ * it, and Escape or a click outside releases the pin. The open/close timing lives in
+ * `useHoverIntent`.
  */
-const hovering = ref(false);
-const pinned = ref(false);
 const root = useTemplateRef<HTMLElement>("root");
-
-const open = computed(() => hovering.value || pinned.value);
-
-/**
- * How long the menu stays open after the pointer leaves.
- *
- * Closing on `mouseleave` alone made it a target you had to hit rather than a menu you
- * could reach for: the panel hangs below the trigger with a gap between them, so the
- * pointer is briefly over neither, and any diagonal path — the natural one, towards an
- * item that is not directly below the trigger — left the menu entirely on the way in.
- * The gap is bridged in CSS as well, but a bridge alone still punishes an overshoot.
- *
- * Only the *closing* is delayed. Opening stays immediate, because a menu that hesitates
- * before appearing feels broken in a way that one lingering for a third of a second does
- * not.
- */
-const CLOSE_DELAY_MS = 300;
-
-let closeTimer: ReturnType<typeof setTimeout> | null = null;
-
-function cancelClose() {
-  if (closeTimer === null) return;
-  clearTimeout(closeTimer);
-  closeTimer = null;
-}
-
-function onEnter() {
-  // Coming back within the grace period is the whole point: the pending close is
-  // cancelled rather than the menu being reopened, so it never blinks.
-  cancelClose();
-  hovering.value = true;
-}
-
-function onLeave() {
-  cancelClose();
-  closeTimer = setTimeout(() => {
-    closeTimer = null;
-    hovering.value = false;
-  }, CLOSE_DELAY_MS);
-}
-
-// A timer outliving its component would fire against a dead one.
-onScopeDispose(cancelClose);
+const { open, onEnter, onLeave, togglePin, close } = useHoverIntent();
 
 onClickOutside(root, () => close());
-
-function close() {
-  cancelClose();
-  pinned.value = false;
-  hovering.value = false;
-}
 
 // Anything chosen inside the menu should dismiss it, so items are wrapped in a
 // click handler rather than each caller remembering to close.
@@ -75,7 +28,7 @@ function close() {
       class="trigger"
       aria-haspopup="menu"
       :aria-expanded="open"
-      @click="pinned = !pinned"
+      @click="togglePin"
     >
       <slot name="trigger" />
     </button>

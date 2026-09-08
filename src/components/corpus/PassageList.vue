@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import CorpusText from "@/components/corpus/CorpusText.vue";
+import { editFromPoint } from "@/composables/useCaretEdit";
+import type { Recognizer } from "@/lib/morphology";
 import { type CorpusDraft, useCorpusStore } from "@/stores/corpus";
 import { useMembersStore } from "@/stores/members";
 import type { CorpusEntry } from "@/types/models";
@@ -19,7 +22,11 @@ import type { CorpusEntry } from "@/types/models";
  * answers. Blank lines and speaker labels are preserved exactly as typed, which is enough
  * to lay a conversation out by hand.
  */
-const props = defineProps<{ projectId: string; query: string }>();
+const props = defineProps<{
+  projectId: string;
+  query: string;
+  recognizer: Recognizer | null;
+}>();
 
 const corpus = useCorpusStore();
 const members = useMembersStore();
@@ -151,13 +158,29 @@ function confirmDelete(entry: CorpusEntry) {
           </label>
           <label class="pane">
             <span class="pane-label">Conlang</span>
-            <textarea
-              v-model="draft.conlang"
-              class="conlang"
-              :readonly="!members.canEdit"
-              :aria-label="`Conlang, passage ${i + 1}`"
-              @keydown.enter.meta.prevent="corpus.saveRow(entry.id)"
-              @keydown.enter.ctrl.prevent="corpus.saveRow(entry.id)"
+            <div v-if="members.canEdit" class="stack" :class="{ overlay: recognizer }">
+              <textarea
+                v-model="draft.conlang"
+                class="conlang"
+                :aria-label="`Conlang, passage ${i + 1}`"
+                @keydown.enter.meta.prevent="corpus.saveRow(entry.id)"
+                @keydown.enter.ctrl.prevent="corpus.saveRow(entry.id)"
+              />
+              <CorpusText
+                v-if="recognizer"
+                class="conlang tokens"
+                :text="draft.conlang"
+                :recognizer="recognizer"
+                :project-id="projectId"
+                @mousedown="editFromPoint"
+              />
+            </div>
+            <CorpusText
+              v-else
+              class="conlang reader"
+              :text="draft.conlang"
+              :recognizer="recognizer"
+              :project-id="projectId"
             />
           </label>
         </div>
@@ -297,6 +320,43 @@ function confirmDelete(entry: CorpusEntry) {
 
 .conlang {
   font-family: var(--font-mono);
+}
+
+/* Visitor's read-only pane, matched to the textarea's metrics. */
+.reader {
+  min-height: 11rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+/**
+ * Editor's hover layer: the tokenized text over the textarea, one grid cell, swapped on
+ * :focus-within. A click on the layer lands the caret and focus moves to the textarea.
+ */
+.stack {
+  flex: 1;
+  display: grid;
+}
+
+.stack > textarea,
+.stack > .tokens {
+  grid-area: 1 / 1;
+}
+
+.stack > .tokens {
+  min-height: 11rem;
+  padding: 1px 2px;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.stack.overlay:not(:focus-within) > textarea {
+  color: transparent;
+}
+
+.stack.overlay:focus-within > .tokens {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .held {

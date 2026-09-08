@@ -6,6 +6,7 @@ import { onBeforeRouteLeave } from "vue-router";
 import ImportReviewDialog from "@/components/corpus/ImportReviewDialog.vue";
 import PassageList from "@/components/corpus/PassageList.vue";
 import UtteranceGrid from "@/components/corpus/UtteranceGrid.vue";
+import { useMorphology } from "@/composables/useMorphology";
 import { useProjectExport } from "@/composables/useProjectExport";
 import { parseCorpusCsv } from "@/lib/corpusImport";
 import { type MergePlan, type ResolvedImport, buildMergePlan } from "@/lib/corpusMerge";
@@ -23,6 +24,10 @@ const phonemes = usePhonemesStore();
 // The same composable the header menu and the lexicon page use, so no two exports of the
 // same data can drift apart.
 const exporter = useProjectExport(() => props.projectId);
+
+// Morphology recognizer for the hover-preview on conlang words. Null while the lexicon is
+// empty, in which case the sub-views render plain text.
+const { recognizer } = useMorphology();
 
 /**
  * Which sub-view is showing. Passages first, deliberately.
@@ -251,8 +256,13 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
 
       <p v-if="corpus.error" class="error" role="alert">{{ corpus.error }}</p>
 
-      <PassageList v-if="view === 'passage'" :project-id="projectId" :query="query" />
-      <UtteranceGrid v-else :project-id="projectId" :query="query" />
+      <PassageList
+        v-if="view === 'passage'"
+        :project-id="projectId"
+        :query="query"
+        :recognizer="recognizer"
+      />
+      <UtteranceGrid v-else :project-id="projectId" :query="query" :recognizer="recognizer" />
     </template>
   </section>
 </template>

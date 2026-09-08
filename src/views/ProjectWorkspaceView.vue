@@ -6,6 +6,7 @@ import { useCorpusStore } from "@/stores/corpus";
 import { useGrammarRulesStore } from "@/stores/grammarRules";
 import { useLexiconStore } from "@/stores/lexicon";
 import { useMembersStore } from "@/stores/members";
+import { useMorphologyStore } from "@/stores/morphology";
 import { usePhonemesStore } from "@/stores/phonemes";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
 import { useProjectsStore } from "@/stores/projects";
@@ -22,6 +23,7 @@ const corpus = useCorpusStore();
 const phonemes = usePhonemesStore();
 const phonotactics = usePhonotacticsStore();
 const wordClasses = useWordClassesStore();
+const morphology = useMorphologyStore();
 const resolving = ref(true);
 
 const project = computed(() => projects.get(props.projectId));
@@ -60,6 +62,10 @@ async function loadProjectData(projectId: string) {
   // that page does not own it.
   wordClasses.subscribe(projectId);
   void wordClasses.fetchFor(projectId);
+  // The morphology plugin feeds the corpus word-hover recogniser, which is built in the
+  // corpus view but reads the lexicon and this document from stores loaded here.
+  morphology.subscribe(projectId);
+  void morphology.fetchFor(projectId);
   await membership;
 }
 
@@ -91,6 +97,7 @@ onUnmounted(() => {
   lexicon.unsubscribeAll();
   grammarRules.unsubscribeAll();
   wordClasses.unsubscribeAll();
+  morphology.unsubscribeAll();
   corpus.unsubscribeAll();
 });
 </script>

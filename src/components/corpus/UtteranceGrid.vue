@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import CorpusText from "@/components/corpus/CorpusText.vue";
+import { editFromPoint } from "@/composables/useCaretEdit";
+import type { Recognizer } from "@/lib/morphology";
 import { type CorpusDraft, useCorpusStore } from "@/stores/corpus";
 import { useMembersStore } from "@/stores/members";
 import type { CorpusEntry } from "@/types/models";
@@ -13,7 +16,11 @@ import type { CorpusEntry } from "@/types/models";
  * layout — a spreadsheet row and a passage card have almost nothing in common but the
  * store.
  */
-const props = defineProps<{ projectId: string; query: string }>();
+const props = defineProps<{
+  projectId: string;
+  query: string;
+  recognizer: Recognizer | null;
+}>();
 
 const corpus = useCorpusStore();
 const members = useMembersStore();
@@ -111,16 +118,35 @@ function confirmDelete(id: string, english: string, conlang: string) {
             </div>
           </td>
           <td>
-            <div class="grow conlang" :data-value="draft.conlang">
+            <div
+              v-if="members.canEdit"
+              class="grow conlang"
+              :class="{ overlay: recognizer }"
+              :data-value="draft.conlang"
+            >
               <textarea
                 v-model="draft.conlang"
-                :readonly="!members.canEdit"
                 rows="1"
                 :aria-label="`Conlang, row ${i + 1}`"
                 @keydown.enter.meta.prevent="corpus.saveRow(entry.id)"
                 @keydown.enter.ctrl.prevent="corpus.saveRow(entry.id)"
               />
+              <CorpusText
+                v-if="recognizer"
+                class="tokens"
+                :text="draft.conlang"
+                :recognizer="recognizer"
+                :project-id="projectId"
+                @mousedown="editFromPoint"
+              />
             </div>
+            <CorpusText
+              v-else
+              class="reader"
+              :text="draft.conlang"
+              :recognizer="recognizer"
+              :project-id="projectId"
+            />
           </td>
           <td class="actions">
             <!-- Nothing here for a visitor to a published conlang: every one of these is
@@ -316,6 +342,35 @@ tbody td {
 .conlang > textarea,
 .conlang::after {
   font-family: var(--font-mono);
+}
+
+/* The read-only conlang cell shown to visitors, matched to the textarea's metrics. */
+.reader {
+  padding: var(--sp-2) var(--sp-3);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+/**
+ * The hover layer for editors: the tokenized text sits over the textarea and takes the
+ * pointer while the cell is not focused; focusing the cell (a click lands the caret) hides
+ * it and hands back to the textarea. Same grid cell as the textarea and the ::after sizer,
+ * so the three stay aligned.
+ */
+.grow.overlay > .tokens {
+  grid-area: 1 / 1;
+  padding: var(--sp-2) var(--sp-3);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.grow.overlay:not(:focus-within) > textarea {
+  color: transparent;
+}
+
+.grow.overlay:focus-within > .tokens {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .held {
