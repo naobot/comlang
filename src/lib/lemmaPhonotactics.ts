@@ -38,7 +38,29 @@ export type LemmaCheck =
     };
 
 /**
+ * Latin-orthography lemmas and the IPA chart disagree on a few glyphs.
+ *
+ * The one that bites is the voiced velar stop: `src/data/ipa.ts` stores it as the proper
+ * IPA symbol, script "ɡ" (U+0261), while a romanization following the conlang's
+ * "lowercase Latin" orthography writes plain "g" (U+0067). Compared literally, "gal"
+ * looks like it contains a sound the language does not have. Each pair is folded to one
+ * form on both sides before matching. Length-preserving, so segmentation offsets are
+ * unaffected; add a pair here if another lookalike turns up.
+ */
+const FOLD_PAIRS: ReadonlyArray<readonly [RegExp, string]> = [[/ɡ/g, "g"]];
+
+function fold(s: string): string {
+  let out = s;
+  for (const [from, to] of FOLD_PAIRS) out = out.replace(from, to);
+  return out;
+}
+
+/**
  * Split `s` into phonemes by greedy longest match against the inventory.
+ *
+ * Matching is done on the folded form (see `fold`), but each unit is emitted as the
+ * inventory's own canonical symbol, so the grammar — `slot.ipa`, the constraint terms —
+ * keeps matching against exactly what it stores.
  *
  * Longest-first is the conventional resolution for a phonemic romanization; it can in
  * principle mis-cut a prefix-ambiguous inventory (`t`, `ts`, `s` all present), but a
@@ -49,23 +71,29 @@ function segment(
   inventory: ReadonlySet<string>,
   s: string,
 ): { ok: true; units: string[] } | { ok: false; bad: string } {
+  // Folded symbol -> the inventory's canonical spelling of it.
+  const canonical = new Map<string, string>();
   let maxLen = 1;
-  for (const symbol of inventory) maxLen = Math.max(maxLen, symbol.length);
+  for (const symbol of inventory) {
+    canonical.set(fold(symbol), symbol);
+    maxLen = Math.max(maxLen, symbol.length);
+  }
 
+  const folded = fold(s);
   const units: string[] = [];
   let i = 0;
-  while (i < s.length) {
+  while (i < folded.length) {
     let matched: string | null = null;
-    for (let len = Math.min(maxLen, s.length - i); len >= 1; len -= 1) {
-      const sub = s.slice(i, i + len);
-      if (inventory.has(sub)) {
-        matched = sub;
+    for (let len = Math.min(maxLen, folded.length - i); len >= 1; len -= 1) {
+      const hit = canonical.get(folded.slice(i, i + len));
+      if (hit !== undefined) {
+        matched = hit;
+        i += len;
         break;
       }
     }
-    if (matched === null) return { ok: false, bad: s[i] ?? "" };
+    if (matched === null) return { ok: false, bad: folded[i] ?? "" };
     units.push(matched);
-    i += matched.length;
   }
   return { ok: true, units };
 }
