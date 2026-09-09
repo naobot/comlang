@@ -84,10 +84,12 @@ describe("round trip", () => {
     rules: [],
     graphemes: [],
     orthographyRules: [],
+    morphology: null,
     lexicon: [
       {
         entry_key: "v_exist",
         lemma: "ga",
+        underlying: null,
         gloss: "exist, there is",
         word_class: "predicate",
         notes: null,
@@ -95,11 +97,12 @@ describe("round trip", () => {
       {
         entry_key: "n_neck",
         lemma: "pamŋwathoŋ",
+        underlying: null,
         gloss: "neck",
         word_class: "noun",
         notes: 'Compound of pam + ŋwathoŋ. Says "frozen".',
       },
-      { entry_key: null, lemma: "ʔo", gloss: "leg", word_class: "noun", notes: null },
+      { entry_key: null, lemma: "ʔo", underlying: null, gloss: "leg", word_class: "noun", notes: null },
     ],
   });
 

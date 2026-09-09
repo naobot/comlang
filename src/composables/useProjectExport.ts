@@ -11,6 +11,7 @@ import {
 import { useCorpusStore } from "@/stores/corpus";
 import { useGrammarRulesStore } from "@/stores/grammarRules";
 import { useLexiconStore } from "@/stores/lexicon";
+import { useMorphologyStore } from "@/stores/morphology";
 import { useOrthographyStore } from "@/stores/orthography";
 import { usePhonemesStore } from "@/stores/phonemes";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
@@ -33,6 +34,7 @@ export function useProjectExport(projectId: () => string | null) {
   const wordClasses = useWordClassesStore();
   const corpus = useCorpusStore();
   const orthography = useOrthographyStore();
+  const morphology = useMorphologyStore();
 
   /**
    * Built from what is **saved**, not from any in-progress draft. An export is a record
@@ -73,6 +75,7 @@ export function useProjectExport(projectId: () => string | null) {
       lexicon: lexicon.entries.map((e) => ({
         entry_key: e.entry_key,
         lemma: e.lemma,
+        underlying: e.underlying_phonology || null,
         gloss: e.gloss,
         word_class: e.word_class,
         notes: e.notes,
@@ -92,6 +95,7 @@ export function useProjectExport(projectId: () => string | null) {
       corpus: corpus.entries.map((e) => ({ english: e.english, conlang: e.conlang })),
       graphemes: orthography.persisted.graphemes.map((g) => ({ ...g })),
       orthographyRules: orthography.persisted.rules.map((r) => ({ ...r })),
+      morphology: morphology.specDoc,
     };
   });
 

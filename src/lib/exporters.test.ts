@@ -44,8 +44,22 @@ const input = (over: Partial<ExportInput> = {}): ExportInput => ({
     },
   ],
   lexicon: [
-    { entry_key: "n_book", lemma: "miŋgwem", gloss: "book", word_class: "noun", notes: null },
-    { entry_key: null, lemma: "ʔo", gloss: "leg", word_class: "noun", notes: "Compound." },
+    {
+      entry_key: "n_book",
+      lemma: "miŋgwem",
+      underlying: "/miŋɡɰem/",
+      gloss: "book",
+      word_class: "noun",
+      notes: null,
+    },
+    {
+      entry_key: null,
+      lemma: "ʔo",
+      underlying: null,
+      gloss: "leg",
+      word_class: "noun",
+      notes: "Compound.",
+    },
   ],
   wordClasses: [
     { name: "noun", kind: "open", description: "", categories: ["number"] },
@@ -72,6 +86,7 @@ const input = (over: Partial<ExportInput> = {}): ExportInput => ({
   ],
   graphemes: [],
   orthographyRules: [],
+  morphology: null,
   ...over,
 });
 
@@ -223,6 +238,79 @@ describe("orthography in the export", () => {
   });
 });
 
+describe("underlying phonology in the export", () => {
+  it("carries `underlying` alongside `lemma` when the entry has one", () => {
+    const doc = parse(toGrammarYaml(input())) as { lexicon: { lemma: string; underlying?: string }[] };
+    expect(doc.lexicon[0]).toMatchObject({ lemma: "miŋgwem", underlying: "/miŋɡɰem/" });
+    expect(doc.lexicon[1]?.underlying).toBeUndefined();
+  });
+});
+
+describe("morphology in the export", () => {
+  const withMorphology = input({
+    morphology: {
+      version: 1,
+      rules: {
+        vowels: "aeiou",
+        glides: "jw",
+        digraphs: ["ng", "ts"],
+        reduplication: { enabled: true },
+        ngGemination: { enabled: true },
+        harmony: { enabled: false },
+        elision: { enabled: false },
+        lowering: { enabled: false },
+      },
+      slots: {
+        nominal: ["numeral", "classifier", "STEM", "plural", "case", "semanticParticle"],
+        predicate: ["negation", "STEM", "tense", "force", "evidential", "conjunction"],
+      },
+      stems: [{ slotClass: "nominal", wordClass: ["noun", "pronoun"] }],
+      affixes: [
+        { role: "case", match: { entryKey: ["p_top", "p_nom"] }, position: "suffix" },
+        { role: "tense", match: { entryKeyPrefix: "t_" }, position: "suffix" },
+        { role: "negation", match: { wordClass: "negation" }, position: "prefix" },
+      ],
+    },
+  });
+
+  it("is absent when the project has no morphology document", () => {
+    expect(toGrammarYaml(input())).not.toContain("morphology:");
+  });
+
+  it("emits the phonological-word slot order for both templates", () => {
+    const doc = parse(toGrammarYaml(withMorphology)) as {
+      morphology: { slots: { nominal: string[]; predicate: string[] } };
+    };
+    expect(doc.morphology.slots.nominal).toEqual([
+      "numeral",
+      "classifier",
+      "STEM",
+      "plural",
+      "case",
+      "semanticParticle",
+    ]);
+    expect(doc.morphology.slots.predicate[0]).toBe("negation");
+  });
+
+  it("records affix bindings by whichever match shape the document used", () => {
+    const doc = parse(toGrammarYaml(withMorphology)) as {
+      morphology: { affixes: Record<string, unknown>[] };
+    };
+    expect(doc.morphology.affixes).toEqual([
+      { role: "case", position: "suffix", entry_key: ["p_top", "p_nom"] },
+      { role: "tense", position: "suffix", entry_key_prefix: "t_" },
+      { role: "negation", position: "prefix", word_class: ["negation"] },
+    ]);
+  });
+
+  it("flattens the phonological toggles to enabled / disabled", () => {
+    const yaml = toGrammarYaml(withMorphology);
+    expect(yaml).toContain("reduplication: enabled");
+    expect(yaml).toContain("ng_gemination: enabled");
+    expect(yaml).toContain("harmony: disabled");
+  });
+});
+
 describe("toLexiconCsv", () => {
   it("is two headerless columns, matching the co-designer's files", () => {
     expect(toLexiconCsv(input())).toBe("n_book,miŋgwem\nʔo,ʔo\n");
@@ -236,7 +324,7 @@ describe("toLexiconCsv", () => {
   it("quotes a field containing a comma", () => {
     const csv = toLexiconCsv(
       input({
-        lexicon: [{ entry_key: "k", lemma: "a,b", gloss: null, word_class: null, notes: null }],
+        lexicon: [{ entry_key: "k", lemma: "a,b", underlying: null, gloss: null, word_class: null, notes: null }],
       }),
     );
     expect(csv).toBe('k,"a,b"\n');
@@ -254,7 +342,7 @@ describe("toLexiconCsvFull", () => {
     const csv = toLexiconCsvFull(
       input({
         lexicon: [
-          { entry_key: "k", lemma: "x", gloss: 'a "quoted" word', word_class: null, notes: null },
+          { entry_key: "k", lemma: "x", underlying: null, gloss: 'a "quoted" word', word_class: null, notes: null },
         ],
       }),
     );
@@ -291,7 +379,13 @@ describe("the emitted YAML actually parses", () => {
     expect(lexicon).toHaveLength(2);
     // The glottal stop survives the trip, which is the whole reason it is quoted.
     expect(lexicon[1]?.lemma).toBe("ʔo");
-    expect(lexicon[0]).toEqual({ key: "n_book", lemma: "miŋgwem", pos: "noun", gloss: "book" });
+    expect(lexicon[0]).toEqual({
+      key: "n_book",
+      lemma: "miŋgwem",
+      underlying: "/miŋɡɰem/",
+      pos: "noun",
+      gloss: "book",
+    });
   });
 
   it("survives values that would otherwise break the document", () => {

@@ -9,11 +9,15 @@
  * devDependency used by the import script and must not reach the browser bundle, and
  * writing it out gives control over matching the source document's shape.
  *
- * What is deliberately absent: `alignment`, `morpheme_order`, `closed_class`, `exceptions`
- * and `samples`. The app has no data for any of them — morpheme order in particular is
- * still an open design question — and inventing empty keys would make the export look like
- * a complete grammar when it is a partial one.
+ * What is deliberately absent: `alignment`, `closed_class`, `exceptions` and `samples`.
+ * The app has no data for any of them, and inventing empty keys would make the export
+ * look like a complete grammar when it is a partial one. `morpheme_order` *is* emitted
+ * now, under `morphology:` — the morphology plugin (migration 0029) models the slot order
+ * of each phonological word, which lexicon rows are bound affixes, and the phonological
+ * toggles.
  */
+
+import type { MorphologySpecDoc } from "./morphologySpec";
 
 import { csvField } from "./csv";
 
@@ -39,6 +43,8 @@ export type ExportConstraint = {
 export type ExportEntry = {
   entry_key: string | null;
   lemma: string;
+  /** Phonemic ground truth in `/slashes/` (migration 0033). `lemma` is the spelt form. */
+  underlying: string | null;
   gloss: string | null;
   word_class: string | null;
   notes: string | null;
@@ -89,6 +95,8 @@ export type ExportInput = {
   corpus: ExportCorpusEntry[];
   graphemes: ExportGrapheme[];
   orthographyRules: ExportOrthographyRule[];
+  /** The morphology-plugin document (migration 0029), or null if the project has none. */
+  morphology: MorphologySpecDoc | null;
 };
 
 // YAML scalars ------------------------------------------------------------------------
@@ -136,8 +144,9 @@ export function toGrammarYaml(input: ExportInput): string {
   push(`# Exported from comlang on ${isoDate(input.generatedAt)}.`);
   push("#");
   push("# A partial grammar: it carries only what the app currently models. Absent by");
-  push("# design rather than by omission — categories, alignment, morpheme_order,");
-  push("# closed_class, exceptions and samples have no home in the app yet.");
+  push("# design rather than by omission — alignment, closed_class, exceptions and");
+  push("# samples have no home in the app yet. Morpheme order lives under the morphology");
+  push("# key below.");
   push("");
   push("meta:");
   push(`  name: ${yamlScalar(input.projectName)}`);
@@ -187,6 +196,54 @@ export function toGrammarYaml(input: ExportInput): string {
           if (value.trim()) push(`      ${key}: ${yamlScalar(value.trim())}`);
         }
       }
+    }
+    push("");
+  }
+
+  // morphology -----------------------------------------------------------------------
+  // The morphology-plugin document (migration 0029): the slot order of each phonological
+  // word, which lexicon rows are bound affixes, and the phonological toggles. comlang's
+  // own key, like `orthography` above — upstream `grammar.yaml` splits this across
+  // `morpheme_order`, `closed_class` and `phonology`.
+  if (input.morphology) {
+    const m = input.morphology;
+    const asList = (v: string | string[]) =>
+      (Array.isArray(v) ? v : [v]).map((s) => yamlScalar(s, true)).join(", ");
+    push("morphology:");
+    push("  slots:");
+    push(`    nominal: ${list(m.slots.nominal)}`);
+    push(`    predicate: ${list(m.slots.predicate)}`);
+    if (m.stems.length) {
+      push("  stems:");
+      for (const s of m.stems) {
+        push(`    - { slot_class: ${yamlScalar(s.slotClass, true)}, word_class: [${asList(s.wordClass)}] }`);
+      }
+    }
+    if (m.affixes.length) {
+      push("  affixes:");
+      for (const a of m.affixes) {
+        const match =
+          "entryKeyPrefix" in a.match
+            ? `entry_key_prefix: ${yamlScalar(a.match.entryKeyPrefix, true)}`
+            : "entryKey" in a.match
+              ? `entry_key: [${asList(a.match.entryKey)}]`
+              : `word_class: [${asList(a.match.wordClass)}]`;
+        push(`    - { role: ${yamlScalar(a.role, true)}, position: ${a.position}, ${match} }`);
+      }
+    }
+    const r = m.rules;
+    push("  rules:");
+    if (r.vowels) push(`    vowels: ${yamlScalar(r.vowels, true)}`);
+    if (r.glides) push(`    glides: ${yamlScalar(r.glides, true)}`);
+    if (r.digraphs?.length) push(`    digraphs: ${list(r.digraphs)}`);
+    for (const [key, on] of [
+      ["reduplication", r.reduplication?.enabled],
+      ["ng_gemination", r.ngGemination?.enabled],
+      ["harmony", r.harmony?.enabled],
+      ["elision", r.elision?.enabled],
+      ["lowering", r.lowering?.enabled],
+    ] as const) {
+      push(`    ${key}: ${on ? "enabled" : "disabled"}`);
     }
     push("");
   }
@@ -280,6 +337,7 @@ export function toGrammarYaml(input: ExportInput): string {
       const parts = [
         entry.entry_key ? `key: ${yamlScalar(entry.entry_key, true)}` : null,
         `lemma: ${yamlScalar(entry.lemma, true)}`,
+        entry.underlying ? `underlying: ${yamlScalar(entry.underlying, true)}` : null,
         entry.word_class ? `pos: ${yamlScalar(entry.word_class, true)}` : null,
         entry.gloss ? `gloss: ${yamlScalar(entry.gloss, true)}` : null,
       ].filter(Boolean);

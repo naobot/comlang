@@ -1,0 +1,5098 @@
+[
+  {
+    "entry_key": "a_alittle",
+    "lemma": "wa",
+    "underlying_phonology": "/ɰa/",
+    "gloss": "alittle",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_alive",
+    "lemma": "wi",
+    "underlying_phonology": "/ɰi/",
+    "gloss": "alive",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_alot",
+    "lemma": "bie",
+    "underlying_phonology": "/bje/",
+    "gloss": "alot",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_bad",
+    "lemma": "ngap",
+    "underlying_phonology": "/ŋap/",
+    "gloss": "bad",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_beautiful",
+    "lemma": "ngoro",
+    "underlying_phonology": "/ŋoɾo/",
+    "gloss": "beautiful",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_big",
+    "lemma": "mwu",
+    "underlying_phonology": "/mɰu/",
+    "gloss": "big",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_black",
+    "lemma": "po",
+    "underlying_phonology": "/po/",
+    "gloss": "black",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_blue",
+    "lemma": "nu",
+    "underlying_phonology": "/nu/",
+    "gloss": "blue",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_boring",
+    "lemma": "nikha",
+    "underlying_phonology": "/nixa/",
+    "gloss": "boring",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_bright",
+    "lemma": "ya",
+    "underlying_phonology": "/ja/",
+    "gloss": "bright",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_cold",
+    "lemma": "to",
+    "underlying_phonology": "/to/",
+    "gloss": "cold",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_cool",
+    "lemma": "khui",
+    "underlying_phonology": "/xɰi/",
+    "gloss": "cool",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_dark",
+    "lemma": "go",
+    "underlying_phonology": "/ɡo/",
+    "gloss": "dark",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_dead",
+    "lemma": "khwu",
+    "underlying_phonology": "/xɰu/",
+    "gloss": "dead",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_delicious",
+    "lemma": "ngwuhol",
+    "underlying_phonology": "/ŋɰuhol/",
+    "gloss": "delicious",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_dim",
+    "lemma": "gkok",
+    "underlying_phonology": "/qok/",
+    "gloss": "dim",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_fast",
+    "lemma": "tsi",
+    "underlying_phonology": "/t͡si/",
+    "gloss": "fast",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_few",
+    "lemma": "muik",
+    "underlying_phonology": "/mɰik/",
+    "gloss": "few",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_good",
+    "lemma": "tsin",
+    "underlying_phonology": "/t͡sin/",
+    "gloss": "good",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_green",
+    "lemma": "gung",
+    "underlying_phonology": "/ɡuŋ/",
+    "gloss": "green",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_grey",
+    "lemma": "ro",
+    "underlying_phonology": "/ɾo/",
+    "gloss": "grey",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_heavy",
+    "lemma": "mo",
+    "underlying_phonology": "/mo/",
+    "gloss": "heavy",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_high",
+    "lemma": "ging",
+    "underlying_phonology": "/ɡiŋ/",
+    "gloss": "high",
+    "word_class": null,
+    "notes": null
+  },
+  {
+    "entry_key": "a_hot",
+    "lemma": "gko",
+    "underlying_phonology": "/qo/",
+    "gloss": "hot",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_interesting",
+    "lemma": "kumiu",
+    "underlying_phonology": "/kumju/",
+    "gloss": "interesting",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_light",
+    "lemma": "pyil",
+    "underlying_phonology": "/pjil/",
+    "gloss": "light",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_like",
+    "lemma": "pyil",
+    "underlying_phonology": "/pjil/",
+    "gloss": "like",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_long",
+    "lemma": "puo",
+    "underlying_phonology": "/pɰo/",
+    "gloss": "long",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_low",
+    "lemma": "wit",
+    "underlying_phonology": "/ɰit/",
+    "gloss": null,
+    "word_class": null,
+    "notes": null
+  },
+  {
+    "entry_key": "a_many",
+    "lemma": "tsua",
+    "underlying_phonology": "/t͡sɰa/",
+    "gloss": "many",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_narrow",
+    "lemma": "nwu",
+    "underlying_phonology": "/nɰu/",
+    "gloss": "narrow",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_new",
+    "lemma": "mio",
+    "underlying_phonology": "/mjo/",
+    "gloss": "new",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_notlong",
+    "lemma": "gi",
+    "underlying_phonology": "/ɡi/",
+    "gloss": "notlong",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_nottall",
+    "lemma": "ru",
+    "underlying_phonology": "/ɾu/",
+    "gloss": "nottall",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_old",
+    "lemma": "khuepue",
+    "underlying_phonology": "/xɰepɰe/",
+    "gloss": "old",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_old_age",
+    "lemma": "dinyo",
+    "underlying_phonology": "/dinjo/",
+    "gloss": "old age",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_orange",
+    "lemma": "he",
+    "underlying_phonology": "/he/",
+    "gloss": "orange",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_pink",
+    "lemma": "tso",
+    "underlying_phonology": "/t͡so/",
+    "gloss": "pink",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_pretty",
+    "lemma": "nopkui",
+    "underlying_phonology": "/nopkɰi/",
+    "gloss": "pretty",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_purple",
+    "lemma": "dia",
+    "underlying_phonology": "/dja/",
+    "gloss": "purple",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_red",
+    "lemma": "gue",
+    "underlying_phonology": "/ɡɰe/",
+    "gloss": "red",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_slow",
+    "lemma": "gem",
+    "underlying_phonology": "/ɡem/",
+    "gloss": "slow",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_small",
+    "lemma": "nguik",
+    "underlying_phonology": "/ŋɰik/",
+    "gloss": "small",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_strong",
+    "lemma": "ro",
+    "underlying_phonology": "/ɾo/",
+    "gloss": "strong",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_tall",
+    "lemma": "kui",
+    "underlying_phonology": "/kɰi/",
+    "gloss": "tall",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_tasteless",
+    "lemma": "rungge",
+    "underlying_phonology": "/ɾuŋe/",
+    "gloss": "tasteless",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_thick",
+    "lemma": "bi",
+    "underlying_phonology": "/bi/",
+    "gloss": "thick",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_thin",
+    "lemma": "hua",
+    "underlying_phonology": "/hɰa/",
+    "gloss": "thin",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_ugly",
+    "lemma": "bangges",
+    "underlying_phonology": "/baŋes/",
+    "gloss": "ugly",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_warm",
+    "lemma": "tsuo",
+    "underlying_phonology": "/t͡sɰo/",
+    "gloss": "warm",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_weak",
+    "lemma": "sie",
+    "underlying_phonology": "/sje/",
+    "gloss": "weak",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_white",
+    "lemma": "ku",
+    "underlying_phonology": "/ku/",
+    "gloss": "white",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_wide",
+    "lemma": "yu",
+    "underlying_phonology": "/ju/",
+    "gloss": "wide",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_yellow",
+    "lemma": "buo",
+    "underlying_phonology": "/bɰo/",
+    "gloss": "yellow",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "a_young",
+    "lemma": "himia",
+    "underlying_phonology": "/himja/",
+    "gloss": "young",
+    "word_class": "adjective",
+    "notes": null
+  },
+  {
+    "entry_key": "adv_final",
+    "lemma": "minya",
+    "underlying_phonology": "/minja/",
+    "gloss": "final",
+    "word_class": "adverb",
+    "notes": null
+  },
+  {
+    "entry_key": "adv_first",
+    "lemma": "wolu",
+    "underlying_phonology": "/ɰolu/",
+    "gloss": "first",
+    "word_class": "adverb",
+    "notes": null
+  },
+  {
+    "entry_key": "adv_following",
+    "lemma": "songgi",
+    "underlying_phonology": "/soŋi/",
+    "gloss": "following",
+    "word_class": "adverb",
+    "notes": null
+  },
+  {
+    "entry_key": "adv_last",
+    "lemma": "duekkal",
+    "underlying_phonology": "/dɰekhal/",
+    "gloss": "last",
+    "word_class": "adverb",
+    "notes": null
+  },
+  {
+    "entry_key": "adv_later",
+    "lemma": "yentui",
+    "underlying_phonology": "/jentɰi/",
+    "gloss": "later",
+    "word_class": "adverb",
+    "notes": null
+  },
+  {
+    "entry_key": "adv_more",
+    "lemma": "ra",
+    "underlying_phonology": "/ɾa/",
+    "gloss": null,
+    "word_class": null,
+    "notes": null
+  },
+  {
+    "entry_key": "adv_next",
+    "lemma": "hokhi",
+    "underlying_phonology": "/hoxi/",
+    "gloss": "next",
+    "word_class": "adverb",
+    "notes": null
+  },
+  {
+    "entry_key": "adv_previous",
+    "lemma": "mopui",
+    "underlying_phonology": "/mopɰi/",
+    "gloss": "previous",
+    "word_class": "adverb",
+    "notes": null
+  },
+  {
+    "entry_key": "adv_right",
+    "lemma": "tsok",
+    "underlying_phonology": "/t͡sok/",
+    "gloss": "right (immediately)",
+    "word_class": "adverb",
+    "notes": null
+  },
+  {
+    "entry_key": "d_any",
+    "lemma": "kut",
+    "underlying_phonology": "/kut/",
+    "gloss": "any",
+    "word_class": "quantifier",
+    "notes": null
+  },
+  {
+    "entry_key": "d_dst",
+    "lemma": "tsu",
+    "underlying_phonology": "/t͡su/",
+    "gloss": "that (distal)",
+    "word_class": "demonstrative",
+    "notes": null
+  },
+  {
+    "entry_key": "d_each",
+    "lemma": "nos",
+    "underlying_phonology": "/nos/",
+    "gloss": "each",
+    "word_class": "quantifier",
+    "notes": null
+  },
+  {
+    "entry_key": "d_every",
+    "lemma": "dong",
+    "underlying_phonology": "/doŋ/",
+    "gloss": "every",
+    "word_class": "quantifier",
+    "notes": null
+  },
+  {
+    "entry_key": "d_med",
+    "lemma": "nge",
+    "underlying_phonology": "/ŋe/",
+    "gloss": "that (medial)",
+    "word_class": "demonstrative",
+    "notes": null
+  },
+  {
+    "entry_key": "d_no",
+    "lemma": "tsek",
+    "underlying_phonology": "/t͡sek/",
+    "gloss": "none",
+    "word_class": "quantifier",
+    "notes": null
+  },
+  {
+    "entry_key": "d_prx",
+    "lemma": "tse",
+    "underlying_phonology": "/t͡se/",
+    "gloss": "this (proximal)",
+    "word_class": "demonstrative",
+    "notes": null
+  },
+  {
+    "entry_key": "d_some",
+    "lemma": "guk",
+    "underlying_phonology": "/ɡuk/",
+    "gloss": "some",
+    "word_class": "quantifier",
+    "notes": null
+  },
+  {
+    "entry_key": "e_dir",
+    "lemma": "t",
+    "underlying_phonology": "/t/",
+    "gloss": "direct evidential",
+    "word_class": "evidential",
+    "notes": null
+  },
+  {
+    "entry_key": "e_epi",
+    "lemma": "li",
+    "underlying_phonology": "/li/",
+    "gloss": "epistemic evidential",
+    "word_class": "evidential",
+    "notes": null
+  },
+  {
+    "entry_key": "e_ind",
+    "lemma": "n",
+    "underlying_phonology": "/n/",
+    "gloss": "indirect evidential",
+    "word_class": "evidential",
+    "notes": null
+  },
+  {
+    "entry_key": "e_mir",
+    "lemma": "wam",
+    "underlying_phonology": "/ɰam/",
+    "gloss": "mirative",
+    "word_class": "evidential",
+    "notes": null
+  },
+  {
+    "entry_key": "e_rel",
+    "lemma": "ng",
+    "underlying_phonology": "/ŋ/",
+    "gloss": "relativizer",
+    "word_class": "evidential",
+    "notes": null
+  },
+  {
+    "entry_key": "f_com",
+    "lemma": "se",
+    "underlying_phonology": "/se/",
+    "gloss": "commissive",
+    "word_class": "force marker",
+    "notes": null
+  },
+  {
+    "entry_key": "f_imp",
+    "lemma": "la",
+    "underlying_phonology": "/la/",
+    "gloss": "imperative",
+    "word_class": "force marker",
+    "notes": null
+  },
+  {
+    "entry_key": "f_int",
+    "lemma": "ke",
+    "underlying_phonology": "/ke/",
+    "gloss": "interrogative",
+    "word_class": "force marker",
+    "notes": null
+  },
+  {
+    "entry_key": "g_ability",
+    "lemma": "ye",
+    "underlying_phonology": "/je/",
+    "gloss": "can (ability)",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "g_desire",
+    "lemma": "ti",
+    "underlying_phonology": "/ti/",
+    "gloss": "want (desire)",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "g_direction",
+    "lemma": "puk",
+    "underlying_phonology": "/puk/",
+    "gloss": "direction",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "g_language",
+    "lemma": "nik",
+    "underlying_phonology": "/nik/",
+    "gloss": null,
+    "word_class": null,
+    "notes": null
+  },
+  {
+    "entry_key": "g_necessity",
+    "lemma": "ri",
+    "underlying_phonology": "/ɾi/",
+    "gloss": "must (necessity)",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "g_obligation",
+    "lemma": "ru",
+    "underlying_phonology": "/ɾu/",
+    "gloss": "should (obligation)",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "g_permission",
+    "lemma": "gko",
+    "underlying_phonology": "/qo/",
+    "gloss": "may (permission)",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "g_potential",
+    "lemma": "di",
+    "underlying_phonology": "/di/",
+    "gloss": "might (potential)",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "g_question",
+    "lemma": "mo",
+    "underlying_phonology": "/mo/",
+    "gloss": "question (particle)",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "g_recommendation",
+    "lemma": "pi",
+    "underlying_phonology": "/pi/",
+    "gloss": "ought (recommendation)",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "g_time",
+    "lemma": "ga",
+    "underlying_phonology": "/ɡa/",
+    "gloss": null,
+    "word_class": null,
+    "notes": null
+  },
+  {
+    "entry_key": "n_0",
+    "lemma": "dang",
+    "underlying_phonology": "/daŋ/",
+    "gloss": "0",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_1",
+    "lemma": "me",
+    "underlying_phonology": "/me/",
+    "gloss": "1",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_10",
+    "lemma": "wit",
+    "underlying_phonology": "/ɰit/",
+    "gloss": "10",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_10-gon",
+    "lemma": "wittsin",
+    "underlying_phonology": "/ɰitt͡sin/",
+    "gloss": "10-gon",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_100",
+    "lemma": "yu",
+    "underlying_phonology": "/ju/",
+    "gloss": "100",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_1000",
+    "lemma": "tsip",
+    "underlying_phonology": "/t͡sip/",
+    "gloss": "1000",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_11-gon",
+    "lemma": "mewittsin",
+    "underlying_phonology": "/meɰitt͡sin/",
+    "gloss": "11-gon",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_12-gon",
+    "lemma": "rawittsin",
+    "underlying_phonology": "/ɾaɰitt͡sin/",
+    "gloss": "12-gon",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_1pl",
+    "lemma": "lu",
+    "underlying_phonology": "/lu/",
+    "gloss": "1PL",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_1sg",
+    "lemma": "po",
+    "underlying_phonology": "/po/",
+    "gloss": "1SG",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_2",
+    "lemma": "ra",
+    "underlying_phonology": "/ɾa/",
+    "gloss": "2",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_2pl",
+    "lemma": "tso",
+    "underlying_phonology": "/t͡so/",
+    "gloss": "2PL",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_2sg",
+    "lemma": "ta",
+    "underlying_phonology": "/ta/",
+    "gloss": "2SG",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_3",
+    "lemma": "hap",
+    "underlying_phonology": "/hap/",
+    "gloss": "3",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_3pl",
+    "lemma": "pa",
+    "underlying_phonology": "/pa/",
+    "gloss": "3PL",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_3sg",
+    "lemma": "so",
+    "underlying_phonology": "/so/",
+    "gloss": "3SG",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_4",
+    "lemma": "mol",
+    "underlying_phonology": "/mol/",
+    "gloss": "4",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_5",
+    "lemma": "tsim",
+    "underlying_phonology": "/t͡sim/",
+    "gloss": "5",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_6",
+    "lemma": "sum",
+    "underlying_phonology": "/sum/",
+    "gloss": "6",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_7",
+    "lemma": "nul",
+    "underlying_phonology": "/nul/",
+    "gloss": "7",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_8",
+    "lemma": "ngat",
+    "underlying_phonology": "/ŋat/",
+    "gloss": "8",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_9",
+    "lemma": "bes",
+    "underlying_phonology": "/bes/",
+    "gloss": "nine",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_9-gon",
+    "lemma": "bestsin",
+    "underlying_phonology": "/best͡sin/",
+    "gloss": "nonagon",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_ability",
+    "lemma": "kieskom",
+    "underlying_phonology": "/kjeskom/",
+    "gloss": "ability",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_above",
+    "lemma": "dul",
+    "underlying_phonology": "/dul/",
+    "gloss": "above",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_accomplishment",
+    "lemma": "gugias",
+    "underlying_phonology": "/ɡuɡjas/",
+    "gloss": "accomplishment",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_achievement",
+    "lemma": "suotua",
+    "underlying_phonology": "/sɰotɰa/",
+    "gloss": "achievement",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_acting",
+    "lemma": "rotibiek",
+    "underlying_phonology": "/ɾotibjek/",
+    "gloss": "acting",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_action",
+    "lemma": "bit",
+    "underlying_phonology": "/bit/",
+    "gloss": "action",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_activity",
+    "lemma": "dakias",
+    "underlying_phonology": "/dakjas/",
+    "gloss": "activity",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_actor",
+    "lemma": "rotibiektui",
+    "underlying_phonology": "/ɾotibjektɰi/",
+    "gloss": "actor",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_afternoon",
+    "lemma": "kiesui",
+    "underlying_phonology": "/kjesɰi/",
+    "gloss": "afternoon",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_air",
+    "lemma": "tsa",
+    "underlying_phonology": "/t͡sa/",
+    "gloss": "air",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_airplane",
+    "lemma": "dekwu",
+    "underlying_phonology": "/dekɰu/",
+    "gloss": "airplane",
+    "word_class": "noun",
+    "notes": "/kɰ/V becomes <gw>"
+  },
+  {
+    "entry_key": "n_angry",
+    "lemma": "tuidying",
+    "underlying_phonology": "/tɰidjiŋ/",
+    "gloss": "angry",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_animal",
+    "lemma": "tsimuo",
+    "underlying_phonology": "/t͡simɰo/",
+    "gloss": "animal",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_animal0",
+    "lemma": "tu",
+    "underlying_phonology": "/tu/",
+    "gloss": "animal0",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_animal1",
+    "lemma": "khe",
+    "underlying_phonology": "/xe/",
+    "gloss": "animal1",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_animal2",
+    "lemma": "ngikyi",
+    "underlying_phonology": "/ŋikji/",
+    "gloss": "animal2",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_animal3",
+    "lemma": "gko",
+    "underlying_phonology": "/qo/",
+    "gloss": "animal3",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_animal4",
+    "lemma": "nui",
+    "underlying_phonology": "/nɰi/",
+    "gloss": "animal4",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_animal5",
+    "lemma": "ge",
+    "underlying_phonology": "/ɡe/",
+    "gloss": "animal5",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_animal6",
+    "lemma": "de",
+    "underlying_phonology": "/de/",
+    "gloss": "animal6",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_animal7",
+    "lemma": "khyitwu",
+    "underlying_phonology": "/xjitɰu/",
+    "gloss": "animal7",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_ankle",
+    "lemma": "royunwu",
+    "underlying_phonology": "/ɾojunɰu/",
+    "gloss": "ankle",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_apartment",
+    "lemma": "sumie",
+    "underlying_phonology": "/sumje/",
+    "gloss": "apartment",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_apologetic",
+    "lemma": "yenus",
+    "underlying_phonology": "/jenus/",
+    "gloss": "apologetic",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_apology",
+    "lemma": "tswuti",
+    "underlying_phonology": "/t͡sɰuti/",
+    "gloss": "apology",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_appearance",
+    "lemma": "win",
+    "underlying_phonology": "/ɰin/",
+    "gloss": "appearance",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_apple",
+    "lemma": "tagup",
+    "underlying_phonology": "/taɡup/",
+    "gloss": "apple",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_april",
+    "lemma": "moltua",
+    "underlying_phonology": "/moltɰa/",
+    "gloss": "april",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_arm",
+    "lemma": "mo",
+    "underlying_phonology": "/mo/",
+    "gloss": "arm",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_around",
+    "lemma": "ngil",
+    "underlying_phonology": "/ŋil/",
+    "gloss": "around",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_art",
+    "lemma": "tulisi",
+    "underlying_phonology": "/tulisi/",
+    "gloss": "art",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_artist",
+    "lemma": "tulisitui",
+    "underlying_phonology": "/tulisitɰi/",
+    "gloss": "artist",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_august",
+    "lemma": "ngattwa",
+    "underlying_phonology": "/ŋattɰa/",
+    "gloss": "august",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_bag",
+    "lemma": "bak",
+    "underlying_phonology": "/bak/",
+    "gloss": "bag",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_banana",
+    "lemma": "tidi",
+    "underlying_phonology": "/tidi/",
+    "gloss": "banana",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_bank",
+    "lemma": "huptaktsa",
+    "underlying_phonology": "/huptakt͡sa/",
+    "gloss": "bank",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_bar",
+    "lemma": "dopuingge",
+    "underlying_phonology": "/dopɰiŋe/",
+    "gloss": "bar",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_beach",
+    "lemma": "gu",
+    "underlying_phonology": "/ɡu/",
+    "gloss": "beach",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_bed",
+    "lemma": "tsimde",
+    "underlying_phonology": "/t͡simde/",
+    "gloss": "bed",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_beef",
+    "lemma": "lepgkusdu",
+    "underlying_phonology": "/lepqusdu/",
+    "gloss": "beef",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_behind",
+    "lemma": "yap",
+    "underlying_phonology": "/jap/",
+    "gloss": "behind",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_belief",
+    "lemma": "mip",
+    "underlying_phonology": "/mip/",
+    "gloss": "belief",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_below",
+    "lemma": "tis",
+    "underlying_phonology": "/tis/",
+    "gloss": "below",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_belt",
+    "lemma": "littiek",
+    "underlying_phonology": "/lithjek/",
+    "gloss": "belt",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_beside",
+    "lemma": "hik",
+    "underlying_phonology": "/hik/",
+    "gloss": "beside",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_bicycle",
+    "lemma": "petuegi",
+    "underlying_phonology": "/petɰeɡi/",
+    "gloss": "bicycle",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_bird",
+    "lemma": "hui",
+    "underlying_phonology": "/hɰi/",
+    "gloss": "bird",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_bird_meat",
+    "lemma": "huidu",
+    "underlying_phonology": "/hɰidu/",
+    "gloss": "bird meat",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_boat",
+    "lemma": "hu",
+    "underlying_phonology": "/hu/",
+    "gloss": "boat",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_body",
+    "lemma": "khe",
+    "underlying_phonology": "/xe/",
+    "gloss": "body",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_book",
+    "lemma": "syi",
+    "underlying_phonology": "/sji/",
+    "gloss": "book",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_bored",
+    "lemma": "base",
+    "underlying_phonology": "/base/",
+    "gloss": "bored",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_box",
+    "lemma": "wedop",
+    "underlying_phonology": "/ɰedop/",
+    "gloss": "box",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_bread",
+    "lemma": "tsi",
+    "underlying_phonology": "/t͡si/",
+    "gloss": "bread",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_bridge",
+    "lemma": "puisgibui",
+    "underlying_phonology": "/pɰisɡibɰi/",
+    "gloss": "bridge",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_building",
+    "lemma": "sunneng",
+    "underlying_phonology": "/sunneŋ/",
+    "gloss": "building",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_bus",
+    "lemma": "degal",
+    "underlying_phonology": "/deɡal/",
+    "gloss": "bus",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_cafe",
+    "lemma": "kape",
+    "underlying_phonology": "/kape/",
+    "gloss": "cafe",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_calm",
+    "lemma": "wiyi",
+    "underlying_phonology": "/ɰiji/",
+    "gloss": "calm",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_camera",
+    "lemma": "khuahu",
+    "underlying_phonology": "/xɰahu/",
+    "gloss": "camera",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_camp",
+    "lemma": "yasgu",
+    "underlying_phonology": "/jasɡu/",
+    "gloss": "camp",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_canada",
+    "lemma": "kanada",
+    "underlying_phonology": "/kanada/",
+    "gloss": "canada",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_car",
+    "lemma": "tumkyil",
+    "underlying_phonology": "/tumkjil/",
+    "gloss": "car",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_carb0",
+    "lemma": "nena",
+    "underlying_phonology": "/nena/",
+    "gloss": "carb0",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_carb1",
+    "lemma": "khiu",
+    "underlying_phonology": "/xju/",
+    "gloss": "carb1",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_carb2",
+    "lemma": "ken",
+    "underlying_phonology": "/ken/",
+    "gloss": "carb2",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_carb3",
+    "lemma": "gap",
+    "underlying_phonology": "/ɡap/",
+    "gloss": "carb3",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_carb4",
+    "lemma": "khungne",
+    "underlying_phonology": "/xuŋne/",
+    "gloss": "carb4",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_carb5",
+    "lemma": "hi",
+    "underlying_phonology": "/hi/",
+    "gloss": "carb5",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_carb6",
+    "lemma": "buhe",
+    "underlying_phonology": "/buhe/",
+    "gloss": "carb6",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_carb7",
+    "lemma": "yakpo",
+    "underlying_phonology": "/jakpo/",
+    "gloss": "carb7",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_career",
+    "lemma": "khakhemwu",
+    "underlying_phonology": "/xaxemɰu/",
+    "gloss": "career",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_ceiling",
+    "lemma": "nekhop",
+    "underlying_phonology": "/nexop/",
+    "gloss": "ceiling",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_cellphone",
+    "lemma": "kottwu",
+    "underlying_phonology": "/kothɰu/",
+    "gloss": "cellphone",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_centimetre",
+    "lemma": "ro",
+    "underlying_phonology": "/ɾo/",
+    "gloss": "centimetre",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_centre",
+    "lemma": "kiosngwon",
+    "underlying_phonology": "/kjosŋon/",
+    "gloss": "centre",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_century",
+    "lemma": "yunggit",
+    "underlying_phonology": "/juŋit/",
+    "gloss": "century",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_chair",
+    "lemma": "rahiu",
+    "underlying_phonology": "/ɾahju/",
+    "gloss": "chair",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_chicken",
+    "lemma": "khu",
+    "underlying_phonology": "/xu/",
+    "gloss": "chicken",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_chicken_meat",
+    "lemma": "khudu",
+    "underlying_phonology": "/xudu/",
+    "gloss": "chicken meat",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_circle",
+    "lemma": "ro",
+    "underlying_phonology": "/ɾo/",
+    "gloss": "circle",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_city",
+    "lemma": "khua",
+    "underlying_phonology": "/xɰa/",
+    "gloss": "city",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_clay",
+    "lemma": "pwumki",
+    "underlying_phonology": "/pɰumki/",
+    "gloss": "clay",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_clock",
+    "lemma": "tuimyima",
+    "underlying_phonology": "/tɰimjima/",
+    "gloss": "clock",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_clothing",
+    "lemma": "si",
+    "underlying_phonology": "/si/",
+    "gloss": "clothing",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_cloud",
+    "lemma": "piseng",
+    "underlying_phonology": "/piseŋ/",
+    "gloss": "cloud",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_coat",
+    "lemma": "katuanwil",
+    "underlying_phonology": "/katɰanɰil/",
+    "gloss": "coat",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_coffee",
+    "lemma": "kohi",
+    "underlying_phonology": "/kohi/",
+    "gloss": "coffee",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_cold",
+    "lemma": "tuwong",
+    "underlying_phonology": "/tuɰoŋ/",
+    "gloss": "cold",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_college",
+    "lemma": "nedotsuan",
+    "underlying_phonology": "/nedot͡sɰan/",
+    "gloss": "college",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_comfort",
+    "lemma": "gonpyi",
+    "underlying_phonology": "/ɡonpji/",
+    "gloss": "comfort",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_common",
+    "lemma": "rukhe",
+    "underlying_phonology": "/ɾuxe/",
+    "gloss": "common",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_community",
+    "lemma": "ka",
+    "underlying_phonology": "/ka/",
+    "gloss": "community",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_computer",
+    "lemma": "hanluto",
+    "underlying_phonology": "/hanluto/",
+    "gloss": "computer",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_computer_program",
+    "lemma": "nubiakhyin",
+    "underlying_phonology": "/nubjaxjin/",
+    "gloss": "computer program",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_condo",
+    "lemma": "ngekhi",
+    "underlying_phonology": "/ŋexi/",
+    "gloss": "condo",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_copper",
+    "lemma": "puekhogue",
+    "underlying_phonology": "/pɰexoɡɰe/",
+    "gloss": "copper",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_corner",
+    "lemma": "gie",
+    "underlying_phonology": "/ɡje/",
+    "gloss": "corner",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_corridor",
+    "lemma": "kuawi",
+    "underlying_phonology": "/kɰaɰi/",
+    "gloss": "corridor",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_cost",
+    "lemma": "langwi",
+    "underlying_phonology": "/laŋɰi/",
+    "gloss": null,
+    "word_class": null,
+    "notes": null
+  },
+  {
+    "entry_key": "n_court",
+    "lemma": "ngoso",
+    "underlying_phonology": "/ŋoso/",
+    "gloss": "court",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_cow",
+    "lemma": "lepgkus",
+    "underlying_phonology": "/lepqus/",
+    "gloss": "cow",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_danger",
+    "lemma": "bappiu",
+    "underlying_phonology": "/baphju/",
+    "gloss": "danger",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_dark",
+    "lemma": "letie",
+    "underlying_phonology": "/letje/",
+    "gloss": "dark",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_date",
+    "lemma": "nuenu",
+    "underlying_phonology": "/nɰenu/",
+    "gloss": "date",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_day",
+    "lemma": "siu",
+    "underlying_phonology": "/sju/",
+    "gloss": "day",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_daytime",
+    "lemma": "towa",
+    "underlying_phonology": "/toɰa/",
+    "gloss": "daytime",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_decade",
+    "lemma": "witngit",
+    "underlying_phonology": "/ɰitŋit/",
+    "gloss": "decade",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_december",
+    "lemma": "rawittua",
+    "underlying_phonology": "/ɾaɰittɰa/",
+    "gloss": "december",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_delicacy0",
+    "lemma": "mepuska",
+    "underlying_phonology": "/mepuska/",
+    "gloss": "delicacy0",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_delicacy1",
+    "lemma": "mieremui",
+    "underlying_phonology": "/mjeɾemɰi/",
+    "gloss": "delicacy1",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_delicacy2",
+    "lemma": "sedyisias",
+    "underlying_phonology": "/sedjisjas/",
+    "gloss": "delicacy2",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_delicacy3",
+    "lemma": "minggilung",
+    "underlying_phonology": "/miŋiluŋ/",
+    "gloss": "delicacy3",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_desire",
+    "lemma": "buogiu",
+    "underlying_phonology": "/bɰoɡju/",
+    "gloss": "desire",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_desk",
+    "lemma": "ngopa",
+    "underlying_phonology": "/ŋopa/",
+    "gloss": "desk",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_diamond",
+    "lemma": "weguoyek",
+    "underlying_phonology": "/ɰeɡɰojek/",
+    "gloss": "diamond",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_digit",
+    "lemma": "komui",
+    "underlying_phonology": "/komɰi/",
+    "gloss": "digit",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_dimension",
+    "lemma": "khari",
+    "underlying_phonology": "/xaɾi/",
+    "gloss": "dimension",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_direction",
+    "lemma": "khyipuk",
+    "underlying_phonology": "/xjipuk/",
+    "gloss": "direction",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_dish0",
+    "lemma": "nuelin",
+    "underlying_phonology": "/nɰelin/",
+    "gloss": "dish0",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_dish1",
+    "lemma": "kemwunan",
+    "underlying_phonology": "/kemɰunan/",
+    "gloss": "dish1",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_dish2",
+    "lemma": "miehim",
+    "underlying_phonology": "/mjehim/",
+    "gloss": "dish2",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_dish3",
+    "lemma": "mesgkogi",
+    "underlying_phonology": "/mesqoɡi/",
+    "gloss": "dish3",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_dish4",
+    "lemma": "wumabes",
+    "underlying_phonology": "/ɰumabes/",
+    "gloss": "dish4",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_dish5",
+    "lemma": "mopepon",
+    "underlying_phonology": "/mopepon/",
+    "gloss": "dish5",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_dish6",
+    "lemma": "hionat",
+    "underlying_phonology": "/hjonat/",
+    "gloss": "dish6",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_dish7",
+    "lemma": "niutse",
+    "underlying_phonology": "/njut͡se/",
+    "gloss": "dish7",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_doctor",
+    "lemma": "huosua",
+    "underlying_phonology": "/hɰosɰa/",
+    "gloss": "doctor",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_dog",
+    "lemma": "me",
+    "underlying_phonology": "/me/",
+    "gloss": "dog",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_dot",
+    "lemma": "tsa",
+    "underlying_phonology": "/t͡sa/",
+    "gloss": "dot",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_down",
+    "lemma": "khok",
+    "underlying_phonology": "/xok/",
+    "gloss": "down",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_dress",
+    "lemma": "mukne",
+    "underlying_phonology": "/mukne/",
+    "gloss": "dress",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_durian",
+    "lemma": "ba",
+    "underlying_phonology": "/ba/",
+    "gloss": "durian",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_dust",
+    "lemma": "tideng",
+    "underlying_phonology": "/tideŋ/",
+    "gloss": "dust",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_east",
+    "lemma": "ta",
+    "underlying_phonology": "/ta/",
+    "gloss": "east",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_edge",
+    "lemma": "heng",
+    "underlying_phonology": "/heŋ/",
+    "gloss": "edge",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_elbow",
+    "lemma": "moyunwu",
+    "underlying_phonology": "/mojunɰu/",
+    "gloss": "elbow",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_embarrass",
+    "lemma": "tsesgo",
+    "underlying_phonology": "/t͡sesɡo/",
+    "gloss": null,
+    "word_class": null,
+    "notes": null
+  },
+  {
+    "entry_key": "n_end",
+    "lemma": "got",
+    "underlying_phonology": "/ɡot/",
+    "gloss": null,
+    "word_class": null,
+    "notes": null
+  },
+  {
+    "entry_key": "n_england",
+    "lemma": "yinglan",
+    "underlying_phonology": "/jiŋlan/",
+    "gloss": "england",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_evening",
+    "lemma": "lokhi",
+    "underlying_phonology": "/loxi/",
+    "gloss": "evening",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_excited",
+    "lemma": "khuala",
+    "underlying_phonology": "/xɰala/",
+    "gloss": "excited",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_exterior",
+    "lemma": "buk",
+    "underlying_phonology": "/buk/",
+    "gloss": "exterior",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_face",
+    "lemma": "ngibe",
+    "underlying_phonology": "/ŋibe/",
+    "gloss": null,
+    "word_class": null,
+    "notes": null
+  },
+  {
+    "entry_key": "n_fame",
+    "lemma": "muokup",
+    "underlying_phonology": "/mɰokup/",
+    "gloss": "fame",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_fan",
+    "lemma": "biegiuwing",
+    "underlying_phonology": "/bjeɡjuɰiŋ/",
+    "gloss": "fan",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_farm",
+    "lemma": "desing",
+    "underlying_phonology": "/desiŋ/",
+    "gloss": "farm",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_february",
+    "lemma": "ratua",
+    "underlying_phonology": "/ɾatɰa/",
+    "gloss": "february",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_feeling",
+    "lemma": "ngopuo",
+    "underlying_phonology": "/ŋopɰo/",
+    "gloss": "feeling",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_finger",
+    "lemma": "hekomui",
+    "underlying_phonology": "/hekomɰi/",
+    "gloss": "finger",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_fire",
+    "lemma": "yu",
+    "underlying_phonology": "/ju/",
+    "gloss": "fire",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_fish",
+    "lemma": "wu",
+    "underlying_phonology": "/ɰu/",
+    "gloss": "fish",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_fish_meat",
+    "lemma": "wudu",
+    "underlying_phonology": "/ɰudu/",
+    "gloss": "fish meat",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_floor",
+    "lemma": "totie",
+    "underlying_phonology": "/totje/",
+    "gloss": "floor",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_flower",
+    "lemma": "khias",
+    "underlying_phonology": "/xjas/",
+    "gloss": "flower",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_food",
+    "lemma": "engtsik",
+    "underlying_phonology": "/eŋt͡sik/",
+    "gloss": "food",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_foot",
+    "lemma": "ro",
+    "underlying_phonology": "/ɾo/",
+    "gloss": "foot",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_foot(measure)",
+    "lemma": "pa",
+    "underlying_phonology": "/pa/",
+    "gloss": "foot(measure)",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_forest",
+    "lemma": "yi",
+    "underlying_phonology": "/ji/",
+    "gloss": "forest",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_friday",
+    "lemma": "tsimsiu",
+    "underlying_phonology": "/t͡simsju/",
+    "gloss": "friday",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_friend",
+    "lemma": "nope",
+    "underlying_phonology": "/nope/",
+    "gloss": "friend",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_front",
+    "lemma": "gal",
+    "underlying_phonology": "/ɡal/",
+    "gloss": "front",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_fruit",
+    "lemma": "swuri",
+    "underlying_phonology": "/sɰuɾi/",
+    "gloss": null,
+    "word_class": null,
+    "notes": null
+  },
+  {
+    "entry_key": "n_fruit0",
+    "lemma": "khonggo",
+    "underlying_phonology": "/xoŋo/",
+    "gloss": "fruit0",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_fruit1",
+    "lemma": "niugwu",
+    "underlying_phonology": "/njuɡɰu/",
+    "gloss": "fruit1",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_fruit2",
+    "lemma": "hema",
+    "underlying_phonology": "/hema/",
+    "gloss": "fruit2",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_fruit3",
+    "lemma": "tsui",
+    "underlying_phonology": "/t͡sɰi/",
+    "gloss": "fruit3",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_fruit4",
+    "lemma": "sugio",
+    "underlying_phonology": "/suɡjo/",
+    "gloss": "fruit4",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_fruit5",
+    "lemma": "hil",
+    "underlying_phonology": "/hil/",
+    "gloss": "fruit5",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_fruit6",
+    "lemma": "nugio",
+    "underlying_phonology": "/nuɡjo/",
+    "gloss": "fruit6",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_fruit7",
+    "lemma": "kyinyi",
+    "underlying_phonology": "/kjinji/",
+    "gloss": "fruit7",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_germany",
+    "lemma": "dotslang",
+    "underlying_phonology": "/dot͡slaŋ/",
+    "gloss": "germany",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_glass",
+    "lemma": "ngokho",
+    "underlying_phonology": "/ŋoxo/",
+    "gloss": "glass",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_glasses",
+    "lemma": "kokhengwu",
+    "underlying_phonology": "/koxeŋɰu/",
+    "gloss": "glasses",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_gold",
+    "lemma": "miedi",
+    "underlying_phonology": "/mjedi/",
+    "gloss": "gold",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_grass",
+    "lemma": "dianem",
+    "underlying_phonology": "/djanem/",
+    "gloss": "grass",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_ground",
+    "lemma": "tietsue",
+    "underlying_phonology": "/tjet͡sɰe/",
+    "gloss": "ground",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_guitar",
+    "lemma": "gita",
+    "underlying_phonology": "/ɡita/",
+    "gloss": null,
+    "word_class": null,
+    "notes": null
+  },
+  {
+    "entry_key": "n_hair",
+    "lemma": "kuguok",
+    "underlying_phonology": "/kuɡɰok/",
+    "gloss": "hair",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_half",
+    "lemma": "tueng",
+    "underlying_phonology": "/tɰeŋ/",
+    "gloss": "half",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_hand",
+    "lemma": "he",
+    "underlying_phonology": "/he/",
+    "gloss": "hand",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_happy",
+    "lemma": "topi",
+    "underlying_phonology": "/topi/",
+    "gloss": "happy",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_hat",
+    "lemma": "nontsuongsua",
+    "underlying_phonology": "/nont͡sɰoŋsɰa/",
+    "gloss": "hat",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_head",
+    "lemma": "sat",
+    "underlying_phonology": "/sat/",
+    "gloss": "head",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_health",
+    "lemma": "tyine",
+    "underlying_phonology": "/tjine/",
+    "gloss": "health",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_heat",
+    "lemma": "tsop",
+    "underlying_phonology": "/t͡sop/",
+    "gloss": "heat",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_height",
+    "lemma": "de",
+    "underlying_phonology": "/de/",
+    "gloss": "height",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_heptagon",
+    "lemma": "nultsin",
+    "underlying_phonology": "/nult͡sin/",
+    "gloss": "heptagon",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_hexagon",
+    "lemma": "sumtsin",
+    "underlying_phonology": "/sumt͡sin/",
+    "gloss": "hexagon",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_hill",
+    "lemma": "si",
+    "underlying_phonology": "/si/",
+    "gloss": "hill",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_hole",
+    "lemma": "taki",
+    "underlying_phonology": "/taki/",
+    "gloss": "hole",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_home",
+    "lemma": "ngatsak",
+    "underlying_phonology": "/ŋat͡sak/",
+    "gloss": "home",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_horse",
+    "lemma": "sel",
+    "underlying_phonology": "/sel/",
+    "gloss": "horse",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_hospital",
+    "lemma": "luhwolo",
+    "underlying_phonology": "/luhɰolo/",
+    "gloss": "hospital",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_hotel",
+    "lemma": "buisyi",
+    "underlying_phonology": "/bɰisji/",
+    "gloss": "hotel",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_house",
+    "lemma": "kali",
+    "underlying_phonology": "/kali/",
+    "gloss": "house",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_ice",
+    "lemma": "pui",
+    "underlying_phonology": "/pɰi/",
+    "gloss": "ice",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_image",
+    "lemma": "pikhial",
+    "underlying_phonology": "/pixjal/",
+    "gloss": "image",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_inch",
+    "lemma": "muin",
+    "underlying_phonology": "/mɰin/",
+    "gloss": "inch",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_ingredient0",
+    "lemma": "tsonggang",
+    "underlying_phonology": "/t͡soŋaŋ/",
+    "gloss": "ingredient0",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_ingredient1",
+    "lemma": "nguinyo",
+    "underlying_phonology": "/ŋɰinjo/",
+    "gloss": "ingredient1",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_ingredient2",
+    "lemma": "swune",
+    "underlying_phonology": "/sɰune/",
+    "gloss": "ingredient2",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_ingredient3",
+    "lemma": "piunbete",
+    "underlying_phonology": "/pjunbete/",
+    "gloss": "ingredient3",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_ingredient4",
+    "lemma": "munggol",
+    "underlying_phonology": "/muŋol/",
+    "gloss": "ingredient4",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_ingredient5",
+    "lemma": "gekhionyu",
+    "underlying_phonology": "/ɡexjonju/",
+    "gloss": "ingredient5",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_ingredient6",
+    "lemma": "dunngwu",
+    "underlying_phonology": "/dunŋɰu/",
+    "gloss": "ingredient6",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_ingredient7",
+    "lemma": "nuiko",
+    "underlying_phonology": "/nɰiko/",
+    "gloss": "ingredient7",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_injury",
+    "lemma": "wotgo",
+    "underlying_phonology": "/ɰotɡo/",
+    "gloss": "injury",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_inside",
+    "lemma": "lengtui",
+    "underlying_phonology": "/leŋtɰi/",
+    "gloss": "inside",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_interior",
+    "lemma": "lus",
+    "underlying_phonology": "/lus/",
+    "gloss": "interior",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_island",
+    "lemma": "du",
+    "underlying_phonology": "/du/",
+    "gloss": "island",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_item",
+    "lemma": "bessi",
+    "underlying_phonology": "/beshi/",
+    "gloss": "item",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_jacket",
+    "lemma": "ngidui",
+    "underlying_phonology": "/ŋidɰi/",
+    "gloss": "jacket",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_january",
+    "lemma": "metua",
+    "underlying_phonology": "/metɰa/",
+    "gloss": "january",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_japan",
+    "lemma": "ngihon",
+    "underlying_phonology": "/ŋihon/",
+    "gloss": "japan",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_joint",
+    "lemma": "yunwu",
+    "underlying_phonology": "/junɰu/",
+    "gloss": "joint",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_july",
+    "lemma": "nultua",
+    "underlying_phonology": "/nultɰa/",
+    "gloss": "july",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_june",
+    "lemma": "sumtua",
+    "underlying_phonology": "/sumtɰa/",
+    "gloss": "june",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_keyboard",
+    "lemma": "wewagak",
+    "underlying_phonology": "/ɰeɰaɡak/",
+    "gloss": "keyboard",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_kilogram",
+    "lemma": "re",
+    "underlying_phonology": "/ɾe/",
+    "gloss": "kilogram",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_knee",
+    "lemma": "hueyunwu",
+    "underlying_phonology": "/hɰejunɰu/",
+    "gloss": "knee",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_korea",
+    "lemma": "hangguk",
+    "underlying_phonology": "/haŋuk/",
+    "gloss": "korea",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_lake",
+    "lemma": "hot",
+    "underlying_phonology": "/hot/",
+    "gloss": "lake",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_lamp",
+    "lemma": "kumtio",
+    "underlying_phonology": "/kumtjo/",
+    "gloss": "lamp",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_laptop",
+    "lemma": "kuakhoke",
+    "underlying_phonology": "/kɰaxoke/",
+    "gloss": "laptop",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_law",
+    "lemma": "teye",
+    "underlying_phonology": "/teje/",
+    "gloss": "law",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_lawyer",
+    "lemma": "teyetui",
+    "underlying_phonology": "/tejetɰi/",
+    "gloss": "lawyer",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_leaf",
+    "lemma": "buip",
+    "underlying_phonology": "/bɰip/",
+    "gloss": "leaf",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_left",
+    "lemma": "tsepyi",
+    "underlying_phonology": "/t͡sepji/",
+    "gloss": "left",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_leg",
+    "lemma": "hue",
+    "underlying_phonology": "/hɰe/",
+    "gloss": "leg",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_legume0",
+    "lemma": "yomuo",
+    "underlying_phonology": "/jomɰo/",
+    "gloss": "legume0",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_legume1",
+    "lemma": "khuetsi",
+    "underlying_phonology": "/xɰet͡si/",
+    "gloss": "legume1",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_legume2",
+    "lemma": "guetmi",
+    "underlying_phonology": "/ɡɰetmi/",
+    "gloss": "legume2",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_legume3",
+    "lemma": "nunes",
+    "underlying_phonology": "/nunes/",
+    "gloss": "legume3",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_legume4",
+    "lemma": "nokmwupo",
+    "underlying_phonology": "/nokmɰupo/",
+    "gloss": "legume4",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_legume5",
+    "lemma": "sobemin",
+    "underlying_phonology": "/sobemin/",
+    "gloss": "legume5",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_legume6",
+    "lemma": "hekokhen",
+    "underlying_phonology": "/hekoxen/",
+    "gloss": "legume6",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_legume7",
+    "lemma": "nguingge",
+    "underlying_phonology": "/ŋɰiŋe/",
+    "gloss": "legume7",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_library",
+    "lemma": "tuotu",
+    "underlying_phonology": "/tɰotu/",
+    "gloss": "library",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_light",
+    "lemma": "syipa",
+    "underlying_phonology": "/sjipa/",
+    "gloss": "light",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_line",
+    "lemma": "tam",
+    "underlying_phonology": "/tam/",
+    "gloss": "line",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_lion",
+    "lemma": "dyimie",
+    "underlying_phonology": "/djimje/",
+    "gloss": "lion",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_location",
+    "lemma": "pakuon",
+    "underlying_phonology": "/pakɰon/",
+    "gloss": "location",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_manager",
+    "lemma": "tumkhellotui",
+    "underlying_phonology": "/tumxelhotɰi/",
+    "gloss": "manager",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_managing",
+    "lemma": "tumkhello",
+    "underlying_phonology": "/tumxelho/",
+    "gloss": "managing",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_mango",
+    "lemma": "no",
+    "underlying_phonology": "/no/",
+    "gloss": "mango",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_march",
+    "lemma": "haptua",
+    "underlying_phonology": "/haptɰa/",
+    "gloss": "march",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_market",
+    "lemma": "ponkhanhel",
+    "underlying_phonology": "/ponxanhel/",
+    "gloss": "market",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_material",
+    "lemma": "nuikiu",
+    "underlying_phonology": "/nɰikju/",
+    "gloss": "material",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_may",
+    "lemma": "tsimtua",
+    "underlying_phonology": "/t͡simtɰa/",
+    "gloss": "may",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_meaning",
+    "lemma": "gin",
+    "underlying_phonology": "/ɡin/",
+    "gloss": "meaning",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_meat",
+    "lemma": "du",
+    "underlying_phonology": "/du/",
+    "gloss": "meat",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_medicine",
+    "lemma": "ringniokuis",
+    "underlying_phonology": "/ɾiŋnjokɰis/",
+    "gloss": "medicine",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_metal",
+    "lemma": "nang",
+    "underlying_phonology": "/naŋ/",
+    "gloss": "metal",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_metre",
+    "lemma": "bui",
+    "underlying_phonology": "/bɰi/",
+    "gloss": "metre",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_midnight",
+    "lemma": "kiosngwonsose",
+    "underlying_phonology": "/kjosŋonsose/",
+    "gloss": "midnight",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_miliary",
+    "lemma": "piusiha",
+    "underlying_phonology": "/pjusiha/",
+    "gloss": "miliary",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_millennium",
+    "lemma": "tsipngit",
+    "underlying_phonology": "/t͡sipŋit/",
+    "gloss": "millennium",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_monday",
+    "lemma": "mesiu",
+    "underlying_phonology": "/mesju/",
+    "gloss": "monday",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_month",
+    "lemma": "tua",
+    "underlying_phonology": "/tɰa/",
+    "gloss": "month",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_moon",
+    "lemma": "donggu",
+    "underlying_phonology": "/doŋu/",
+    "gloss": "moon",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_moped",
+    "lemma": "kiutu",
+    "underlying_phonology": "/kjutu/",
+    "gloss": "moped",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_morning",
+    "lemma": "niopgu",
+    "underlying_phonology": "/njopɡu/",
+    "gloss": "morning",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_motorcycle",
+    "lemma": "dusayu",
+    "underlying_phonology": "/dusaju/",
+    "gloss": "motorcycle",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_mountain",
+    "lemma": "khies",
+    "underlying_phonology": "/xjes/",
+    "gloss": "mountain",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_mouse",
+    "lemma": "yogkuhio",
+    "underlying_phonology": "/joquhjo/",
+    "gloss": "mouse",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_nature",
+    "lemma": "yihiu",
+    "underlying_phonology": "/jihju/",
+    "gloss": "nature",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_nearby",
+    "lemma": "mel",
+    "underlying_phonology": "/mel/",
+    "gloss": "nearby",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_necessity",
+    "lemma": "khiyo",
+    "underlying_phonology": "/xijo/",
+    "gloss": "necessity",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_neck",
+    "lemma": "satiunwu",
+    "underlying_phonology": "/satjunɰu/",
+    "gloss": "neck",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_neighbourhood",
+    "lemma": "nguiha",
+    "underlying_phonology": "/ŋɰiha/",
+    "gloss": "neighbourhood",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_nervous",
+    "lemma": "mihui",
+    "underlying_phonology": "/mihɰi/",
+    "gloss": "nervous",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_network",
+    "lemma": "biosia",
+    "underlying_phonology": "/bjosja/",
+    "gloss": "network",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_nighttime",
+    "lemma": "sose",
+    "underlying_phonology": "/sose/",
+    "gloss": "nighttime",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_noise",
+    "lemma": "tsoknuo",
+    "underlying_phonology": "/t͡soknɰo/",
+    "gloss": "noise",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_noodle",
+    "lemma": "die",
+    "underlying_phonology": "/dje/",
+    "gloss": "noodle",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_noon",
+    "lemma": "kiosngwontowa",
+    "underlying_phonology": "/kjosŋontoɰa/",
+    "gloss": "noon",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_north",
+    "lemma": "tuo",
+    "underlying_phonology": "/tɰo/",
+    "gloss": "north",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_november",
+    "lemma": "mewittua",
+    "underlying_phonology": "/meɰittɰa/",
+    "gloss": "november",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_null",
+    "lemma": "ko",
+    "underlying_phonology": "/ko/",
+    "gloss": "(null/dummy nominal)",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_number",
+    "lemma": "huo",
+    "underlying_phonology": "/hɰo/",
+    "gloss": "number",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_numeral",
+    "lemma": "gugku",
+    "underlying_phonology": "/ɡuqu/",
+    "gloss": "numeral",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_nurse",
+    "lemma": "buasmo",
+    "underlying_phonology": "/bɰasmo/",
+    "gloss": "nurse",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_obligation",
+    "lemma": "kiure",
+    "underlying_phonology": "/kjuɾe/",
+    "gloss": "obligation",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_occupation",
+    "lemma": "khangwi",
+    "underlying_phonology": "/xaŋɰi/",
+    "gloss": "occupation",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_occupation0",
+    "lemma": "ritsatui",
+    "underlying_phonology": "/ɾit͡satɰi/",
+    "gloss": "occupation0",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_occupation1",
+    "lemma": "khuilotui",
+    "underlying_phonology": "/xɰilotɰi/",
+    "gloss": "occupation1",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_occupation2",
+    "lemma": "piawitui",
+    "underlying_phonology": "/pjaɰitɰi/",
+    "gloss": "occupation2",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_occupation3",
+    "lemma": "todiomtui",
+    "underlying_phonology": "/todjomtɰi/",
+    "gloss": "occupation3",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_occupation4",
+    "lemma": "hiaptiptui",
+    "underlying_phonology": "/hjaptiptɰi/",
+    "gloss": "occupation4",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_occupation5",
+    "lemma": "nokyitui",
+    "underlying_phonology": "/nokjitɰi/",
+    "gloss": "occupation5",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_occupation6",
+    "lemma": "khakitui",
+    "underlying_phonology": "/xakitɰi/",
+    "gloss": "occupation6",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_occupation7",
+    "lemma": "yikhwuttui",
+    "underlying_phonology": "/jixɰuttɰi/",
+    "gloss": "occupation7",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_occupational_task0",
+    "lemma": "ritsa",
+    "underlying_phonology": "/ɾit͡sa/",
+    "gloss": "occupational task0",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_occupational_task1",
+    "lemma": "khuilo",
+    "underlying_phonology": "/xɰilo/",
+    "gloss": "occupational task1",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_occupational_task2",
+    "lemma": "piawi",
+    "underlying_phonology": "/pjaɰi/",
+    "gloss": "occupational task2",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_occupational_task3",
+    "lemma": "todiom",
+    "underlying_phonology": "/todjom/",
+    "gloss": "occupational task3",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_occupational_task4",
+    "lemma": "hiaptip",
+    "underlying_phonology": "/hjaptip/",
+    "gloss": "occupational task4",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_occupational_task5",
+    "lemma": "nokyi",
+    "underlying_phonology": "/nokji/",
+    "gloss": "occupational task5",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_occupational_task6",
+    "lemma": "khaki",
+    "underlying_phonology": "/xaki/",
+    "gloss": "occupational task6",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_occupational_task7",
+    "lemma": "yikhwut",
+    "underlying_phonology": "/jixɰut/",
+    "gloss": "occupational task7",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_ocean",
+    "lemma": "nionus",
+    "underlying_phonology": "/njonus/",
+    "gloss": "ocean",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_octagon",
+    "lemma": "ngattsin",
+    "underlying_phonology": "/ŋatt͡sin/",
+    "gloss": "octagon",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_october",
+    "lemma": "wittua",
+    "underlying_phonology": "/ɰittɰa/",
+    "gloss": "october",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_office",
+    "lemma": "khakhungwo",
+    "underlying_phonology": "/xaxuŋɰo/",
+    "gloss": "office",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_organization",
+    "lemma": "tsusawa",
+    "underlying_phonology": "/t͡susaɰa/",
+    "gloss": "organization",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_outer_space",
+    "lemma": "wikhu",
+    "underlying_phonology": "/ɰixu/",
+    "gloss": "outer space",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_outside",
+    "lemma": "mipyi",
+    "underlying_phonology": "/mipji/",
+    "gloss": "outside",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_pain",
+    "lemma": "tswotsan",
+    "underlying_phonology": "/t͡sɰot͡san/",
+    "gloss": "pain",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_panty",
+    "lemma": "tere",
+    "underlying_phonology": "/teɾe/",
+    "gloss": "panty",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_paper",
+    "lemma": "pioga",
+    "underlying_phonology": "/pjoɡa/",
+    "gloss": "paper",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_park",
+    "lemma": "khuoba",
+    "underlying_phonology": "/xɰoba/",
+    "gloss": "park",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_part",
+    "lemma": "gieptiu",
+    "underlying_phonology": "/ɡjeptju/",
+    "gloss": "part",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_pattern",
+    "lemma": "polnua",
+    "underlying_phonology": "/polnɰa/",
+    "gloss": "pattern",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_pearl",
+    "lemma": "otmo",
+    "underlying_phonology": "/otmo/",
+    "gloss": "pearl",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_pen",
+    "lemma": "niuhia",
+    "underlying_phonology": "/njuhja/",
+    "gloss": "pen",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_pencil",
+    "lemma": "hangswul",
+    "underlying_phonology": "/haŋsɰul/",
+    "gloss": "pencil",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_pentagon",
+    "lemma": "tsimtsin",
+    "underlying_phonology": "/t͡simt͡sin/",
+    "gloss": "pentagon",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_permission",
+    "lemma": "tuilbiam",
+    "underlying_phonology": "/tɰilbjam/",
+    "gloss": "permission",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_person",
+    "lemma": "tui",
+    "underlying_phonology": "/tɰi/",
+    "gloss": "person",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_piano",
+    "lemma": "piano",
+    "underlying_phonology": "/pjano/",
+    "gloss": null,
+    "word_class": null,
+    "notes": null
+  },
+  {
+    "entry_key": "n_piece",
+    "lemma": "sadwe",
+    "underlying_phonology": "/sadɰe/",
+    "gloss": "piece",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_pig",
+    "lemma": "pires",
+    "underlying_phonology": "/piɾes/",
+    "gloss": "pig",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_plane",
+    "lemma": "tse",
+    "underlying_phonology": "/t͡se/",
+    "gloss": "plane",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_planet",
+    "lemma": "khe",
+    "underlying_phonology": "/xe/",
+    "gloss": "planet",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_plant",
+    "lemma": "hukhwe",
+    "underlying_phonology": "/huxɰe/",
+    "gloss": "plant",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_plastic",
+    "lemma": "yatop",
+    "underlying_phonology": "/jatop/",
+    "gloss": "plastic",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_pocket",
+    "lemma": "tswuli",
+    "underlying_phonology": "/t͡sɰuli/",
+    "gloss": "pocket",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_point",
+    "lemma": "kia",
+    "underlying_phonology": "/kja/",
+    "gloss": "point",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_police_officer",
+    "lemma": "khwunduitui",
+    "underlying_phonology": "/xɰundɰitɰi/",
+    "gloss": "police officer",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_policing",
+    "lemma": "khwundui",
+    "underlying_phonology": "/xɰundɰi/",
+    "gloss": "policing",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_pork",
+    "lemma": "piresdu",
+    "underlying_phonology": "/piɾesdu/",
+    "gloss": "pork",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_potential",
+    "lemma": "khedu",
+    "underlying_phonology": "/xedu/",
+    "gloss": "potential",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_pound",
+    "lemma": "ti",
+    "underlying_phonology": "/ti/",
+    "gloss": "pound",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_protein0",
+    "lemma": "tudu",
+    "underlying_phonology": "/tudu/",
+    "gloss": "protein0",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_protein1",
+    "lemma": "khedu",
+    "underlying_phonology": "/xedu/",
+    "gloss": "protein1",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_protein2",
+    "lemma": "ngikyidu",
+    "underlying_phonology": "/ŋikjidu/",
+    "gloss": "protein2",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_protein3",
+    "lemma": "gkodu",
+    "underlying_phonology": "/qodu/",
+    "gloss": "protein3",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_protein4",
+    "lemma": "nuidu",
+    "underlying_phonology": "/nɰidu/",
+    "gloss": "protein4",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_protein5",
+    "lemma": "gedu",
+    "underlying_phonology": "/ɡedu/",
+    "gloss": "protein5",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_protein6",
+    "lemma": "dedu",
+    "underlying_phonology": "/dedu/",
+    "gloss": "protein6",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_protein7",
+    "lemma": "khyitwudu",
+    "underlying_phonology": "/xjitɰudu/",
+    "gloss": "protein7",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_question",
+    "lemma": "yektsam",
+    "underlying_phonology": "/jekt͡sam/",
+    "gloss": "question",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_radio",
+    "lemma": "monkibuk",
+    "underlying_phonology": "/monkibuk/",
+    "gloss": "radio",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_rain",
+    "lemma": "ge",
+    "underlying_phonology": "/ɡe/",
+    "gloss": "rain",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_rainbow",
+    "lemma": "gesyip",
+    "underlying_phonology": "/ɡesjip/",
+    "gloss": "rainbow",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_recently",
+    "lemma": "ngingwi",
+    "underlying_phonology": "/ŋiŋɰi/",
+    "gloss": null,
+    "word_class": null,
+    "notes": null
+  },
+  {
+    "entry_key": "n_receptionist",
+    "lemma": "tsusawatui",
+    "underlying_phonology": "/t͡susaɰatɰi/",
+    "gloss": "receptionist",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_recommendation",
+    "lemma": "toppwu",
+    "underlying_phonology": "/tophɰu/",
+    "gloss": "recommendation",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_rectangle",
+    "lemma": "moltsin",
+    "underlying_phonology": "/molt͡sin/",
+    "gloss": "rectangle",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_region",
+    "lemma": "khabie",
+    "underlying_phonology": "/xabje/",
+    "gloss": "region",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_reporter",
+    "lemma": "lenutui",
+    "underlying_phonology": "/lenutɰi/",
+    "gloss": "reporter",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_reporting",
+    "lemma": "lenu",
+    "underlying_phonology": "/lenu/",
+    "gloss": "reporting",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_restaurant",
+    "lemma": "pukhia",
+    "underlying_phonology": "/puxja/",
+    "gloss": "restaurant",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_rice",
+    "lemma": "me",
+    "underlying_phonology": "/me/",
+    "gloss": "rice",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_right",
+    "lemma": "nihik",
+    "underlying_phonology": "/nihik/",
+    "gloss": "right",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_river",
+    "lemma": "pakia",
+    "underlying_phonology": "/pakja/",
+    "gloss": "river",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_road",
+    "lemma": "bui",
+    "underlying_phonology": "/bɰi/",
+    "gloss": "road",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_room",
+    "lemma": "gko",
+    "underlying_phonology": "/qo/",
+    "gloss": "room",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_root",
+    "lemma": "rete",
+    "underlying_phonology": "/ɾete/",
+    "gloss": "root",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_sad",
+    "lemma": "giakhyi",
+    "underlying_phonology": "/ɡjaxji/",
+    "gloss": "sad",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_safety",
+    "lemma": "puohie",
+    "underlying_phonology": "/pɰohje/",
+    "gloss": "safety",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_sailboat",
+    "lemma": "sitki",
+    "underlying_phonology": "/sitki/",
+    "gloss": "sailboat",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_sand",
+    "lemma": "tsatsa",
+    "underlying_phonology": "/t͡sat͡sa/",
+    "gloss": "sand",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_saturday",
+    "lemma": "sumsiu",
+    "underlying_phonology": "/sumsju/",
+    "gloss": "saturday",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_school",
+    "lemma": "nyihenuo",
+    "underlying_phonology": "/njihenɰo/",
+    "gloss": "school",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_screen",
+    "lemma": "tsungmiopep",
+    "underlying_phonology": "/t͡suŋmjopep/",
+    "gloss": "screen",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_sea",
+    "lemma": "gip",
+    "underlying_phonology": "/ɡip/",
+    "gloss": "sea",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_seed",
+    "lemma": "gosi",
+    "underlying_phonology": "/ɡosi/",
+    "gloss": "seed",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_semelfactive",
+    "lemma": "soha",
+    "underlying_phonology": "/soha/",
+    "gloss": "semelfactive",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_september",
+    "lemma": "bestua",
+    "underlying_phonology": "/bestɰa/",
+    "gloss": "september",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_shape",
+    "lemma": "hie",
+    "underlying_phonology": "/hje/",
+    "gloss": "shape",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_ship",
+    "lemma": "kop",
+    "underlying_phonology": "/kop/",
+    "gloss": "ship",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_shirt",
+    "lemma": "ngwotuowe",
+    "underlying_phonology": "/ŋɰotɰoɰe/",
+    "gloss": "shirt",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_shoes",
+    "lemma": "tobita",
+    "underlying_phonology": "/tobita/",
+    "gloss": "shoes",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_shop",
+    "lemma": "kopi",
+    "underlying_phonology": "/kopi/",
+    "gloss": "shop",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_shorts",
+    "lemma": "hogate",
+    "underlying_phonology": "/hoɡate/",
+    "gloss": "shorts",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_side",
+    "lemma": "tsin",
+    "underlying_phonology": "/t͡sin/",
+    "gloss": "side",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_silver",
+    "lemma": "lipdu",
+    "underlying_phonology": "/lipdu/",
+    "gloss": "silver",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_skirt",
+    "lemma": "binguohe",
+    "underlying_phonology": "/biŋɰohe/",
+    "gloss": "skirt",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_sky",
+    "lemma": "lukho",
+    "underlying_phonology": "/luxo/",
+    "gloss": "sky",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_sleepy",
+    "lemma": "ngomo",
+    "underlying_phonology": "/ŋomo/",
+    "gloss": null,
+    "word_class": null,
+    "notes": null
+  },
+  {
+    "entry_key": "n_snow",
+    "lemma": "dekho",
+    "underlying_phonology": "/dexo/",
+    "gloss": "snow",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_soil",
+    "lemma": "go",
+    "underlying_phonology": "/ɡo/",
+    "gloss": "soil",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_soldier",
+    "lemma": "piusihatui",
+    "underlying_phonology": "/pjusihatɰi/",
+    "gloss": "soldier",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_sound",
+    "lemma": "laphyi",
+    "underlying_phonology": "/laphji/",
+    "gloss": "sound",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_south",
+    "lemma": "tia",
+    "underlying_phonology": "/tja/",
+    "gloss": "south",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_space",
+    "lemma": "tio",
+    "underlying_phonology": "/tjo/",
+    "gloss": "space",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_speech",
+    "lemma": "tsek",
+    "underlying_phonology": "/t͡sek/",
+    "gloss": "speech",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_spot",
+    "lemma": "nge",
+    "underlying_phonology": "/ŋe/",
+    "gloss": "spot",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_square",
+    "lemma": "ni",
+    "underlying_phonology": "/ni/",
+    "gloss": "square",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_star",
+    "lemma": "wus",
+    "underlying_phonology": "/ɰus/",
+    "gloss": "star",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_start",
+    "lemma": "tsitsak",
+    "underlying_phonology": "/t͡sit͡sak/",
+    "gloss": null,
+    "word_class": null,
+    "notes": null
+  },
+  {
+    "entry_key": "n_state",
+    "lemma": "ngakhan",
+    "underlying_phonology": "/ŋaxan/",
+    "gloss": "state",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_station",
+    "lemma": "nguikyi",
+    "underlying_phonology": "/ŋɰikji/",
+    "gloss": "station",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_sticker",
+    "lemma": "muebyitseng",
+    "underlying_phonology": "/mɰebjit͡seŋ/",
+    "gloss": "sticker",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_stone",
+    "lemma": "hobe",
+    "underlying_phonology": "/hobe/",
+    "gloss": "stone",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_stop",
+    "lemma": "ho",
+    "underlying_phonology": "/ho/",
+    "gloss": "stop",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_straight",
+    "lemma": "tego",
+    "underlying_phonology": "/teɡo/",
+    "gloss": "straight",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_street",
+    "lemma": "lot",
+    "underlying_phonology": "/lot/",
+    "gloss": "street",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_student",
+    "lemma": "khulitui",
+    "underlying_phonology": "/xulitɰi/",
+    "gloss": "student",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_studying",
+    "lemma": "khuli",
+    "underlying_phonology": "/xuli/",
+    "gloss": "studying",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_subway",
+    "lemma": "tesdo",
+    "underlying_phonology": "/tesdo/",
+    "gloss": "subway",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_suit",
+    "lemma": "bobiu",
+    "underlying_phonology": "/bobju/",
+    "gloss": "suit",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_sun",
+    "lemma": "khin",
+    "underlying_phonology": "/xin/",
+    "gloss": "sun",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_sunday",
+    "lemma": "nulsiu",
+    "underlying_phonology": "/nulsju/",
+    "gloss": "sunday",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_surrounding",
+    "lemma": "bik",
+    "underlying_phonology": "/bik/",
+    "gloss": "surrounding",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_t-shirt",
+    "lemma": "kanlokha",
+    "underlying_phonology": "/kanloxa/",
+    "gloss": "t-shirt",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_table",
+    "lemma": "konyang",
+    "underlying_phonology": "/konjaŋ/",
+    "gloss": "table",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_tea",
+    "lemma": "tsa",
+    "underlying_phonology": "/t͡sa/",
+    "gloss": "tea",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_teacher",
+    "lemma": "kuissilotui",
+    "underlying_phonology": "/kɰishilotɰi/",
+    "gloss": "teacher",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_teaching",
+    "lemma": "kuissilo",
+    "underlying_phonology": "/kɰishilo/",
+    "gloss": "teaching",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_television",
+    "lemma": "pwunungwol",
+    "underlying_phonology": "/pɰunuŋɰol/",
+    "gloss": "television",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_temperature",
+    "lemma": "huo",
+    "underlying_phonology": "/hɰo/",
+    "gloss": "temperature",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_thankful",
+    "lemma": "khiague",
+    "underlying_phonology": "/xjaɡɰe/",
+    "gloss": "thankful",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_theater",
+    "lemma": "kiemkhie",
+    "underlying_phonology": "/kjemxje/",
+    "gloss": "theater",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_thesedays",
+    "lemma": "kulyi",
+    "underlying_phonology": "/kulji/",
+    "gloss": null,
+    "word_class": null,
+    "notes": null
+  },
+  {
+    "entry_key": "n_thought",
+    "lemma": "bip",
+    "underlying_phonology": "/bip/",
+    "gloss": "thought",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_thursday",
+    "lemma": "molsiu",
+    "underlying_phonology": "/molsju/",
+    "gloss": "thursday",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_ticket",
+    "lemma": "to",
+    "underlying_phonology": "/to/",
+    "gloss": "ticket",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_time",
+    "lemma": "dotngua",
+    "underlying_phonology": "/dotŋɰa/",
+    "gloss": "time",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_today",
+    "lemma": "tiakbal",
+    "underlying_phonology": "/tjakbal/",
+    "gloss": "today",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_toe",
+    "lemma": "rokomui",
+    "underlying_phonology": "/ɾokomɰi/",
+    "gloss": "toe",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_town",
+    "lemma": "wa",
+    "underlying_phonology": "/ɰa/",
+    "gloss": "town",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_townhouse",
+    "lemma": "tsare",
+    "underlying_phonology": "/t͡saɾe/",
+    "gloss": "townhouse",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_trackpad",
+    "lemma": "sietiu",
+    "underlying_phonology": "/sjetju/",
+    "gloss": "trackpad",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_train",
+    "lemma": "gkorukpe",
+    "underlying_phonology": "/qoɾukpe/",
+    "gloss": "train",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_tram",
+    "lemma": "khakhut",
+    "underlying_phonology": "/xaxut/",
+    "gloss": "tram",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_transportation",
+    "lemma": "miewa",
+    "underlying_phonology": "/mjeɰa/",
+    "gloss": "transportation",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_tree",
+    "lemma": "pium",
+    "underlying_phonology": "/pjum/",
+    "gloss": "tree",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_triangle",
+    "lemma": "haptsin",
+    "underlying_phonology": "/hapt͡sin/",
+    "gloss": "triangle",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_trousers",
+    "lemma": "nenhigwu",
+    "underlying_phonology": "/nenhiɡɰu/",
+    "gloss": "trousers",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_tuesday",
+    "lemma": "rasiu",
+    "underlying_phonology": "/ɾasju/",
+    "gloss": "tuesday",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_underwear",
+    "lemma": "nuolsiude",
+    "underlying_phonology": "/nɰolsjude/",
+    "gloss": "underwear",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_university",
+    "lemma": "wukigis",
+    "underlying_phonology": "/ɰukiɡis/",
+    "gloss": "university",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_up",
+    "lemma": "hop",
+    "underlying_phonology": "/hop/",
+    "gloss": "up",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_valley",
+    "lemma": "bingya",
+    "underlying_phonology": "/biŋja/",
+    "gloss": "valley",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_vegetable0",
+    "lemma": "songwo",
+    "underlying_phonology": "/soŋɰo/",
+    "gloss": "vegetable0",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_vegetable1",
+    "lemma": "sotsari",
+    "underlying_phonology": "/sot͡saɾi/",
+    "gloss": "vegetable1",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_vegetable2",
+    "lemma": "hahiere",
+    "underlying_phonology": "/hahjeɾe/",
+    "gloss": "vegetable2",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_vegetable3",
+    "lemma": "byimwu",
+    "underlying_phonology": "/bjimɰu/",
+    "gloss": "vegetable3",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_vegetable4",
+    "lemma": "wobomkhop",
+    "underlying_phonology": "/ɰobomxop/",
+    "gloss": "vegetable4",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_vegetable5",
+    "lemma": "ngepyim",
+    "underlying_phonology": "/ŋepjim/",
+    "gloss": "vegetable5",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_vegetable6",
+    "lemma": "sowotuep",
+    "underlying_phonology": "/soɰotɰep/",
+    "gloss": "vegetable6",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_vegetable7",
+    "lemma": "torokmia",
+    "underlying_phonology": "/toɾokmja/",
+    "gloss": "vegetable7",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_vietnam",
+    "lemma": "bietnam",
+    "underlying_phonology": "/bjetnam/",
+    "gloss": "vietnam",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_waist",
+    "lemma": "wapkuo",
+    "underlying_phonology": "/ɰapkɰo/",
+    "gloss": "waist",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_waiter",
+    "lemma": "kekhokka",
+    "underlying_phonology": "/kexokha/",
+    "gloss": "waiter",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_walking",
+    "lemma": "like",
+    "underlying_phonology": "/like/",
+    "gloss": "walking",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_wall",
+    "lemma": "kiga",
+    "underlying_phonology": "/kiɡa/",
+    "gloss": "wall",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_wave",
+    "lemma": "ri",
+    "underlying_phonology": "/ɾi/",
+    "gloss": "wave",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_way",
+    "lemma": "yi",
+    "underlying_phonology": "/ji/",
+    "gloss": "way",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_weather",
+    "lemma": "dyitual",
+    "underlying_phonology": "/djitɰal/",
+    "gloss": "weather",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_wednesday",
+    "lemma": "hapsiu",
+    "underlying_phonology": "/hapsju/",
+    "gloss": "wednesday",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_weight",
+    "lemma": "nuam",
+    "underlying_phonology": "/nɰam/",
+    "gloss": "weight",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_west",
+    "lemma": "tia",
+    "underlying_phonology": "/tja/",
+    "gloss": "west",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_whale",
+    "lemma": "tlungro",
+    "underlying_phonology": "/tluŋɾo/",
+    "gloss": "whale",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_whole",
+    "lemma": "ku",
+    "underlying_phonology": "/ku/",
+    "gloss": "whole",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_wind",
+    "lemma": "de",
+    "underlying_phonology": "/de/",
+    "gloss": "wind",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_wolf",
+    "lemma": "lome",
+    "underlying_phonology": "/lome/",
+    "gloss": "wolf",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_wood",
+    "lemma": "kuro",
+    "underlying_phonology": "/kuɾo/",
+    "gloss": "wood",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_world",
+    "lemma": "duohyi",
+    "underlying_phonology": "/dɰohji/",
+    "gloss": "world",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_worry",
+    "lemma": "nagui",
+    "underlying_phonology": "/naɡɰi/",
+    "gloss": "worry",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_wrist",
+    "lemma": "heyunwu",
+    "underlying_phonology": "/hejunɰu/",
+    "gloss": "wrist",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_writer",
+    "lemma": "tuapbupngestui",
+    "underlying_phonology": "/tɰapbupŋestɰi/",
+    "gloss": "writer",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_writing",
+    "lemma": "tuapbupnges",
+    "underlying_phonology": "/tɰapbupŋes/",
+    "gloss": "writing",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "n_year",
+    "lemma": "ngit",
+    "underlying_phonology": "/ŋit/",
+    "gloss": "year",
+    "word_class": "noun",
+    "notes": null
+  },
+  {
+    "entry_key": "no",
+    "lemma": "dus",
+    "underlying_phonology": "/dus/",
+    "gloss": "no",
+    "word_class": "negation",
+    "notes": null
+  },
+  {
+    "entry_key": "p_acc",
+    "lemma": "ka",
+    "underlying_phonology": "/ka/",
+    "gloss": "accusative",
+    "word_class": "case marker",
+    "notes": null
+  },
+  {
+    "entry_key": "p_adv",
+    "lemma": "ni",
+    "underlying_phonology": "/ni/",
+    "gloss": "adverbializer",
+    "word_class": "particle",
+    "notes": null
+  },
+  {
+    "entry_key": "p_also",
+    "lemma": "ki",
+    "underlying_phonology": "/ki/",
+    "gloss": "also, too",
+    "word_class": "semantic particle",
+    "notes": null
+  },
+  {
+    "entry_key": "p_but",
+    "lemma": "de",
+    "underlying_phonology": "/de/",
+    "gloss": "but",
+    "word_class": "conjunction",
+    "notes": null
+  },
+  {
+    "entry_key": "p_cause",
+    "lemma": "do",
+    "underlying_phonology": "/do/",
+    "gloss": "because",
+    "word_class": "conjunction",
+    "notes": null
+  },
+  {
+    "entry_key": "p_cond",
+    "lemma": "ma",
+    "underlying_phonology": "/ma/",
+    "gloss": "if",
+    "word_class": "conjunction",
+    "notes": null
+  },
+  {
+    "entry_key": "p_conj",
+    "lemma": "ya",
+    "underlying_phonology": "/ja/",
+    "gloss": "and",
+    "word_class": "conjunction",
+    "notes": null
+  },
+  {
+    "entry_key": "p_dat",
+    "lemma": "si",
+    "underlying_phonology": "/si/",
+    "gloss": "dative",
+    "word_class": "case marker",
+    "notes": null
+  },
+  {
+    "entry_key": "p_disj",
+    "lemma": "tsi",
+    "underlying_phonology": "/t͡si/",
+    "gloss": "or",
+    "word_class": "conjunction",
+    "notes": null
+  },
+  {
+    "entry_key": "p_gen",
+    "lemma": "tu",
+    "underlying_phonology": "/tu/",
+    "gloss": "genitive",
+    "word_class": "case marker",
+    "notes": null
+  },
+  {
+    "entry_key": "p_ins",
+    "lemma": "yi",
+    "underlying_phonology": "/ji/",
+    "gloss": "instrumental",
+    "word_class": "case marker",
+    "notes": null
+  },
+  {
+    "entry_key": "p_loc",
+    "lemma": "bi",
+    "underlying_phonology": "/bi/",
+    "gloss": "locative",
+    "word_class": "case marker",
+    "notes": null
+  },
+  {
+    "entry_key": "p_neg1",
+    "lemma": "ha",
+    "underlying_phonology": "/ha/",
+    "gloss": "not (negation)",
+    "word_class": "negation",
+    "notes": null
+  },
+  {
+    "entry_key": "p_neg2",
+    "lemma": "hen",
+    "underlying_phonology": "/hen/",
+    "gloss": "not (negation)",
+    "word_class": "negation",
+    "notes": null
+  },
+  {
+    "entry_key": "p_nom",
+    "lemma": "de",
+    "underlying_phonology": "/de/",
+    "gloss": "nominative",
+    "word_class": "case marker",
+    "notes": null
+  },
+  {
+    "entry_key": "p_only",
+    "lemma": "tul",
+    "underlying_phonology": "/tul/",
+    "gloss": "only",
+    "word_class": "semantic particle",
+    "notes": null
+  },
+  {
+    "entry_key": "p_top",
+    "lemma": "ngom",
+    "underlying_phonology": "/ŋom/",
+    "gloss": "topic",
+    "word_class": "case marker",
+    "notes": null
+  },
+  {
+    "entry_key": "p_with",
+    "lemma": "kat",
+    "underlying_phonology": "/kat/",
+    "gloss": "with",
+    "word_class": "semantic particle",
+    "notes": null
+  },
+  {
+    "entry_key": "q_class",
+    "lemma": "to",
+    "underlying_phonology": "/to/",
+    "gloss": "classifier",
+    "word_class": "classifier",
+    "notes": null
+  },
+  {
+    "entry_key": "qu_how",
+    "lemma": "gi",
+    "underlying_phonology": "/ɡi/",
+    "gloss": "how",
+    "word_class": "interrogative",
+    "notes": null
+  },
+  {
+    "entry_key": "qu_what",
+    "lemma": "pi",
+    "underlying_phonology": "/pi/",
+    "gloss": "what",
+    "word_class": "interrogative",
+    "notes": null
+  },
+  {
+    "entry_key": "qu_when",
+    "lemma": "mu",
+    "underlying_phonology": "/mu/",
+    "gloss": "when",
+    "word_class": "interrogative",
+    "notes": null
+  },
+  {
+    "entry_key": "qu_where",
+    "lemma": "ni",
+    "underlying_phonology": "/ni/",
+    "gloss": "where",
+    "word_class": "interrogative",
+    "notes": null
+  },
+  {
+    "entry_key": "qu_which",
+    "lemma": "hi",
+    "underlying_phonology": "/hi/",
+    "gloss": "which",
+    "word_class": "interrogative",
+    "notes": null
+  },
+  {
+    "entry_key": "qu_who",
+    "lemma": "bu",
+    "underlying_phonology": "/bu/",
+    "gloss": "who",
+    "word_class": "interrogative",
+    "notes": null
+  },
+  {
+    "entry_key": "qu_why",
+    "lemma": "pu",
+    "underlying_phonology": "/pu/",
+    "gloss": "why",
+    "word_class": "interrogative",
+    "notes": null
+  },
+  {
+    "entry_key": "t_fut",
+    "lemma": "ne",
+    "underlying_phonology": "/ne/",
+    "gloss": "future",
+    "word_class": "tense marker",
+    "notes": null
+  },
+  {
+    "entry_key": "t_inf",
+    "lemma": "lo",
+    "underlying_phonology": "/lo/",
+    "gloss": "infinitive",
+    "word_class": "tense marker",
+    "notes": null
+  },
+  {
+    "entry_key": "t_prs",
+    "lemma": "wu",
+    "underlying_phonology": "/ɰu/",
+    "gloss": "present",
+    "word_class": "tense marker",
+    "notes": null
+  },
+  {
+    "entry_key": "t_pst",
+    "lemma": "na",
+    "underlying_phonology": "/na/",
+    "gloss": "past",
+    "word_class": "tense marker",
+    "notes": null
+  },
+  {
+    "entry_key": "v_become",
+    "lemma": "khe",
+    "underlying_phonology": "/xe/",
+    "gloss": "become",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_bring",
+    "lemma": "yakno",
+    "underlying_phonology": "/jakno/",
+    "gloss": "bring",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_buy",
+    "lemma": "mun",
+    "underlying_phonology": "/mun/",
+    "gloss": "buy",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_cause",
+    "lemma": "nge",
+    "underlying_phonology": "/ŋe/",
+    "gloss": "cause",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_come",
+    "lemma": "tsa",
+    "underlying_phonology": "/t͡sa/",
+    "gloss": "come",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_cop",
+    "lemma": "ya",
+    "underlying_phonology": "/ja/",
+    "gloss": "be (copula)",
+    "word_class": "predicate",
+    "notes": null
+  },
+  {
+    "entry_key": "v_do",
+    "lemma": "sa",
+    "underlying_phonology": "/sa/",
+    "gloss": "do",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_drink",
+    "lemma": "tukhi",
+    "underlying_phonology": "/tuxi/",
+    "gloss": "drink",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_eat",
+    "lemma": "hiu",
+    "underlying_phonology": "/hju/",
+    "gloss": "eat",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_exist",
+    "lemma": "ga",
+    "underlying_phonology": "/ɡa/",
+    "gloss": "exist, there is",
+    "word_class": "predicate",
+    "notes": null
+  },
+  {
+    "entry_key": "v_getup",
+    "lemma": "metsis",
+    "underlying_phonology": "/met͡sis/",
+    "gloss": null,
+    "word_class": null,
+    "notes": null
+  },
+  {
+    "entry_key": "v_give",
+    "lemma": "men",
+    "underlying_phonology": "/men/",
+    "gloss": "give",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_go",
+    "lemma": "yu",
+    "underlying_phonology": "/ju/",
+    "gloss": "go",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_have",
+    "lemma": "tiung",
+    "underlying_phonology": "/tjuŋ/",
+    "gloss": "have",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_know",
+    "lemma": "ngol",
+    "underlying_phonology": "/ŋol/",
+    "gloss": null,
+    "word_class": null,
+    "notes": null
+  },
+  {
+    "entry_key": "v_nothave",
+    "lemma": "pie",
+    "underlying_phonology": "/pje/",
+    "gloss": "not have",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_read",
+    "lemma": "wo",
+    "underlying_phonology": "/ɰo/",
+    "gloss": "read",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_receive",
+    "lemma": "tsu",
+    "underlying_phonology": "/t͡su/",
+    "gloss": "receive",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_see",
+    "lemma": "die",
+    "underlying_phonology": "/dje/",
+    "gloss": "see",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_sell",
+    "lemma": "hel",
+    "underlying_phonology": "/hel/",
+    "gloss": "sell",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_sit",
+    "lemma": "gu",
+    "underlying_phonology": "/ɡu/",
+    "gloss": "sit",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_sleep",
+    "lemma": "ki",
+    "underlying_phonology": "/ki/",
+    "gloss": "sleep",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_trim",
+    "lemma": "dal",
+    "underlying_phonology": "/dal/",
+    "gloss": "trim",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "v_use",
+    "lemma": "tse",
+    "underlying_phonology": "/t͡se/",
+    "gloss": "use",
+    "word_class": "verb",
+    "notes": null
+  },
+  {
+    "entry_key": "yes",
+    "lemma": "tsi",
+    "underlying_phonology": "/t͡si/",
+    "gloss": "yes",
+    "word_class": "particle",
+    "notes": null
+  }
+]
