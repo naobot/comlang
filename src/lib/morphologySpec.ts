@@ -52,6 +52,7 @@ export interface RuleDoc {
   harmony?: { enabled?: boolean; pairs?: Record<string, string>; neutral?: string };
   elision?: { enabled?: boolean };
   lowering?: { enabled?: boolean; after?: string; map?: Record<string, string> };
+  ngGemination?: { enabled?: boolean };
 }
 
 export interface MorphologySpecDoc {
@@ -76,6 +77,7 @@ const DEFAULT_RULES: RuleConfig = {
   harmony: { enabled: false, pairs: {}, neutral: "" },
   elision: { enabled: false },
   lowering: { enabled: false, after: "w", map: { u: "o" } },
+  ngGemination: { enabled: false },
 };
 
 // ---------------------------------------------------------------------------
@@ -226,6 +228,7 @@ function rulesFrom(doc: RuleDoc): RuleConfig {
       after: typeof doc.lowering?.after === "string" ? doc.lowering.after : "w",
       map: Object.keys(map).length > 0 ? map : { u: "o" },
     },
+    ngGemination: { enabled: !!doc.ngGemination?.enabled },
   };
 }
 

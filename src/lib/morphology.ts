@@ -64,6 +64,12 @@ export interface RuleConfig {
   elision: { enabled: boolean };
   /** A vowel lowers after a labiovelar glide, e.g. `u` → `o` after `w`. */
   lowering: { enabled: boolean; after: string; map: Readonly<Record<string, string>> };
+  /**
+   * A suffix's onset /ŋ/ geminates (`ng` → `ngg`) when it lands intervocalically — the
+   * orthography rule fixed for the lexicon and corpus (see CLAUDE.md, "intervocalic /ŋ/").
+   * Suffix-only: a prefix's `ng` sits at the very start of the word, never between vowels.
+   */
+  ngGemination: { enabled: boolean };
 }
 
 /** `"STEM"` marks where the stem sits between the ordered affix slots. */
@@ -224,8 +230,13 @@ const swapAt = (segs: readonly string[], i: number, seg: string): string =>
  * This is an approximation. It generates the alternants an affix vowel *could* take
  * without knowing the stem it lands on, rather than deriving the one form a full ordered
  * rule pipeline would produce. Capped at `MAX_AFFIX_VARIANTS`.
+ *
+ * `position` matters only for `ngGemination`: gemination needs a vowel on *both* sides of
+ * the /ŋ/, and this function can only ever confirm the side that lives inside the affix
+ * itself (the vowel after). A suffix supplies the other side from whatever stem or affix
+ * precedes it; a prefix never does, since it opens the word.
  */
-export function affixVariants(form: string, cfg: RuleConfig): string[] {
+export function affixVariants(form: string, cfg: RuleConfig, position: MorphPosition): string[] {
   const forms = new Set<string>([form]);
 
   if (cfg.harmony.enabled) {
@@ -270,6 +281,16 @@ export function affixVariants(form: string, cfg: RuleConfig): string[] {
         isVowel(segs[2] ?? "", cfg)
       ) {
         forms.add([segs[0], ...segs.slice(2)].join(""));
+      }
+    }
+  }
+
+  if (cfg.ngGemination.enabled && position === "suffix") {
+    for (const f of [...forms]) {
+      const segs = segmentize(f, cfg);
+      // The affix supplies only the vowel *after* — see the doc comment above.
+      if (segs[0] === "ng" && isVowel(segs[1] ?? "", cfg)) {
+        forms.add(["ngg", ...segs.slice(1)].join(""));
       }
     }
   }
@@ -334,7 +355,7 @@ export function buildRecognizer(spec: MorphologySpec): Recognizer {
   const byLen = (a: AffixEntry, b: AffixEntry) => b.form.length - a.form.length;
   const prepare = (a: AffixEntry): PreparedAffix => ({
     affix: a,
-    forms: affixVariants(a.form, spec.rules).sort((x, y) => y.length - x.length),
+    forms: affixVariants(a.form, spec.rules, a.position).sort((x, y) => y.length - x.length),
   });
   return {
     stemLemmas: new Set(stemsByLemma.keys()),
