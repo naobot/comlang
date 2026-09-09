@@ -72,6 +72,24 @@ staying blank the way `notes` always had. The Orthography tab also moved earlier
 `projectTabs` — right after Phonotactics rather than last — since it is closer kin to the
 phoneme inventory than to word classes or the lexicon.
 
+**The intervocalic-/ŋ/ rule reaches the morphology recognizer too, as `rules.ngGemination`
+in `src/lib/morphology.ts`.** Once the lexicon and corpus were re-spelled, the topic suffix
+`-ngom` (/ŋom/) surfaces as `-nggom` on any vowel-final stem — the same phonological rule,
+just crossing a morpheme boundary instead of sitting inside one root, and orthography rules
+don't know or care where that boundary is. `affixVariants` already generated the alternants
+a rule *could* produce (harmony, lowering, elision) without seeing the neighboring
+morpheme, so gemination fits the same shape: given a suffix form, add the `ngg`-initial
+variant when the affix's own next segment is a vowel (the one half of "between two vowels"
+the affix can confirm by itself — the preceding half comes from whatever stem or affix
+lands before it, which `affixVariants` still can't see). It is **suffix-only**: gated on
+`position`, because a prefix's `ng` opens the word and can never be intervocalic, unlike
+every other rule here which doesn't care about position. A bare `/ŋ/` with no vowel of its
+own (`e_rel`, the reported evidential) correctly gets no geminated variant — there is
+nothing after it within the affix to confirm the environment against. Turned on for xenic
+directly in its stored `project_morphology.spec` (`rules.ngGemination.enabled: true`); off
+by default, like every other phonological rule here, until a project's plugin document
+opts in.
+
 **`lexicon_entries.underlying_phonology` (0033) split what `lemma` used to conflate.**
 Before an orthography existed, `lemma` was doing two jobs at once: it was close to a
 phonemic transcription (using real IPA `ŋ` and `ʔ` directly in places) while also using

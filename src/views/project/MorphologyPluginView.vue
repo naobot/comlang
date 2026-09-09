@@ -23,7 +23,8 @@ const EXAMPLE = `{
     "reduplication": { "enabled": true },
     "harmony": { "enabled": false, "pairs": { "i": "u", "e": "o" }, "neutral": "a" },
     "elision": { "enabled": false },
-    "lowering": { "enabled": false, "after": "w", "map": { "u": "o" } }
+    "lowering": { "enabled": false, "after": "w", "map": { "u": "o" } },
+    "ngGemination": { "enabled": false }
   },
   "slots": {
     "nominal": ["numeral", "classifier", "STEM", "plural", "case", "semanticParticle"],
@@ -194,6 +195,11 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
           <li>
             <code>rules.harmony</code> / <code>elision</code> / <code>lowering</code> — phonological
             rules; recognition of their output is approximate.
+          </li>
+          <li>
+            <code>rules.ngGemination.enabled</code> — a suffix's onset /ŋ/ also surfaces geminated
+            (<code>ng</code> → <code>ngg</code>) when it lands intervocalically, e.g.
+            <code>-ngom</code> as <code>-nggom</code>.
           </li>
           <li>
             <code>slots.nominal</code> / <code>slots.predicate</code> — the ordered slot names of

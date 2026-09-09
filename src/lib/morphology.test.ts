@@ -25,6 +25,7 @@ const RULES: RuleConfig = {
   harmony: { enabled: false, pairs: { i: "u", e: "o" }, neutral: "a" },
   elision: { enabled: false },
   lowering: { enabled: false, after: "w", map: { u: "o" } },
+  ngGemination: { enabled: false },
 };
 
 const stem = (over: Partial<StemEntry> & { lemma: string }): StemEntry => ({
@@ -266,17 +267,17 @@ describe("analyze", () => {
 
 describe("affixVariants", () => {
   it("returns just the form when no rule is enabled", () => {
-    expect(affixVariants("swom", RULES)).toEqual(["swom"]);
+    expect(affixVariants("swom", RULES, "suffix")).toEqual(["swom"]);
   });
 
   it("adds the harmony alternants of a participating vowel", () => {
     const harmonic = { ...RULES, harmony: { ...RULES.harmony, enabled: true } };
-    expect(affixVariants("swom", harmonic)).toContain("swem");
+    expect(affixVariants("swom", harmonic, "suffix")).toContain("swem");
   });
 
   it("adds the lowered form after the labiovelar glide", () => {
     const lowering = { ...RULES, lowering: { ...RULES.lowering, enabled: true } };
-    expect(affixVariants("kwun", lowering)).toContain("kwon");
+    expect(affixVariants("kwun", lowering, "suffix")).toContain("kwon");
   });
 
   it("stays within the cap", () => {
@@ -285,7 +286,30 @@ describe("affixVariants", () => {
       harmony: { enabled: true, pairs: { i: "u", e: "o", a: "o" }, neutral: "" },
       lowering: { ...RULES.lowering, enabled: true },
     };
-    expect(affixVariants("wemeko", both).length).toBeLessThanOrEqual(8);
+    expect(affixVariants("wemeko", both, "suffix").length).toBeLessThanOrEqual(8);
+  });
+
+  describe("ngGemination", () => {
+    const geminating = { ...RULES, ngGemination: { enabled: true } };
+
+    it("adds the geminated form of a suffix whose onset /ŋ/ has its own following vowel", () => {
+      expect(affixVariants("ngom", geminating, "suffix")).toContain("nggom");
+    });
+
+    it("does not apply to a prefix — its /ŋ/ opens the word, never sits between vowels", () => {
+      expect(affixVariants("ngom", geminating, "prefix")).not.toContain("nggom");
+    });
+
+    it("does not apply to a bare /ŋ/ with no vowel of its own to confirm the environment", () => {
+      // e_rel, the reported evidential: gemination also needs a vowel *before* it, which
+      // this function cannot see — but it must not fire on a form with no vowel *after*
+      // either, since that's the one half of the environment it can actually confirm.
+      expect(affixVariants("ng", geminating, "suffix")).toEqual(["ng"]);
+    });
+
+    it("is a no-op when disabled", () => {
+      expect(affixVariants("ngom", RULES, "suffix")).toEqual(["ngom"]);
+    });
   });
 });
 
@@ -314,6 +338,31 @@ describe("analyze with phonological rules", () => {
       "case:swem",
     ]);
     expect(r.analyses[0]!.morphemes[1]!.entryKey).toBe("p_nom");
+  });
+
+  it("peels -nggom as the topic suffix -ngom, geminated intervocalically", () => {
+    const rec = buildRecognizer(
+      spec({
+        rules: { ...RULES, ngGemination: { enabled: true } },
+        stems: [stem({ lemma: "po", entryKey: "pn_1sg", wordClass: "pronoun" })],
+        affixes: [
+          affix({
+            form: "ngom",
+            role: "case",
+            entryKey: "p_top",
+            gloss: "topic",
+            wordClass: "case marker",
+          }),
+        ],
+      }),
+    );
+    const r = analyze("ponggom", rec);
+    if (!r.ok) throw new Error("expected ok");
+    expect(r.analyses[0]!.morphemes.map((m) => `${m.role}:${m.form}`)).toEqual([
+      "stem:po",
+      "case:nggom",
+    ]);
+    expect(r.analyses[0]!.morphemes[1]!.entryKey).toBe("p_top");
   });
 });
 
