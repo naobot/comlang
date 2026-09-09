@@ -11,6 +11,7 @@ import {
 import { useCorpusStore } from "@/stores/corpus";
 import { useGrammarRulesStore } from "@/stores/grammarRules";
 import { useLexiconStore } from "@/stores/lexicon";
+import { useOrthographyStore } from "@/stores/orthography";
 import { usePhonemesStore } from "@/stores/phonemes";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
 import { useProjectsStore } from "@/stores/projects";
@@ -31,6 +32,7 @@ export function useProjectExport(projectId: () => string | null) {
   const grammarRules = useGrammarRulesStore();
   const wordClasses = useWordClassesStore();
   const corpus = useCorpusStore();
+  const orthography = useOrthographyStore();
 
   /**
    * Built from what is **saved**, not from any in-progress draft. An export is a record
@@ -88,6 +90,8 @@ export function useProjectExport(projectId: () => string | null) {
         values: c.values.map((v) => ({ value: v.value, notes: v.notes })),
       })),
       corpus: corpus.entries.map((e) => ({ english: e.english, conlang: e.conlang })),
+      graphemes: orthography.persisted.graphemes.map((g) => ({ ...g })),
+      orthographyRules: orthography.persisted.rules.map((r) => ({ ...r })),
     };
   });
 
@@ -98,7 +102,9 @@ export function useProjectExport(projectId: () => string | null) {
       input.value.lexicon.length > 0 ||
       input.value.rules.length > 0 ||
       input.value.wordClasses.length > 0 ||
-      input.value.corpus.length > 0,
+      input.value.corpus.length > 0 ||
+      input.value.graphemes.length > 0 ||
+      input.value.orthographyRules.length > 0,
   );
 
   function download(filename: string, contents: string, mime: string) {

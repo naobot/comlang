@@ -7,6 +7,7 @@ import { useGrammarRulesStore } from "@/stores/grammarRules";
 import { useLexiconStore } from "@/stores/lexicon";
 import { useMembersStore } from "@/stores/members";
 import { useMorphologyStore } from "@/stores/morphology";
+import { useOrthographyStore } from "@/stores/orthography";
 import { usePhonemesStore } from "@/stores/phonemes";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
 import { useProjectsStore } from "@/stores/projects";
@@ -24,6 +25,7 @@ const phonemes = usePhonemesStore();
 const phonotactics = usePhonotacticsStore();
 const wordClasses = useWordClassesStore();
 const morphology = useMorphologyStore();
+const orthography = useOrthographyStore();
 const resolving = ref(true);
 
 const project = computed(() => projects.get(props.projectId));
@@ -55,6 +57,8 @@ async function loadProjectData(projectId: string) {
   void lexicon.fetchFor(projectId);
   grammarRules.subscribe(projectId);
   void grammarRules.fetchFor(projectId);
+  orthography.subscribe(projectId);
+  void orthography.fetchFor(projectId);
   corpus.subscribe(projectId);
   void corpus.fetchFor(projectId);
   // Loaded here rather than only on its own tab, for the same reason as the inventory:
@@ -98,6 +102,7 @@ onUnmounted(() => {
   grammarRules.unsubscribeAll();
   wordClasses.unsubscribeAll();
   morphology.unsubscribeAll();
+  orthography.unsubscribeAll();
   corpus.unsubscribeAll();
 });
 </script>

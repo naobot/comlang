@@ -17,16 +17,42 @@ itself a repo:
 
 Built: the **access layer** (`projects`, `project_members`, RLS), auth, the dashboard,
 the project workspace *shell* — a navy-on-white header with the conlang name and a gear
-menu at the left, section tabs across the middle, and the app name at the right — and the
-first six linguistic-core sections: the **phoneme inventory**, **phonotactics**, **word
+menu at the left, section tabs across the middle, and the app name at the right — and all
+seven linguistic-core sections: the **phoneme inventory**, **phonotactics**, **word
 classes**, the **lexicon** (seeded with the 60 entries from `grammar.yaml`), **grammar
-rules**, and the **corpus**.
+rules**, the **corpus**, and **orthography**.
 
-**Only Orthography is hidden from the header** — dropped from `projectTabs` in
-`src/router/index.ts` while its route stays live, so a saved link still resolves and
-re-showing it is one line. It is where romanization goes once there is one; upstream has
-none. (Note the commit that "hid the two unbuilt tabs" only ever removed Orthography —
-word classes stayed in `projectTabs` and rendered the placeholder until it was built.)
+**Orthography (0031) is invented in the app rather than derived from upstream, because
+upstream has no romanization at all.** Every earlier section started from something
+`grammar.yaml` or the co-designer's docs already said; this is the first one where the
+schema had nothing to be derived from. It is two tables, mirroring phonotactics and
+grammar rules rather than the lexicon: `orthography_graphemes` (one grapheme per phoneme,
+keyed on `phoneme_ipa` — text, not a foreign key, the same "store the symbol, flag the
+orphan" choice phonotactics made for class and slot membership, so a phoneme leaving the
+inventory doesn't silently erase a spelling someone chose for it) and `orthography_rules`
+(field-for-field identical to `grammar_rules`: free text apart from `name` and
+`rule_order`, for the same reason — digraph resolution feeding capitalization is real
+structure this round doesn't model). One RPC, `save_orthography`, writes both tables in
+a transaction, copying `save_grammar_rules`'s upsert-on-name/rewrite-order/delete-absent
+loop for the rules half. Both tables' SELECT policy goes straight to
+`private.is_project_visible` rather than being retrofitted later, since they were created
+after 0026 — the same shape `project_morphology` used, except orthography is ordinary
+member-editable content, not owner-only configuration. The tab was previously hidden from
+`projectTabs` in `src/router/index.ts` with its route kept live for exactly this moment;
+it is un-hidden now that there is something to show.
+
+Verified live (2026-09-09), as a **collaborator** against a throwaway project since
+deleted: `save_orthography` inserts graphemes and a rule; a re-save that drops one
+grapheme, renames the surviving rule's content, and adds a rule before it keeps every
+surviving row's **id stable** and rewrites `rule_order` from array position; a non-member
+is refused 42501; `anon` is refused at the grant on the RPC and by RLS on a direct insert,
+even once the project is published (published, `anon` can read the two tables but still
+cannot write to them); and the collaborator's save stamped `projects.last_activity_by`
+despite the owner-only UPDATE policy on `projects`. `get_advisors` showed nothing new
+beyond the two documented `create_project` / `add_project_member` warnings. xenic was
+confirmed untouched afterward: 633 lexicon entries, 23 phonemes, 80 corpus rows, 21 word
+classes, and the throwaway project's two orthography tables were empty of any leftover
+rows after cleanup.
 
 **Word classes models classes and categories, and deliberately not morpheme order.** The
 first design was tabled because the obvious model — a class owns an ordered chain of slots
@@ -42,9 +68,9 @@ so it does not read as a complete account of the morphology.
 grammar.yaml's own (`effect`, `environment`, `examples`, `notes`) so tightening later is a
 rename rather than a re-parse. Not modelled yet: the SPE-style `formal_source`, and the
 provenance split across `inferred` / `confirmed_by` / `fitted_to` / `attested` /
-`contradicted_by` — two distinct evidence relations that want their own table. Each needs its own design pass — those tabs render
-`SectionPlaceholderView.vue`; they are placeholders, not stubs waiting to be filled in
-blind. Also deferred: changelog/version history, and any public/private flag.
+`contradicted_by` — two distinct evidence relations that want their own table. Each needs
+its own design pass rather than being folded into the existing free-text fields blind.
+Also deferred: changelog/version history, and any public/private flag.
 
 ## Gotchas that will otherwise be rediscovered as bugs
 
@@ -664,11 +690,13 @@ nothing to announce it by. `ProjectMembers` and `ProjectSettings` keep visible h
 they hang off the name menu, not the tab bar, so nothing else names them.
 
 **Sections declare dependencies with `meta.requires`.** Phonotactics, word classes,
-lexicon, corpus and grammar all carry `requires: "phonemes"`, and `SectionPlaceholderView`
-renders a "set up the inventory first" notice instead of the generic placeholder when
-the inventory is empty. Soft gate on purpose: the tab stays navigable, so the header
-never shows a dead control. `ProjectWorkspaceView` loads the inventory for the same
-reason it loads membership — pages that don't own the data still have to ask about it.
+lexicon, corpus, grammar and orthography all carry `requires: "phonemes"`. Each view
+renders its own "set up the inventory first" notice when the inventory is empty, rather
+than a shared placeholder component doing it generically — `SectionPlaceholderView` was
+retired once orthography, the last section still using it, got a real view. Soft gate on
+purpose: the tab stays navigable, so the header never shows a dead control.
+`ProjectWorkspaceView` loads the inventory for the same reason it loads membership —
+pages that don't own the data still have to ask about it.
 
 **Content is member-editable; owner-only is for settings and membership.** The
 `phonemes` policies grant all four verbs to any member. A collaborator who could not

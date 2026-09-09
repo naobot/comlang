@@ -70,6 +70,8 @@ const input = (over: Partial<ExportInput> = {}): ExportInput => ({
       notes: "",
     },
   ],
+  graphemes: [],
+  orthographyRules: [],
   ...over,
 });
 
@@ -184,6 +186,42 @@ describe("word classes in the export", () => {
     expect(yaml).toContain("# paucal: reduplication without numeral+counter");
     const doc = parse(yaml) as { categories: Record<string, Record<string, unknown>> };
     expect(Object.keys(doc.categories.number ?? {})).toEqual(["values"]);
+  });
+});
+
+describe("orthography in the export", () => {
+  const withOrthography = input({
+    graphemes: [
+      { phoneme_ipa: "p", grapheme: "p" },
+      { phoneme_ipa: "ŋ", grapheme: "ng" },
+    ],
+    orthographyRules: [
+      { name: "ng-digraph", effect: 'write /ŋ/ as "ng"', environment: "", examples: "", notes: "" },
+    ],
+  });
+
+  it("drops the section entirely when there is nothing mapped or written", () => {
+    expect(toGrammarYaml(input())).not.toContain("orthography:");
+  });
+
+  it("emits a block mapping of phoneme to grapheme", () => {
+    const doc = parse(toGrammarYaml(withOrthography)) as {
+      orthography: { graphemes: Record<string, string> };
+    };
+    expect(doc.orthography.graphemes).toEqual({ p: "p", ŋ: "ng" });
+  });
+
+  it("emits rules the same way grammar rules are emitted", () => {
+    const doc = parse(toGrammarYaml(withOrthography)) as {
+      orthography: { rules: Record<string, Record<string, string>> };
+    };
+    expect(doc.orthography.rules["ng-digraph"]?.effect).toBe('write /ŋ/ as "ng"');
+  });
+
+  it("is not folded into phonology, since upstream has no such key", () => {
+    const yaml = toGrammarYaml(withOrthography);
+    const phonologyBlock = yaml.slice(yaml.indexOf("phonology:"), yaml.indexOf("orthography:"));
+    expect(phonologyBlock).not.toContain("graphemes");
   });
 });
 

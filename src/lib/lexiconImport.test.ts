@@ -82,6 +82,8 @@ describe("round trip", () => {
     wordClasses: [],
     categories: [],
     rules: [],
+    graphemes: [],
+    orthographyRules: [],
     lexicon: [
       {
         entry_key: "v_exist",

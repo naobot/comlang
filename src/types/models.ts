@@ -87,6 +87,15 @@ export type WordClassCategory = Tables<"word_class_categories">;
  */
 export type ProjectMorphology = Tables<"project_morphology">;
 
+/**
+ * Orthography: which character(s) spell a phoneme, and free-text spelling rules.
+ * `phoneme_ipa` is text rather than a foreign key to `phonemes`, the same "store the
+ * symbol, flag the orphan" choice phonotactics made for class/slot membership — see
+ * `orphanedGraphemes` in `src/lib/orthography.ts`. See 0031.
+ */
+export type OrthographyGrapheme = Tables<"orthography_graphemes">;
+export type OrthographyRule = Tables<"orthography_rules">;
+
 /** A membership joined to the person it belongs to, as the members list renders it. */
 export type ProjectMemberWithProfile = ProjectMember & {
   profile: Pick<Profile, "id" | "email" | "display_name"> | null;
