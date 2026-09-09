@@ -34,6 +34,11 @@ export type SequencePosition = Enums<"sequence_position">;
  * expected it to become one, and 0012/0013 settled the opposite policy in the meantime.
  * A key would make deleting a class either delete the words in it or be blocked by them;
  * a dangling name lets the entry survive and be shown in red. See lib/wordClasses.ts.
+ *
+ * `underlying_phonology` (0033) is the phonemic ground truth, `/slashes/` in the project's
+ * own IPA; `lemma` is the orthographic (written) spelling once a project has an
+ * orthography (0031). Both were backfilled together for xenic from what `lemma` used to
+ * hold — an ASCII-ish transcription that was itself close to phonemic.
  */
 export type LexiconEntry = Tables<"lexicon_entries">;
 

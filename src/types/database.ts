@@ -201,6 +201,7 @@ export type Database = {
           lemma: string
           notes: string | null
           project_id: string
+          underlying_phonology: string | null
           updated_at: string
           word_class: string | null
         }
@@ -212,6 +213,7 @@ export type Database = {
           lemma: string
           notes?: string | null
           project_id: string
+          underlying_phonology?: string | null
           updated_at?: string
           word_class?: string | null
         }
@@ -223,6 +225,7 @@ export type Database = {
           lemma?: string
           notes?: string | null
           project_id?: string
+          underlying_phonology?: string | null
           updated_at?: string
           word_class?: string | null
         }

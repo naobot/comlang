@@ -54,6 +54,37 @@ confirmed untouched afterward: 633 lexicon entries, 23 phonemes, 80 corpus rows,
 classes, and the throwaway project's two orthography tables were empty of any leftover
 rows after cleanup.
 
+**`lexicon_entries.underlying_phonology` (0033) split what `lemma` used to conflate.**
+Before an orthography existed, `lemma` was doing two jobs at once: it was close to a
+phonemic transcription (using real IPA `ŋ` and `ʔ` directly in places) while also using
+plain ASCII where IPA would call for a different glyph (`g` for `ɡ`, `r` for `ɾ`, `w` for
+`ɰ`, and the digraphs `ng`/`ts` for `ŋ`/`t͡s`). Once xenic had real orthography rules to
+render *from*, `lemma` could become what it should always have meant — the written
+form — with the phonemic ground truth moved to its own column.
+
+The backfill (a one-off script, not a repeatable RPC — see 0033's migration comment) did
+two things per entry: converted the old `lemma` into a proper phonemic string for
+`underlying_phonology` (the two digraph conversions were specified directly rather than
+inferred — "ng" and "ts" are always `ŋ` and `t͡s`, never a coincidental consonant
+sequence), then **syllabified** that phonemic string against `syllable_templates`'
+`(C)(A)V(C)` shape (class `A` = the onset-glide set `j l ɾ ɰ`) to re-render `lemma`
+through the orthography's position-sensitive rules (`onset glides`, `coda /q/`,
+`coda /ŋ/`, `coda /d/`). Maximal onset resolves every intervocalic cluster: a lone
+consonant, or a plain consonant plus one from class `A`, always joins the *following*
+syllable, so a coda only exists where a word-final consonant (or a genuine two-consonant
+non-`A` cluster) leaves nothing else for it to be. That resolved 630 of 633 entries with
+no ambiguity — cross-checked against real role tallies (`/ŋ/` split 20 word-final / 7
+medial-coda / 65 onset; `/d/` and `/q/` never actually land in coda in the current
+lexicon, since the modeled coda slot excludes them, so `coda /d/`→`<dd>` and
+`coda /q/`→`<kk>` are dormant rules waiting for a word that needs them).
+
+**Three entries were flagged rather than guessed at**: `e_ind` ("n"), `e_rel` ("ng"),
+`e_dir` ("t") are evidential clitics with no vowel at all, so they cannot be syllabified —
+there is no onset/coda position to look up a rule against. `underlying_phonology` was
+still filled in for all three (`/n/`, `/ŋ/`, `/t/` — the tokenization needed no
+syllable position), but their `lemma` was left exactly as it was pending a decision on how
+a bare, vowelless consonant should spell.
+
 **Word classes models classes and categories, and deliberately not morpheme order.** The
 first design was tabled because the obvious model — a class owns an ordered chain of slots
 — is one the source resists in five places: `phonological_word` splits a nominal template
