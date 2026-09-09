@@ -32,7 +32,13 @@ const phonotacticsReady = computed(() => phonotactics.hasTemplates && phonemes.c
 const inventorySet = computed(() => new Set(phonemes.inventory.map((p) => p.ipa)));
 
 /**
- * Entry id → why its lemma does not fit the phonotactics, for the entries that do not.
+ * Entry id → why its underlying phonology does not fit the phonotactics, for the entries
+ * that do not. Checks `underlying_phonology`, not `lemma` — once a project has an
+ * orthography (0031), `lemma` is the written spelling, which can merge or reshape
+ * phonemic contrasts in ways that make checking it against the grammar meaningless. An
+ * entry with no `underlying_phonology` yet is silently skipped, the same as a blank one
+ * always was.
+ *
  * Keyed off `entries` / the saved grammar / the inventory, none of which move when the
  * search box is typed in, so it is computed once and reused.
  */
@@ -40,13 +46,21 @@ const lemmaWarnings = computed(() => {
   const out = new Map<string, string>();
   if (!phonotacticsReady.value) return out;
   for (const entry of lexicon.entries) {
-    const result = checkLemma(phonotactics.persistedGrammar, inventorySet.value, entry.lemma);
+    if (!entry.underlying_phonology) continue;
+    const result = checkLemma(
+      phonotactics.persistedGrammar,
+      inventorySet.value,
+      entry.underlying_phonology,
+    );
     if (!result.ok) out.set(entry.id, result.reason);
   }
   return out;
 });
 
-/** The same check, for a lemma coming off an import file rather than a stored row. */
+/** The same check, for a lemma coming off an import file rather than a stored row.
+ *  Import files carry only `lemma` — there is no underlying_phonology column in the CSV
+ *  format — so this still checks the literal imported text; see `lemmaPhonotactics.ts`
+ *  for why that is a weaker signal than checking a stored entry's phonemic form. */
 function validateLemma(lemma: string): LemmaCheck {
   if (!phonotacticsReady.value) return { ok: true };
   return checkLemma(phonotactics.persistedGrammar, inventorySet.value, lemma);

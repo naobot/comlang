@@ -65,6 +65,16 @@ export type ExportRule = {
   notes: string;
 };
 
+/** One phoneme's spelling. See 0031. */
+export type ExportGrapheme = { phoneme_ipa: string; grapheme: string };
+
+/**
+ * An orthography rule. Used to be the same shape as a grammar rule; 0034 dropped
+ * `environment` and `notes` from `orthography_rules` once every rule in practice folded
+ * its environment into `effect`'s own prose, so this diverges from `ExportRule` now.
+ */
+export type ExportOrthographyRule = { name: string; effect: string; examples: string };
+
 export type ExportInput = {
   projectName: string;
   generatedAt: Date;
@@ -77,6 +87,8 @@ export type ExportInput = {
   wordClasses: ExportWordClass[];
   categories: ExportCategory[];
   corpus: ExportCorpusEntry[];
+  graphemes: ExportGrapheme[];
+  orthographyRules: ExportOrthographyRule[];
 };
 
 // YAML scalars ------------------------------------------------------------------------
@@ -151,6 +163,33 @@ export function toGrammarYaml(input: ExportInput): string {
     }
   }
   push("");
+
+  // orthography -------------------------------------------------------------------------
+  // Not an upstream key — grammar.yaml has no romanization at all (see 0031) — so this is
+  // comlang's own addition to the document, clearly labelled rather than folded into
+  // `phonology` as if upstream had asked for it.
+  if (input.graphemes.length || input.orthographyRules.length) {
+    push("orthography:");
+    if (input.graphemes.length) {
+      push("  graphemes:");
+      for (const g of input.graphemes) {
+        push(`    ${yamlScalar(g.phoneme_ipa)}: ${yamlScalar(g.grapheme)}`);
+      }
+    }
+    if (input.orthographyRules.length) {
+      push("  rules:");
+      for (const rule of input.orthographyRules) {
+        push(`    ${yamlScalar(rule.name)}:`);
+        for (const [key, value] of [
+          ["effect", rule.effect],
+          ["examples", rule.examples],
+        ] as const) {
+          if (value.trim()) push(`      ${key}: ${yamlScalar(value.trim())}`);
+        }
+      }
+    }
+    push("");
+  }
 
   // phonotactics ----------------------------------------------------------------------
   if (input.templates.length || input.constraints.length) {

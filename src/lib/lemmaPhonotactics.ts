@@ -1,15 +1,22 @@
 /**
- * Checking a hand-written lemma against the phonotactics the project has committed to.
+ * Checking a word's phonemic shape against the phonotactics the project has committed to.
  *
  * **Pure, like `./phonotactics`.** It imports from that module and nothing else — no
- * `vue`, `pinia`, or Supabase — so the lexicon page, the entry editor and the import
- * review dialog all reach the same code. A `?raw` test enforces it.
+ * `vue`, `pinia`, or Supabase — so the lexicon page and the entry editor reach the same
+ * code. A `?raw` test enforces it.
+ *
+ * The input is `lexicon_entries.underlying_phonology` — a phonemic string in the
+ * project's own IPA, the same symbols the grammar itself stores, optionally wrapped in
+ * `/slashes/` the way that column is. It is **not** `lemma`: once a project has an
+ * orthography (0031), `lemma` is the written spelling, which can merge or reshape
+ * phonemic contrasts (two phonemes spelled the same, one phoneme spelled differently by
+ * position) in ways that would make checking it against the grammar meaningless.
  *
  * `generateWord` runs the grammar forwards; this runs it backwards. Given a string it
  * (1) splits it into inventory phonemes, (2) finds a way to cut that sequence into
  * syllables each matching some syllable template, and (3) reuses `violation()` — which
  * already works on a flat `Segment[]` and already anticipates this use — to check the
- * constraints. A lemma "fits" if *any* such syllabification also passes the constraints;
+ * constraints. A word "fits" if *any* such syllabification also passes the constraints;
  * only when every parse fails does a warning show.
  *
  * The warning is advisory everywhere it appears: a lexicon full of loanwords and frozen
@@ -38,32 +45,15 @@ export type LemmaCheck =
     };
 
 /**
- * Latin-orthography lemmas and the IPA chart disagree on a few glyphs.
- *
- * The one that bites is the voiced velar stop: `src/data/ipa.ts` stores it as the proper
- * IPA symbol, script "ɡ" (U+0261), while a romanization following the conlang's
- * "lowercase Latin" orthography writes plain "g" (U+0067). Compared literally, "gal"
- * looks like it contains a sound the language does not have. Each pair is folded to one
- * form on both sides before matching. Length-preserving, so segmentation offsets are
- * unaffected; add a pair here if another lookalike turns up.
- */
-const FOLD_PAIRS: ReadonlyArray<readonly [RegExp, string]> = [[/ɡ/g, "g"]];
-
-function fold(s: string): string {
-  let out = s;
-  for (const [from, to] of FOLD_PAIRS) out = out.replace(from, to);
-  return out;
-}
-
-/**
  * Split `s` into phonemes by greedy longest match against the inventory.
  *
- * Matching is done on the folded form (see `fold`), but each unit is emitted as the
- * inventory's own canonical symbol, so the grammar — `slot.ipa`, the constraint terms —
- * keeps matching against exactly what it stores.
+ * The input is already the project's own IPA (see the module doc comment), so — unlike
+ * when this matched a hand-written, Latin-orthography lemma — there is no glyph
+ * reconciliation to do first: a symbol either is or isn't in the inventory's own set of
+ * spellings.
  *
- * Longest-first is the conventional resolution for a phonemic romanization; it can in
- * principle mis-cut a prefix-ambiguous inventory (`t`, `ts`, `s` all present), but a
+ * Longest-first is the conventional resolution for a phonemic transcription; it can in
+ * principle mis-cut a prefix-ambiguous inventory (`t`, `t͡s`, `s` all present), but a
  * backtracking segmenter multiplies the search for no practical gain here. A substring
  * that matches nothing is reported rather than skipped.
  */
@@ -71,28 +61,22 @@ function segment(
   inventory: ReadonlySet<string>,
   s: string,
 ): { ok: true; units: string[] } | { ok: false; bad: string } {
-  // Folded symbol -> the inventory's canonical spelling of it.
-  const canonical = new Map<string, string>();
   let maxLen = 1;
-  for (const symbol of inventory) {
-    canonical.set(fold(symbol), symbol);
-    maxLen = Math.max(maxLen, symbol.length);
-  }
+  for (const symbol of inventory) maxLen = Math.max(maxLen, symbol.length);
 
-  const folded = fold(s);
   const units: string[] = [];
   let i = 0;
-  while (i < folded.length) {
+  while (i < s.length) {
     let matched: string | null = null;
-    for (let len = Math.min(maxLen, folded.length - i); len >= 1; len -= 1) {
-      const hit = canonical.get(folded.slice(i, i + len));
-      if (hit !== undefined) {
-        matched = hit;
+    for (let len = Math.min(maxLen, s.length - i); len >= 1; len -= 1) {
+      const candidate = s.slice(i, i + len);
+      if (inventory.has(candidate)) {
+        matched = candidate;
         i += len;
         break;
       }
     }
-    if (matched === null) return { ok: false, bad: folded[i] ?? "" };
+    if (matched === null) return { ok: false, bad: s[i] ?? "" };
     units.push(matched);
   }
   return { ok: true, units };
@@ -177,20 +161,29 @@ function parseWord(grammar: Grammar, units: string[]): { parses: Segment[][]; ex
 }
 
 /**
- * Whether `lemma` fits the grammar, and if not, the first reason it does not.
+ * Whether `phonology` fits the grammar, and if not, the first reason it does not.
+ *
+ * `phonology` is expected to be `underlying_phonology` — optionally wrapped in
+ * `/slashes/`, which are stripped before matching — not `lemma`. See the module doc
+ * comment for why the two are not interchangeable once a project has an orthography.
  *
  * `inventory` is passed rather than read off `grammar` on purpose: it is the language's
  * actual sound set, which lets an unknown symbol ("not a phoneme at all") read
  * differently from a real phoneme that no slot here happens to accept ("does not fit the
- * templates"). Every degenerate input — blank lemma, empty inventory, no usable template
- * — returns `ok`, so a missed gate upstream can only ever fail quiet.
+ * templates"). Every degenerate input — blank, empty inventory, no usable template —
+ * returns `ok`, so a missed gate upstream can only ever fail quiet.
  */
 export function checkLemma(
   grammar: Grammar,
   inventory: ReadonlySet<string>,
-  lemma: string,
+  phonology: string,
 ): LemmaCheck {
-  const norm = lemma.normalize("NFC").trim().toLowerCase();
+  const norm = phonology
+    .trim()
+    .replace(/^\//, "")
+    .replace(/\/$/, "")
+    .normalize("NFC")
+    .toLowerCase();
   if (norm === "") return { ok: true };
   if (inventory.size === 0) return { ok: true };
 

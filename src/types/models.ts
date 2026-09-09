@@ -34,6 +34,11 @@ export type SequencePosition = Enums<"sequence_position">;
  * expected it to become one, and 0012/0013 settled the opposite policy in the meantime.
  * A key would make deleting a class either delete the words in it or be blocked by them;
  * a dangling name lets the entry survive and be shown in red. See lib/wordClasses.ts.
+ *
+ * `underlying_phonology` (0033) is the phonemic ground truth, `/slashes/` in the project's
+ * own IPA; `lemma` is the orthographic (written) spelling once a project has an
+ * orthography (0031). Both were backfilled together for xenic from what `lemma` used to
+ * hold — an ASCII-ish transcription that was itself close to phonemic.
  */
 export type LexiconEntry = Tables<"lexicon_entries">;
 
@@ -86,6 +91,15 @@ export type WordClassCategory = Tables<"word_class_categories">;
  * (`parseSpec`), not by the database — see 0029 for why this one is a blob.
  */
 export type ProjectMorphology = Tables<"project_morphology">;
+
+/**
+ * Orthography: which character(s) spell a phoneme, and free-text spelling rules.
+ * `phoneme_ipa` is text rather than a foreign key to `phonemes`, the same "store the
+ * symbol, flag the orphan" choice phonotactics made for class/slot membership — see
+ * `orphanedGraphemes` in `src/lib/orthography.ts`. See 0031.
+ */
+export type OrthographyGrapheme = Tables<"orthography_graphemes">;
+export type OrthographyRule = Tables<"orthography_rules">;
 
 /** A membership joined to the person it belongs to, as the members list renders it. */
 export type ProjectMemberWithProfile = ProjectMember & {

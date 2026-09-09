@@ -17,16 +17,109 @@ itself a repo:
 
 Built: the **access layer** (`projects`, `project_members`, RLS), auth, the dashboard,
 the project workspace *shell* — a navy-on-white header with the conlang name and a gear
-menu at the left, section tabs across the middle, and the app name at the right — and the
-first six linguistic-core sections: the **phoneme inventory**, **phonotactics**, **word
+menu at the left, section tabs across the middle, and the app name at the right — and all
+seven linguistic-core sections: the **phoneme inventory**, **phonotactics**, **word
 classes**, the **lexicon** (seeded with the 60 entries from `grammar.yaml`), **grammar
-rules**, and the **corpus**.
+rules**, the **corpus**, and **orthography**.
 
-**Only Orthography is hidden from the header** — dropped from `projectTabs` in
-`src/router/index.ts` while its route stays live, so a saved link still resolves and
-re-showing it is one line. It is where romanization goes once there is one; upstream has
-none. (Note the commit that "hid the two unbuilt tabs" only ever removed Orthography —
-word classes stayed in `projectTabs` and rendered the placeholder until it was built.)
+**Orthography (0031) is invented in the app rather than derived from upstream, because
+upstream has no romanization at all.** Every earlier section started from something
+`grammar.yaml` or the co-designer's docs already said; this is the first one where the
+schema had nothing to be derived from. It is two tables, mirroring phonotactics and
+grammar rules rather than the lexicon: `orthography_graphemes` (one grapheme per phoneme,
+keyed on `phoneme_ipa` — text, not a foreign key, the same "store the symbol, flag the
+orphan" choice phonotactics made for class and slot membership, so a phoneme leaving the
+inventory doesn't silently erase a spelling someone chose for it) and `orthography_rules`
+(originally field-for-field identical to `grammar_rules` — free text apart from `name` and
+`rule_order`, for the same reason digraph resolution feeding capitalization is real
+structure this round doesn't model; 0034 later dropped two of those fields, see below).
+One RPC, `save_orthography`, writes both tables in
+a transaction, copying `save_grammar_rules`'s upsert-on-name/rewrite-order/delete-absent
+loop for the rules half. Both tables' SELECT policy goes straight to
+`private.is_project_visible` rather than being retrofitted later, since they were created
+after 0026 — the same shape `project_morphology` used, except orthography is ordinary
+member-editable content, not owner-only configuration. The tab was previously hidden from
+`projectTabs` in `src/router/index.ts` with its route kept live for exactly this moment;
+it is un-hidden now that there is something to show.
+
+Verified live (2026-09-09), as a **collaborator** against a throwaway project since
+deleted: `save_orthography` inserts graphemes and a rule; a re-save that drops one
+grapheme, renames the surviving rule's content, and adds a rule before it keeps every
+surviving row's **id stable** and rewrites `rule_order` from array position; a non-member
+is refused 42501; `anon` is refused at the grant on the RPC and by RLS on a direct insert,
+even once the project is published (published, `anon` can read the two tables but still
+cannot write to them); and the collaborator's save stamped `projects.last_activity_by`
+despite the owner-only UPDATE policy on `projects`. `get_advisors` showed nothing new
+beyond the two documented `create_project` / `add_project_member` warnings. xenic was
+confirmed untouched afterward: 633 lexicon entries, 23 phonemes, 80 corpus rows, 21 word
+classes, and the throwaway project's two orthography tables were empty of any leftover
+rows after cleanup.
+
+**`orthography_rules` dropped `environment` and `notes` (0034), reversing the "same shape
+as `grammar_rules`" starting point.** Every rule actually written in the interim already
+stated its environment as part of one prose sentence ("as the onset of a word's first
+syllable", "immediately after a consonant") — the separate column never carried
+information `effect` didn't already have, it just meant filling in two boxes for one
+idea. `notes` had never been used for anything a rewritten `effect` couldn't say instead.
+The migration folds any `environment` text a row already had into `effect` (skipping it
+where `effect` already said the same thing, so nothing doubles up), then drops both
+columns; `save_orthography`, `DraftRule`, and the exporter's `ExportOrthographyRule` all
+shrank to `name` / `effect` / `examples` in the same commit — `ExportOrthographyRule` is
+no longer a bare alias for `ExportRule` (grammar rules), since the two shapes have
+diverged. `examples` is meant to actually hold something now: the five rules live at the
+time were backfilled with real lemma/gloss pairs pulled from the lexicon, rather than
+staying blank the way `notes` always had. The Orthography tab also moved earlier in
+`projectTabs` — right after Phonotactics rather than last — since it is closer kin to the
+phoneme inventory than to word classes or the lexicon.
+
+**The intervocalic-/ŋ/ rule reaches the morphology recognizer too, as `rules.ngGemination`
+in `src/lib/morphology.ts`.** Once the lexicon and corpus were re-spelled, the topic suffix
+`-ngom` (/ŋom/) surfaces as `-nggom` on any vowel-final stem — the same phonological rule,
+just crossing a morpheme boundary instead of sitting inside one root, and orthography rules
+don't know or care where that boundary is. `affixVariants` already generated the alternants
+a rule *could* produce (harmony, lowering, elision) without seeing the neighboring
+morpheme, so gemination fits the same shape: given a suffix form, add the `ngg`-initial
+variant when the affix's own next segment is a vowel (the one half of "between two vowels"
+the affix can confirm by itself — the preceding half comes from whatever stem or affix
+lands before it, which `affixVariants` still can't see). It is **suffix-only**: gated on
+`position`, because a prefix's `ng` opens the word and can never be intervocalic, unlike
+every other rule here which doesn't care about position. A bare `/ŋ/` with no vowel of its
+own (`e_rel`, the reported evidential) correctly gets no geminated variant — there is
+nothing after it within the affix to confirm the environment against. Turned on for xenic
+directly in its stored `project_morphology.spec` (`rules.ngGemination.enabled: true`); off
+by default, like every other phonological rule here, until a project's plugin document
+opts in.
+
+**`lexicon_entries.underlying_phonology` (0033) split what `lemma` used to conflate.**
+Before an orthography existed, `lemma` was doing two jobs at once: it was close to a
+phonemic transcription (using real IPA `ŋ` and `ʔ` directly in places) while also using
+plain ASCII where IPA would call for a different glyph (`g` for `ɡ`, `r` for `ɾ`, `w` for
+`ɰ`, and the digraphs `ng`/`ts` for `ŋ`/`t͡s`). Once xenic had real orthography rules to
+render *from*, `lemma` could become what it should always have meant — the written
+form — with the phonemic ground truth moved to its own column.
+
+The backfill (a one-off script, not a repeatable RPC — see 0033's migration comment) did
+two things per entry: converted the old `lemma` into a proper phonemic string for
+`underlying_phonology` (the two digraph conversions were specified directly rather than
+inferred — "ng" and "ts" are always `ŋ` and `t͡s`, never a coincidental consonant
+sequence), then **syllabified** that phonemic string against `syllable_templates`'
+`(C)(A)V(C)` shape (class `A` = the onset-glide set `j l ɾ ɰ`) to re-render `lemma`
+through the orthography's position-sensitive rules (`onset glides`, `coda /q/`,
+`coda /ŋ/`, `coda /d/`). Maximal onset resolves every intervocalic cluster: a lone
+consonant, or a plain consonant plus one from class `A`, always joins the *following*
+syllable, so a coda only exists where a word-final consonant (or a genuine two-consonant
+non-`A` cluster) leaves nothing else for it to be. That resolved 630 of 633 entries with
+no ambiguity — cross-checked against real role tallies (`/ŋ/` split 20 word-final / 7
+medial-coda / 65 onset; `/d/` and `/q/` never actually land in coda in the current
+lexicon, since the modeled coda slot excludes them, so `coda /d/`→`<dd>` and
+`coda /q/`→`<kk>` are dormant rules waiting for a word that needs them).
+
+**Three entries were flagged rather than guessed at**: `e_ind` ("n"), `e_rel` ("ng"),
+`e_dir` ("t") are evidential clitics with no vowel at all, so they cannot be syllabified —
+there is no onset/coda position to look up a rule against. `underlying_phonology` was
+still filled in for all three (`/n/`, `/ŋ/`, `/t/` — the tokenization needed no
+syllable position), but their `lemma` was left exactly as it was pending a decision on how
+a bare, vowelless consonant should spell.
 
 **Word classes models classes and categories, and deliberately not morpheme order.** The
 first design was tabled because the obvious model — a class owns an ordered chain of slots
@@ -42,9 +135,9 @@ so it does not read as a complete account of the morphology.
 grammar.yaml's own (`effect`, `environment`, `examples`, `notes`) so tightening later is a
 rename rather than a re-parse. Not modelled yet: the SPE-style `formal_source`, and the
 provenance split across `inferred` / `confirmed_by` / `fitted_to` / `attested` /
-`contradicted_by` — two distinct evidence relations that want their own table. Each needs its own design pass — those tabs render
-`SectionPlaceholderView.vue`; they are placeholders, not stubs waiting to be filled in
-blind. Also deferred: changelog/version history, and any public/private flag.
+`contradicted_by` — two distinct evidence relations that want their own table. Each needs
+its own design pass rather than being folded into the existing free-text fields blind.
+Also deferred: changelog/version history, and any public/private flag.
 
 ## Gotchas that will otherwise be rediscovered as bugs
 
@@ -664,11 +757,13 @@ nothing to announce it by. `ProjectMembers` and `ProjectSettings` keep visible h
 they hang off the name menu, not the tab bar, so nothing else names them.
 
 **Sections declare dependencies with `meta.requires`.** Phonotactics, word classes,
-lexicon, corpus and grammar all carry `requires: "phonemes"`, and `SectionPlaceholderView`
-renders a "set up the inventory first" notice instead of the generic placeholder when
-the inventory is empty. Soft gate on purpose: the tab stays navigable, so the header
-never shows a dead control. `ProjectWorkspaceView` loads the inventory for the same
-reason it loads membership — pages that don't own the data still have to ask about it.
+lexicon, corpus, grammar and orthography all carry `requires: "phonemes"`. Each view
+renders its own "set up the inventory first" notice when the inventory is empty, rather
+than a shared placeholder component doing it generically — `SectionPlaceholderView` was
+retired once orthography, the last section still using it, got a real view. Soft gate on
+purpose: the tab stays navigable, so the header never shows a dead control.
+`ProjectWorkspaceView` loads the inventory for the same reason it loads membership —
+pages that don't own the data still have to ask about it.
 
 **Content is member-editable; owner-only is for settings and membership.** The
 `phonemes` policies grant all four verbs to any member. A collaborator who could not

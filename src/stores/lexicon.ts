@@ -24,6 +24,7 @@ import type { LexiconEntry } from "@/types/models";
 /** The editable subset. `id` is absent while creating. */
 export type EntryDraft = {
   lemma: string;
+  underlying_phonology: string;
   gloss: string;
   word_class: string;
   entry_key: string;
@@ -32,6 +33,7 @@ export type EntryDraft = {
 
 const emptyDraft = (): EntryDraft => ({
   lemma: "",
+  underlying_phonology: "",
   gloss: "",
   word_class: "",
   entry_key: "",
@@ -41,6 +43,7 @@ const emptyDraft = (): EntryDraft => ({
 function draftOf(row: LexiconEntry): EntryDraft {
   return {
     lemma: row.lemma,
+    underlying_phonology: row.underlying_phonology ?? "",
     gloss: row.gloss ?? "",
     word_class: row.word_class ?? "",
     entry_key: row.entry_key ?? "",
@@ -50,6 +53,7 @@ function draftOf(row: LexiconEntry): EntryDraft {
 
 const same = (a: EntryDraft, b: EntryDraft) =>
   a.lemma === b.lemma &&
+  a.underlying_phonology === b.underlying_phonology &&
   a.gloss === b.gloss &&
   a.word_class === b.word_class &&
   a.entry_key === b.entry_key &&
@@ -240,6 +244,7 @@ export const useLexiconStore = defineStore("lexicon", () => {
 
   const payload = () => ({
     lemma: draft.value.lemma.trim(),
+    underlying_phonology: orNull(draft.value.underlying_phonology),
     gloss: orNull(draft.value.gloss),
     word_class: orNull(draft.value.word_class),
     entry_key: orNull(draft.value.entry_key),
@@ -347,6 +352,7 @@ export const useLexiconStore = defineStore("lexicon", () => {
       .insert({
         project_id: projectId,
         lemma,
+        underlying_phonology: orNull(entry.underlying_phonology),
         gloss: orNull(entry.gloss),
         word_class: orNull(entry.word_class),
         entry_key: orNull(entry.entry_key),

@@ -39,7 +39,11 @@ const orphaned = computed(() => {
 });
 
 /**
- * Why the lemma as typed does not fit the saved phonotactics, or null.
+ * Why the underlying phonology as typed does not fit the saved phonotactics, or null.
+ *
+ * Checks against `underlying_phonology`, not `lemma` — once a project has an orthography
+ * (0031), `lemma` is the written spelling, which can merge or reshape phonemic contrasts
+ * in ways that make checking it against the grammar meaningless. See `lemmaPhonotactics.ts`.
  *
  * Checks the live draft, not the stored row — same as `orphaned` above — so it updates
  * as the field is edited. Dark until the project has both an inventory and a syllable
@@ -47,12 +51,12 @@ const orphaned = computed(() => {
  */
 const lemmaWarning = computed(() => {
   if (!phonotactics.hasTemplates || phonemes.count === 0) return null;
-  const lemma = lexicon.draft.lemma.trim();
-  if (!lemma) return null;
+  const phonology = lexicon.draft.underlying_phonology.trim();
+  if (!phonology) return null;
   const result = checkLemma(
     phonotactics.persistedGrammar,
     new Set(phonemes.inventory.map((p) => p.ipa)),
-    lemma,
+    phonology,
   );
   return result.ok ? null : result.reason;
 });
@@ -102,11 +106,22 @@ async function remove() {
         <input
           v-model="lexicon.draft.lemma"
           class="mono"
+          :readonly="!members.canEdit"
+          required
+          aria-label="Lemma"
+        />
+      </label>
+
+      <label class="wide">
+        Underlying phonology
+        <input
+          v-model="lexicon.draft.underlying_phonology"
+          class="mono"
           :class="{ warn: lemmaWarning }"
           :readonly="!members.canEdit"
           :aria-invalid="lemmaWarning ? 'true' : undefined"
-          required
-          aria-label="Lemma"
+          placeholder="/phonemic form/"
+          aria-label="Underlying phonology"
         />
         <small v-if="lemmaWarning" class="hint">{{ lemmaWarning }}</small>
       </label>

@@ -72,6 +72,8 @@ describe("the corpus CSV round-trip", () => {
     rules: [],
     wordClasses: [],
     categories: [],
+    graphemes: [],
+    orthographyRules: [],
     corpus: [
       { english: "Yes, I see you", conlang: "mi kan yu" },
       { english: 'She said "no"', conlang: "ta se ŋat" },

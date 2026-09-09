@@ -114,15 +114,9 @@ describe("checkLemma — syllabification", () => {
     expect(checkLemma(grammar(), inventory, "HOT")).toEqual({ ok: true });
   });
 
-  it("folds script-g in the inventory against a romanized ‘g’", () => {
-    // The IPA chart stores the voiced velar stop as ɡ (U+0261); lemmas write plain g.
-    const scriptG: ResolvedClass = { ...C, ipa: C.ipa.map((x) => (x === "g" ? "ɡ" : x)) };
-    const g = grammar({
-      classes: [scriptG, G, V],
-      templates: [{ ...cgvc, slots: [follows("onset", true, scriptG), ...cgvc.slots.slice(1)] }],
-    });
-    const inv = new Set([...scriptG.ipa, ...G.ipa, ...V.ipa]);
-    expect(checkLemma(g, inv, "gal")).toEqual({ ok: true });
+  it("strips surrounding slashes, the shape underlying_phonology is stored in", () => {
+    expect(checkLemma(grammar(), inventory, "/hot/")).toEqual({ ok: true });
+    expect(checkLemma(grammar(), inventory, "/tlpk/").ok).toBe(false);
   });
 
   it("returns quickly on a long unparseable string", () => {

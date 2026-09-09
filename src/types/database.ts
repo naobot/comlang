@@ -201,6 +201,7 @@ export type Database = {
           lemma: string
           notes: string | null
           project_id: string
+          underlying_phonology: string | null
           updated_at: string
           word_class: string | null
         }
@@ -212,6 +213,7 @@ export type Database = {
           lemma: string
           notes?: string | null
           project_id: string
+          underlying_phonology?: string | null
           updated_at?: string
           word_class?: string | null
         }
@@ -223,12 +225,89 @@ export type Database = {
           lemma?: string
           notes?: string | null
           project_id?: string
+          underlying_phonology?: string | null
           updated_at?: string
           word_class?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "lexicon_entries_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orthography_graphemes: {
+        Row: {
+          created_at: string
+          grapheme: string
+          id: string
+          phoneme_ipa: string
+          project_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          grapheme: string
+          id?: string
+          phoneme_ipa: string
+          project_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          grapheme?: string
+          id?: string
+          phoneme_ipa?: string
+          project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orthography_graphemes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orthography_rules: {
+        Row: {
+          created_at: string
+          effect: string | null
+          examples: string | null
+          id: string
+          name: string
+          project_id: string
+          rule_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          effect?: string | null
+          examples?: string | null
+          id?: string
+          name: string
+          project_id: string
+          rule_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          effect?: string | null
+          examples?: string | null
+          id?: string
+          name?: string
+          project_id?: string
+          rule_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orthography_rules_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
@@ -771,6 +850,10 @@ export type Database = {
       }
       save_morphology: {
         Args: { p_project_id: string; p_spec: Json }
+        Returns: undefined
+      }
+      save_orthography: {
+        Args: { p_graphemes: Json; p_project_id: string; p_rules: Json }
         Returns: undefined
       }
       save_phoneme_inventory: {
