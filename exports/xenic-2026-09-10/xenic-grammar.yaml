@@ -574,7 +574,7 @@ lexicon:
   - { key: n_location, lemma: pakuon, underlying: /pakɰon/, pos: noun, gloss: location }
   - { key: n_manager, lemma: tumkhellotui, underlying: /tumxelhotɰi/, pos: noun, gloss: manager }
   - { key: n_managing, lemma: tumkhello, underlying: /tumxelho/, pos: noun, gloss: managing }
-  - { key: n_mango, lemma: no, underlying: /no/, pos: noun, gloss: mango }
+  - { key: n_mango, lemma: "no", underlying: /no/, pos: noun, gloss: mango }
   - { key: n_march, lemma: haptua, underlying: /haptɰa/, pos: noun, gloss: march }
   - { key: n_market, lemma: ponkhanhel, underlying: /ponxanhel/, pos: noun, gloss: market }
   - { key: n_material, lemma: nuikiu, underlying: /nɰikju/, pos: noun, gloss: material }
@@ -796,7 +796,7 @@ lexicon:
   - { key: n_writer, lemma: tuapbupngestui, underlying: /tɰapbupŋestɰi/, pos: noun, gloss: writer }
   - { key: n_writing, lemma: tuapbupnges, underlying: /tɰapbupŋes/, pos: noun, gloss: writing }
   - { key: n_year, lemma: ngit, underlying: /ŋit/, pos: noun, gloss: year }
-  - { key: no, lemma: dus, underlying: /dus/, pos: negation, gloss: no }
+  - { key: "no", lemma: dus, underlying: /dus/, pos: negation, gloss: "no" }
   - { key: p_acc, lemma: ka, underlying: /ka/, pos: case marker, gloss: accusative }
   - { key: p_adv, lemma: ni, underlying: /ni/, pos: particle, gloss: adverbializer }
   - { key: p_also, lemma: ki, underlying: /ki/, pos: semantic particle, gloss: "also, too" }
@@ -851,4 +851,4 @@ lexicon:
   - { key: v_sleep, lemma: ki, underlying: /ki/, pos: verb, gloss: sleep }
   - { key: v_trim, lemma: dal, underlying: /dal/, pos: verb, gloss: trim }
   - { key: v_use, lemma: tse, underlying: /t͡se/, pos: verb, gloss: use }
-  - { key: yes, lemma: tsi, underlying: /t͡si/, pos: particle, gloss: yes }
+  - { key: "yes", lemma: tsi, underlying: /t͡si/, pos: particle, gloss: "yes" }

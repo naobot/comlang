@@ -101,8 +101,14 @@ export type ExportInput = {
 
 // YAML scalars ------------------------------------------------------------------------
 
-/** Characters that make a bare scalar ambiguous, plus anything YAML would coerce. */
-const NEEDS_QUOTES = /^$|^[-?:,[\]{}#&*!|>'"%@`]|[:#]\s|[\s]$|^(?:true|false|null|~|\d)$/i;
+/**
+ * Characters that make a bare scalar ambiguous, plus anything YAML would coerce.
+ * `yes|no|on|off` are in the list because YAML 1.1 parsers (PyYAML's `safe_load`, which
+ * the harness uses) read them as booleans — and `entry_key: no` / `entry_key: yes` are
+ * real lexicon keys here.
+ */
+const NEEDS_QUOTES =
+  /^$|^[-?:,[\]{}#&*!|>'"%@`]|[:#]\s|[\s]$|^(?:true|false|null|~|yes|no|on|off|\d)$/i;
 
 /**
  * Inside `{...}` or `[...]` a comma is a separator, not text. A gloss like

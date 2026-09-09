@@ -109,6 +109,14 @@ describe("yamlScalar", () => {
     expect(yamlScalar("- dash")).toBe('"- dash"');
   });
 
+  // YAML 1.1 (PyYAML, which the harness uses) reads these as booleans. `entry_key: no`
+  // and `entry_key: yes` are real lexicon keys, so they must round-trip as strings.
+  it("quotes the YAML 1.1 boolean words", () => {
+    for (const w of ["yes", "no", "on", "off", "Yes", "NO", "Off"]) {
+      expect(yamlScalar(w)).toBe(`"${w}"`);
+    }
+  });
+
   it("escapes a newline, which a plain scalar cannot carry", () => {
     expect(yamlScalar("a\nb")).toBe('"a\\nb"');
   });
