@@ -112,6 +112,17 @@ async function remove() {
       </label>
 
       <label class="wide">
+        Underlying phonology
+        <input
+          v-model="lexicon.draft.underlying_phonology"
+          class="mono"
+          :readonly="!members.canEdit"
+          placeholder="/phonemic form/"
+          aria-label="Underlying phonology"
+        />
+      </label>
+
+      <label class="wide">
         Meaning
         <input
           v-model="lexicon.draft.gloss"

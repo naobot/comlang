@@ -25,6 +25,7 @@ const wordClasses = useWordClassesStore();
 
 const draft = ref<EntryDraft>({
   lemma: "",
+  underlying_phonology: "",
   gloss: "",
   word_class: "",
   entry_key: "",
@@ -37,14 +38,23 @@ const error = ref<string | null>(null);
  * Re-seeded each time it opens, so cancelling leaves nothing behind and the next word does
  * not inherit the last one's gloss.
  *
- * The lemma is the generated form and is editable: the generator is a suggestion, and
- * shaving a segment off before writing it down is a normal thing to want.
+ * The generator's output is a phonemic form, so it seeds `underlying_phonology`
+ * (slash-wrapped, the stored convention) as well as `lemma` — both are editable, since the
+ * generator is a suggestion and the actual spelling still needs the orthography rules
+ * applied by hand here.
  */
 watch(
   () => [props.open, props.ipa],
   () => {
     if (!props.open) return;
-    draft.value = { lemma: props.ipa, gloss: "", word_class: "", entry_key: "", notes: "" };
+    draft.value = {
+      lemma: props.ipa,
+      underlying_phonology: `/${props.ipa}/`,
+      gloss: "",
+      word_class: "",
+      entry_key: "",
+      notes: "",
+    };
     error.value = null;
   },
   { immediate: true },
@@ -89,6 +99,16 @@ async function add() {
       <label class="wide">
         Lemma
         <input v-model="draft.lemma" class="mono" required aria-label="Lemma" />
+      </label>
+
+      <label class="wide">
+        Underlying phonology
+        <input
+          v-model="draft.underlying_phonology"
+          class="mono"
+          placeholder="/phonemic form/"
+          aria-label="Underlying phonology"
+        />
       </label>
 
       <label class="wide">
