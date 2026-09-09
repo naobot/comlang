@@ -17,15 +17,8 @@ export const projectTabs = [
   { name: "project-lexicon", label: "Lexicon" },
   { name: "project-corpus", label: "Corpus" },
   { name: "project-grammar", label: "Syntax" },
+  { name: "project-orthography", label: "Orthography" },
 ] as const;
-
-// Orthography is hidden from the header for now. Its route stays live, so a saved link
-// still resolves and re-showing it is one line here — orthography is where romanization
-// goes once there is one, and upstream has none.
-
-// Every tab renders the same placeholder until the linguistic core is designed. The
-// route shape is the point: `/projects/:id/lexicon` is where a real lexicon will live.
-const SectionPlaceholder = () => import("@/views/project/SectionPlaceholderView.vue");
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -126,9 +119,11 @@ const router = createRouter({
         {
           path: "orthography",
           name: "project-orthography",
-          component: SectionPlaceholder,
+          component: () => import("@/views/project/OrthographyView.vue"),
           props: true,
-          meta: { tab: "Orthography" },
+          // The view renders the dependency notice itself; `requires` stays so the
+          // meta reads the same across sections.
+          meta: { tab: "Orthography", requires: "phonemes" },
         },
         {
           path: "members",

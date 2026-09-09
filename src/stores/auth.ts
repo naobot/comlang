@@ -57,6 +57,7 @@ export const useAuthStore = defineStore("auth", () => {
           import("@/stores/wordClasses"),
           import("@/stores/morphology"),
           import("@/stores/corpus"),
+          import("@/stores/orthography"),
         ]).then(
           ([
             members,
@@ -67,6 +68,7 @@ export const useAuthStore = defineStore("auth", () => {
             wordClasses,
             morphology,
             corpus,
+            orthography,
           ]) => {
             members.useMembersStore().reset();
             phonemes.usePhonemesStore().reset();
@@ -76,6 +78,7 @@ export const useAuthStore = defineStore("auth", () => {
             wordClasses.useWordClassesStore().reset();
             morphology.useMorphologyStore().reset();
             corpus.useCorpusStore().reset();
+            orthography.useOrthographyStore().reset();
           },
         );
       }
