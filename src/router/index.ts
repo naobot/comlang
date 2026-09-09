@@ -13,11 +13,11 @@ import { useAuthStore } from "@/stores/auth";
 export const projectTabs = [
   { name: "project-phonemes", label: "Phonemes" },
   { name: "project-phonotactics", label: "Phonotactics" },
+  { name: "project-orthography", label: "Orthography" },
   { name: "project-word-classes", label: "Word Classes" },
   { name: "project-lexicon", label: "Lexicon" },
   { name: "project-corpus", label: "Corpus" },
   { name: "project-grammar", label: "Syntax" },
-  { name: "project-orthography", label: "Orthography" },
 ] as const;
 
 const router = createRouter({

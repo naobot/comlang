@@ -193,17 +193,8 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
                 <textarea
                   v-model="rule.effect"
                   :readonly="!members.canEdit"
-                  rows="2"
-                  placeholder="what the rule does"
-                ></textarea>
-              </label>
-              <label>
-                Environment
-                <textarea
-                  v-model="rule.environment"
-                  :readonly="!members.canEdit"
-                  rows="2"
-                  placeholder="where it applies"
+                  rows="3"
+                  placeholder="what happens, and where"
                 ></textarea>
               </label>
               <label>
@@ -213,15 +204,6 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
                   :readonly="!members.canEdit"
                   rows="3"
                   placeholder="spellings, one per line"
-                ></textarea>
-              </label>
-              <label>
-                Notes
-                <textarea
-                  v-model="rule.notes"
-                  :readonly="!members.canEdit"
-                  rows="3"
-                  placeholder="open questions"
                 ></textarea>
               </label>
             </div>

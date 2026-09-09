@@ -30,9 +30,10 @@ grammar rules rather than the lexicon: `orthography_graphemes` (one grapheme per
 keyed on `phoneme_ipa` — text, not a foreign key, the same "store the symbol, flag the
 orphan" choice phonotactics made for class and slot membership, so a phoneme leaving the
 inventory doesn't silently erase a spelling someone chose for it) and `orthography_rules`
-(field-for-field identical to `grammar_rules`: free text apart from `name` and
-`rule_order`, for the same reason — digraph resolution feeding capitalization is real
-structure this round doesn't model). One RPC, `save_orthography`, writes both tables in
+(originally field-for-field identical to `grammar_rules` — free text apart from `name` and
+`rule_order`, for the same reason digraph resolution feeding capitalization is real
+structure this round doesn't model; 0034 later dropped two of those fields, see below).
+One RPC, `save_orthography`, writes both tables in
 a transaction, copying `save_grammar_rules`'s upsert-on-name/rewrite-order/delete-absent
 loop for the rules half. Both tables' SELECT policy goes straight to
 `private.is_project_visible` rather than being retrofitted later, since they were created
@@ -53,6 +54,23 @@ beyond the two documented `create_project` / `add_project_member` warnings. xeni
 confirmed untouched afterward: 633 lexicon entries, 23 phonemes, 80 corpus rows, 21 word
 classes, and the throwaway project's two orthography tables were empty of any leftover
 rows after cleanup.
+
+**`orthography_rules` dropped `environment` and `notes` (0034), reversing the "same shape
+as `grammar_rules`" starting point.** Every rule actually written in the interim already
+stated its environment as part of one prose sentence ("as the onset of a word's first
+syllable", "immediately after a consonant") — the separate column never carried
+information `effect` didn't already have, it just meant filling in two boxes for one
+idea. `notes` had never been used for anything a rewritten `effect` couldn't say instead.
+The migration folds any `environment` text a row already had into `effect` (skipping it
+where `effect` already said the same thing, so nothing doubles up), then drops both
+columns; `save_orthography`, `DraftRule`, and the exporter's `ExportOrthographyRule` all
+shrank to `name` / `effect` / `examples` in the same commit — `ExportOrthographyRule` is
+no longer a bare alias for `ExportRule` (grammar rules), since the two shapes have
+diverged. `examples` is meant to actually hold something now: the five rules live at the
+time were backfilled with real lemma/gloss pairs pulled from the lexicon, rather than
+staying blank the way `notes` always had. The Orthography tab also moved earlier in
+`projectTabs` — right after Phonotactics rather than last — since it is closer kin to the
+phoneme inventory than to word classes or the lexicon.
 
 **`lexicon_entries.underlying_phonology` (0033) split what `lemma` used to conflate.**
 Before an orthography existed, `lemma` was doing two jobs at once: it was close to a
