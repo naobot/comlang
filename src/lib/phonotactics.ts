@@ -152,7 +152,7 @@ export function violation(grammar: Grammar, segments: Segment[]): string | null 
       const b = segments[i + 1];
       if (a && b && matches(constraint.a, a) && matches(constraint.b, b)) {
         const where = constraint.position === "anywhere" ? "" : ` ${constraint.position}`;
-        return `${describe(constraint.a, grammar)}${describe(constraint.b, grammar)} is not allowed${where}`;
+        return `${describe(constraint.a, grammar)} followed by ${describe(constraint.b, grammar)} is not allowed${where}`;
       }
     }
   }
@@ -450,7 +450,7 @@ export function describeConstraint(c: DraftConstraint): string {
   const where =
     c.seq_position === "anywhere" || !c.seq_position ? "" : ` ${c.seq_position.replace("_", "-")}`;
   return (
-    `${term(c.a_class_symbol, c.a_phoneme_ipa)}${term(c.b_class_symbol, c.b_phoneme_ipa)}` +
+    `${term(c.a_class_symbol, c.a_phoneme_ipa)} followed by ${term(c.b_class_symbol, c.b_phoneme_ipa)}` +
     ` not allowed${where}`
   );
 }
