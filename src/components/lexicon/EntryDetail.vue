@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { computed } from "vue";
 
+import { checkLemma } from "@/lib/lemmaPhonotactics";
 import { useLexiconStore } from "@/stores/lexicon";
 import { useMembersStore } from "@/stores/members";
+import { usePhonemesStore } from "@/stores/phonemes";
+import { usePhonotacticsStore } from "@/stores/phonotactics";
 import { useWordClassesStore } from "@/stores/wordClasses";
 
 const props = defineProps<{ projectId: string }>();
 const lexicon = useLexiconStore();
 const members = useMembersStore();
+const phonemes = usePhonemesStore();
+const phonotactics = usePhonotacticsStore();
 const wordClasses = useWordClassesStore();
 
 /**
@@ -31,6 +36,25 @@ const orphaned = computed(() => {
   const current = lexicon.draft.word_class?.trim();
   if (!current) return null;
   return defined.value.includes(current) ? null : current;
+});
+
+/**
+ * Why the lemma as typed does not fit the saved phonotactics, or null.
+ *
+ * Checks the live draft, not the stored row — same as `orphaned` above — so it updates
+ * as the field is edited. Dark until the project has both an inventory and a syllable
+ * template; advisory when lit, exactly like the orphaned-class hint.
+ */
+const lemmaWarning = computed(() => {
+  if (!phonotactics.hasTemplates || phonemes.count === 0) return null;
+  const lemma = lexicon.draft.lemma.trim();
+  if (!lemma) return null;
+  const result = checkLemma(
+    phonotactics.persistedGrammar,
+    new Set(phonemes.inventory.map((p) => p.ipa)),
+    lemma,
+  );
+  return result.ok ? null : result.reason;
 });
 
 const title = computed(() => {
@@ -78,10 +102,13 @@ async function remove() {
         <input
           v-model="lexicon.draft.lemma"
           class="mono"
+          :class="{ warn: lemmaWarning }"
           :readonly="!members.canEdit"
+          :aria-invalid="lemmaWarning ? 'true' : undefined"
           required
           aria-label="Lemma"
         />
+        <small v-if="lemmaWarning" class="hint">{{ lemmaWarning }}</small>
       </label>
 
       <label class="wide">
@@ -179,7 +206,8 @@ select {
 
 /* Inert rather than wrong — the word is intact and reconnects the moment the class comes
    back — so this reads as a flag, not an error. */
-select.orphan {
+select.orphan,
+input.warn {
   border-color: var(--c-danger);
 }
 
@@ -188,6 +216,15 @@ select.orphan {
   font-size: 0.75rem;
   letter-spacing: normal;
   text-transform: none;
+}
+
+/* A hint sitting under a field — the orphaned-class note, the phonotactic warning — is a
+   flag on that field: red, tight to it. Outscopes the muted `.hint` further down, which
+   is for the standalone footnote outside the form. */
+label .hint {
+  margin-top: 0;
+  color: var(--c-danger);
+  font-size: 0.75rem;
 }
 
 .detail {

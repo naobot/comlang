@@ -2,6 +2,7 @@
 import { computed, reactive, ref } from "vue";
 
 import ModalDialog from "@/components/ModalDialog.vue";
+import type { LemmaCheck } from "@/lib/lemmaPhonotactics";
 import type { ImportField } from "@/lib/lexiconImport";
 import {
   type Decisions,
@@ -43,6 +44,12 @@ const props = defineProps<{
   busy: boolean;
   /** A refused write. Shown here rather than behind the dialog, so the choices survive it. */
   error: string | null;
+  /**
+   * Checks a lemma against the project's phonotactics. Injected as a plain function so
+   * this component stays clear of the phonotactics store and engine — the same way the
+   * merge layer takes an `Rng`. A no-op when the project has no rules to check against.
+   */
+  validate?: (lemma: string) => LemmaCheck;
 }>();
 const emit = defineEmits<{ close: []; confirm: [ResolvedImport] }>();
 
@@ -65,6 +72,29 @@ const blocking = computed(() => unresolved(props.plan, decisions));
 
 /** The one field-set warning the old confirm did carry, kept: absent columns are not writes. */
 const partialColumns = computed(() => !props.plan.fields.includes("gloss"));
+
+/**
+ * File line → why that row's lemma does not fit the phonotactics, for the rows that do
+ * not. Advisory: it drives a ⚠ next to the lemma and a count at the top, and touches
+ * neither the tally nor whether Import is enabled. A row already identical to the
+ * lexicon is not listed here — if its stored form is bad, the lexicon list flags it.
+ */
+const lemmaWarnings = computed(() => {
+  const check = props.validate ?? (() => ({ ok: true }) as LemmaCheck);
+  const rows: { lemma: string; line: number }[] = [
+    ...props.plan.additions,
+    ...props.plan.unkeyed,
+    ...props.plan.conflicts.map((c) => ({ lemma: c.incoming.lemma, line: c.line })),
+    ...props.plan.duplicates.flatMap((g) => g.candidates),
+  ];
+  const out = new Map<number, string>();
+  for (const row of rows) {
+    const result = check(row.lemma);
+    if (!result.ok) out.set(row.line, result.reason);
+  }
+  return out;
+});
+const lemmaWarn = (line: number) => lemmaWarnings.value.get(line);
 
 function takeAll(choice: "take" | "keep") {
   for (const c of props.plan.conflicts) decisions.conflicts[c.key] = choice;
@@ -106,6 +136,14 @@ const fieldsOf = (fields: ImportField[]) => fields.map((f) => FIELD_LABEL[f]).jo
         notes on existing entries are left exactly as they are.
       </p>
 
+      <p v-if="lemmaWarnings.size" class="note">
+        {{ lemmaWarnings.size }}
+        {{
+          lemmaWarnings.size === 1 ? "row has a lemma that doesn’t" : "rows have lemmas that don’t"
+        }}
+        fit the phonotactic rules, marked below. They can still be imported.
+      </p>
+
       <!-- Duplicates first: it is the only section that can block, so it must not be
            something you scroll past to find out why Import is disabled. -->
       <section v-if="plan.duplicates.length" class="block">
@@ -137,6 +175,7 @@ const fieldsOf = (fields: ImportField[]) => fields.map((f) => FIELD_LABEL[f]).jo
               />
               <span class="line">Line {{ row.line }}</span>
               <span class="lemma">{{ row.lemma }}</span>
+              <span v-if="lemmaWarn(row.line)" class="warn" :title="lemmaWarn(row.line)">⚠</span>
               <span class="muted">{{ row.gloss || "—" }}</span>
             </label>
             <label class="choice">
@@ -174,6 +213,9 @@ const fieldsOf = (fields: ImportField[]) => fields.map((f) => FIELD_LABEL[f]).jo
           >
             <div class="card-head">
               <span class="lemma">{{ conflict.existing.lemma }}</span>
+              <span v-if="lemmaWarn(conflict.line)" class="warn" :title="lemmaWarn(conflict.line)"
+                >⚠</span
+              >
               <code>{{ conflict.key }}</code>
               <span class="muted">line {{ conflict.line }}</span>
               <div class="pick">
@@ -237,6 +279,7 @@ const fieldsOf = (fields: ImportField[]) => fields.map((f) => FIELD_LABEL[f]).jo
           >
             <span class="muted">Line {{ row.line }}</span>
             <span class="lemma">{{ row.lemma }}</span>
+            <span v-if="lemmaWarn(row.line)" class="warn" :title="lemmaWarn(row.line)">⚠</span>
             <span class="muted">{{ row.gloss || "—" }}</span>
             <div class="pick">
               <button
@@ -269,6 +312,7 @@ const fieldsOf = (fields: ImportField[]) => fields.map((f) => FIELD_LABEL[f]).jo
           <div v-for="row in plan.additions" :key="row.line" class="line-row">
             <code>{{ row.entry_key }}</code>
             <span class="lemma">{{ row.lemma }}</span>
+            <span v-if="lemmaWarn(row.line)" class="warn" :title="lemmaWarn(row.line)">⚠</span>
             <span class="muted">{{ row.gloss || "—" }}</span>
           </div>
         </div>
@@ -466,6 +510,12 @@ const fieldsOf = (fields: ImportField[]) => fields.map((f) => FIELD_LABEL[f]).jo
 .lemma {
   font-family: var(--font-mono);
   font-size: 0.9375rem;
+}
+
+/* Advisory, not blocking — this row imports like any other. */
+.warn {
+  color: var(--c-danger);
+  font-size: 0.875rem;
 }
 
 code {

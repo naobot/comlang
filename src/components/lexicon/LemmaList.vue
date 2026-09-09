@@ -6,6 +6,9 @@ import { useMembersStore } from "@/stores/members";
 
 const lexicon = useLexiconStore();
 const members = useMembersStore();
+// Entry id → why its lemma does not fit the phonotactics. Absent when the project has no
+// rules to check against.
+defineProps<{ warnings: ReadonlyMap<string, string> }>();
 const emit = defineEmits<{ pick: [id: string]; create: [lemma: string] }>();
 
 const query = ref("");
@@ -57,9 +60,19 @@ const exactLemma = computed(() =>
         >
           <span class="lemma">{{ entry.lemma }}</span>
           <span class="gloss">{{ entry.gloss || "—" }}</span>
-          <span v-if="entry.id === lexicon.openId && lexicon.dirty" class="dot" title="Unsaved"
-            >●</span
-          >
+          <span class="marks">
+            <span
+              v-if="warnings.get(entry.id)"
+              class="warn"
+              role="img"
+              :aria-label="`Phonotactic warning: ${warnings.get(entry.id)}`"
+              :title="warnings.get(entry.id)"
+              >⚠</span
+            >
+            <span v-if="entry.id === lexicon.openId && lexicon.dirty" class="dot" title="Unsaved"
+              >●</span
+            >
+          </span>
         </button>
       </li>
     </ul>
@@ -154,11 +167,24 @@ const exactLemma = computed(() =>
   overflow-wrap: anywhere;
 }
 
-.dot {
+.marks {
   grid-row: 1 / span 2;
   align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+}
+
+.dot {
   color: var(--c-accent);
   font-size: 0.625rem;
+}
+
+/* Inert rather than wrong — the word is in the lexicon either way — so it flags, it does
+   not alarm. Same red as the orphaned-class outline. */
+.warn {
+  color: var(--c-danger);
+  font-size: 0.75rem;
 }
 
 .empty {

@@ -1,25 +1,56 @@
 <script setup lang="ts">
 import { useEventListener } from "@vueuse/core";
-import { onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 
 import EntryDetail from "@/components/lexicon/EntryDetail.vue";
 import ImportReviewDialog from "@/components/lexicon/ImportReviewDialog.vue";
 import LemmaList from "@/components/lexicon/LemmaList.vue";
 import { useProjectExport } from "@/composables/useProjectExport";
+import { type LemmaCheck, checkLemma } from "@/lib/lemmaPhonotactics";
 import { parseLexiconCsv } from "@/lib/lexiconImport";
 import { type MergePlan, type ResolvedImport, buildMergePlan } from "@/lib/lexiconMerge";
 import { useLexiconStore } from "@/stores/lexicon";
 import { useMembersStore } from "@/stores/members";
 import { usePhonemesStore } from "@/stores/phonemes";
+import { usePhonotacticsStore } from "@/stores/phonotactics";
 
 const props = defineProps<{ projectId: string }>();
 
 const lexicon = useLexiconStore();
 const members = useMembersStore();
 const phonemes = usePhonemesStore();
+const phonotactics = usePhonotacticsStore();
 const route = useRoute();
 const router = useRouter();
+
+// Phonotactic warnings only mean something once the project has both a saved inventory
+// and a saved syllable template — until then there is nothing to check a lemma against,
+// and the whole feature stays dark. `checkLemma` also self-guards, so this is belt and
+// braces.
+const phonotacticsReady = computed(() => phonotactics.hasTemplates && phonemes.count > 0);
+const inventorySet = computed(() => new Set(phonemes.inventory.map((p) => p.ipa)));
+
+/**
+ * Entry id → why its lemma does not fit the phonotactics, for the entries that do not.
+ * Keyed off `entries` / the saved grammar / the inventory, none of which move when the
+ * search box is typed in, so it is computed once and reused.
+ */
+const lemmaWarnings = computed(() => {
+  const out = new Map<string, string>();
+  if (!phonotacticsReady.value) return out;
+  for (const entry of lexicon.entries) {
+    const result = checkLemma(phonotactics.persistedGrammar, inventorySet.value, entry.lemma);
+    if (!result.ok) out.set(entry.id, result.reason);
+  }
+  return out;
+});
+
+/** The same check, for a lemma coming off an import file rather than a stored row. */
+function validateLemma(lemma: string): LemmaCheck {
+  if (!phonotacticsReady.value) return { ok: true };
+  return checkLemma(phonotactics.persistedGrammar, inventorySet.value, lemma);
+}
 
 // The same composable the header menu uses, so the two exports cannot drift apart. This
 // page offers the full CSV only: it is the one that carries pos, gloss and notes, and so
@@ -196,6 +227,7 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
       :file-name="review.fileName"
       :busy="importing"
       :error="importError"
+      :validate="validateLemma"
       @close="review = null"
       @confirm="applyImport"
     />
@@ -212,7 +244,7 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
     </div>
 
     <div v-else class="panes">
-      <LemmaList @pick="pick" @create="create" />
+      <LemmaList :warnings="lemmaWarnings" @pick="pick" @create="create" />
 
       <EntryDetail v-if="lexicon.openId || lexicon.creating" :project-id="projectId" />
       <p v-else class="placeholder muted">Pick a word from the list, or add one.</p>

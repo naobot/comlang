@@ -428,6 +428,26 @@ export const usePhonotacticsStore = defineStore("phonotactics", () => {
     resolveGrammar(draft.value, new Set(phonemes.inventory.map((p) => p.ipa))),
   );
 
+  /**
+   * The same shape as `grammar`, but from what is **saved** rather than the draft.
+   *
+   * The lexicon's lemma check reads this: a warning on a word has to reflect the rules
+   * the project has committed to, not whatever half-finished state this tab's draft is
+   * in while someone edits it.
+   */
+  const persistedGrammar = computed<Grammar>(() =>
+    resolveGrammar(persisted.value, new Set(phonemes.inventory.map((p) => p.ipa))),
+  );
+
+  /**
+   * A saved syllable template with at least one slot exists.
+   *
+   * Narrower than `isConfigured` on purpose: a grammar with classes but no template has
+   * nothing to judge a lemma's shape against, and a named-but-empty template is not a
+   * usable pattern — same filter `generateWord` applies.
+   */
+  const hasTemplates = computed(() => persisted.value.templates.some((t) => t.slots.length > 0));
+
   return {
     draft,
     persisted,
@@ -438,6 +458,8 @@ export const usePhonotacticsStore = defineStore("phonotactics", () => {
     dirty,
     isConfigured,
     grammar,
+    persistedGrammar,
+    hasTemplates,
     fetchFor,
     save,
     discard,
