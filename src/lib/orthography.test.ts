@@ -17,9 +17,7 @@ import {
 const emptyRule = (name: string) => ({
   name,
   effect: "",
-  environment: "",
   examples: "",
-  notes: "",
 });
 
 describe("purity", () => {

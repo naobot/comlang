@@ -278,11 +278,9 @@ export type Database = {
         Row: {
           created_at: string
           effect: string | null
-          environment: string | null
           examples: string | null
           id: string
           name: string
-          notes: string | null
           project_id: string
           rule_order: number
           updated_at: string
@@ -290,11 +288,9 @@ export type Database = {
         Insert: {
           created_at?: string
           effect?: string | null
-          environment?: string | null
           examples?: string | null
           id?: string
           name: string
-          notes?: string | null
           project_id: string
           rule_order?: number
           updated_at?: string
@@ -302,11 +298,9 @@ export type Database = {
         Update: {
           created_at?: string
           effect?: string | null
-          environment?: string | null
           examples?: string | null
           id?: string
           name?: string
-          notes?: string | null
           project_id?: string
           rule_order?: number
           updated_at?: string

@@ -195,9 +195,7 @@ describe("orthography in the export", () => {
       { phoneme_ipa: "p", grapheme: "p" },
       { phoneme_ipa: "ŋ", grapheme: "ng" },
     ],
-    orthographyRules: [
-      { name: "ng-digraph", effect: 'write /ŋ/ as "ng"', environment: "", examples: "", notes: "" },
-    ],
+    orthographyRules: [{ name: "ng-digraph", effect: 'write /ŋ/ as "ng"', examples: "" }],
   });
 
   it("drops the section entirely when there is nothing mapped or written", () => {

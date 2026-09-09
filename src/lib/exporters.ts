@@ -68,8 +68,12 @@ export type ExportRule = {
 /** One phoneme's spelling. See 0031. */
 export type ExportGrapheme = { phoneme_ipa: string; grapheme: string };
 
-/** An orthography rule: same shape as a grammar rule, a different table. */
-export type ExportOrthographyRule = ExportRule;
+/**
+ * An orthography rule. Used to be the same shape as a grammar rule; 0034 dropped
+ * `environment` and `notes` from `orthography_rules` once every rule in practice folded
+ * its environment into `effect`'s own prose, so this diverges from `ExportRule` now.
+ */
+export type ExportOrthographyRule = { name: string; effect: string; examples: string };
 
 export type ExportInput = {
   projectName: string;
@@ -178,9 +182,7 @@ export function toGrammarYaml(input: ExportInput): string {
         push(`    ${yamlScalar(rule.name)}:`);
         for (const [key, value] of [
           ["effect", rule.effect],
-          ["environment", rule.environment],
           ["examples", rule.examples],
-          ["note", rule.notes],
         ] as const) {
           if (value.trim()) push(`      ${key}: ${yamlScalar(value.trim())}`);
         }

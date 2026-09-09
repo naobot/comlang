@@ -24,17 +24,17 @@ export type DraftGrapheme = { phoneme_ipa: string; grapheme: string };
 /**
  * One spelling rule, free text apart from `name` and its position in the list.
  *
- * Field names match `grammar_rules`' own on purpose: this is the same shape for the same
- * reason — real orthographies have real structure (digraph resolution feeding
- * capitalization, say), and that structure is not modelled yet. Order is kept because it
- * may be a pipeline the same way grammar rules are.
+ * 0031 copied `grammar_rules`' shape wholesale (`effect`/`environment`/`examples`/
+ * `notes`); 0034 dropped `environment` and `notes` once every rule written in practice
+ * turned out to state its environment as part of one prose sentence anyway ("as the onset
+ * of a word's first syllable"), so the split was two boxes for one idea rather than real
+ * structure. `examples` stays, meant to be filled from real lexicon spellings. Order is
+ * kept because it may be a pipeline the same way grammar rules are.
  */
 export type DraftRule = {
   name: string;
   effect: string;
-  environment: string;
   examples: string;
-  notes: string;
 };
 
 export type Draft = {
