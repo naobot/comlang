@@ -48,11 +48,11 @@ export interface RuleDoc {
   vowels?: string;
   glides?: string;
   digraphs?: string[];
-  reduplication?: { enabled?: boolean };
+  reduplication?: { enabled?: boolean; role?: string; gloss?: string; copySyllables?: number };
   harmony?: { enabled?: boolean; pairs?: Record<string, string>; neutral?: string };
   elision?: { enabled?: boolean };
   lowering?: { enabled?: boolean; after?: string; map?: Record<string, string> };
-  ngGemination?: { enabled?: boolean };
+  gemination?: { enabled?: boolean; from?: string; to?: string; positions?: string[] };
 }
 
 export interface MorphologySpecDoc {
@@ -62,6 +62,21 @@ export interface MorphologySpecDoc {
   slots: { nominal: string[]; predicate: string[] };
   affixes: AffixRuleDoc[];
   stems: StemRuleDoc[];
+  /**
+   * Typed form → canonical phoneme, for people entering `underlying_phonology` on a
+   * keyboard that has no `ŋ` key. Read by `checkLemma`, which only honours a pair when the
+   * project's inventory actually has the canonical phoneme and does not itself use the
+   * typed form as a segment. Not a morphology rule, hence top level rather than `rules`.
+   */
+  inputVariants: Record<string, string>;
+  /**
+   * Entry-key prefix → word class, for a project whose `entry_key`s read `pos_meaning`
+   * (`n_book`, `v_become`). Only used to pre-fill a lexicon import that carried neither
+   * column, and only ever shown in the review dialog before anything is written. Empty
+   * means "guess nothing", which is the right default for a project with no such
+   * convention.
+   */
+  entryKeyPos: Record<string, string>;
 }
 
 const isObject = (v: unknown): v is Record<string, unknown> =>
@@ -69,15 +84,22 @@ const isObject = (v: unknown): v is Record<string, unknown> =>
 const asArray = <T>(v: T | T[]): T[] => (Array.isArray(v) ? v : [v]);
 const lower = (s: string) => s.trim().toLowerCase();
 
+/**
+ * What a project that has declared nothing gets. Every rule is off, and every rule's
+ * *content* is empty rather than borrowed from some particular conlang — a default of
+ * `after: "w"` / `{ u: "o" }` would be one language's lowering rule applying to all of
+ * them the moment someone enabled the flag. `vowels` and `glides` are the exception: they
+ * are a plain Latin/IPA starting point, and `segmentize` needs something to call a vowel.
+ */
 const DEFAULT_RULES: RuleConfig = {
   vowels: "aeiou",
   glides: "jw",
   digraphs: [],
-  reduplication: { enabled: false },
+  reduplication: { enabled: false, role: "", gloss: "", copySyllables: 2 },
   harmony: { enabled: false, pairs: {}, neutral: "" },
   elision: { enabled: false },
-  lowering: { enabled: false, after: "w", map: { u: "o" } },
-  ngGemination: { enabled: false },
+  lowering: { enabled: false, after: "", map: {} },
+  gemination: { enabled: false, from: "", to: "", positions: [] },
 };
 
 // ---------------------------------------------------------------------------
@@ -177,8 +199,68 @@ export function parseSpec(input: unknown): { doc: MorphologySpecDoc | null; prob
     problems.push('"rules.vowels" must be a non-empty string');
   }
 
+  // `ngGemination` named one conlang's segments in the engine. The rule is now
+  // `gemination`, which states them. Say so rather than silently dropping the rule.
+  if ((rules as Record<string, unknown>).ngGemination !== undefined) {
+    problems.push(
+      '"rules.ngGemination" is no longer read — use "rules.gemination" with an explicit ' +
+        '"from", "to" and "positions" (e.g. { "enabled": true, "from": "ng", "to": "ngg", ' +
+        '"positions": ["suffix"] })',
+    );
+  }
+
+  // Both rules below are inert without their content, so an enabled-but-incomplete block
+  // is a mistake worth naming — it otherwise looks switched on and does nothing.
+  if (rules.reduplication?.enabled && !rules.reduplication.role?.trim()) {
+    problems.push('"rules.reduplication" is enabled but has no "role" naming the slot it fills');
+  } else if (rules.reduplication?.role && !templateRoles.has(rules.reduplication.role.trim())) {
+    problems.push(
+      `"rules.reduplication.role" "${rules.reduplication.role.trim()}" appears in no slot template`,
+    );
+  }
+  if (rules.gemination?.enabled) {
+    if (!rules.gemination.from || !rules.gemination.to) {
+      problems.push('"rules.gemination" is enabled but is missing "from" and/or "to"');
+    }
+    const positions = rules.gemination.positions ?? [];
+    if (!Array.isArray(positions) || positions.length === 0) {
+      problems.push('"rules.gemination" is enabled but lists no "positions"');
+    } else if (positions.some((p) => p !== "prefix" && p !== "suffix")) {
+      problems.push('"rules.gemination.positions" may only contain "prefix" or "suffix"');
+    }
+  }
+
+  const inputVariants = stringMap(input.inputVariants, "inputVariants", problems);
+  const entryKeyPos = stringMap(input.entryKeyPos, "entryKeyPos", problems);
+
   if (!slotsUsable) return { doc: null, problems };
-  return { doc: { version: numberOr(input.version, 1), rules, slots, affixes, stems }, problems };
+  return {
+    doc: {
+      version: numberOr(input.version, 1),
+      rules,
+      slots,
+      affixes,
+      stems,
+      inputVariants,
+      entryKeyPos,
+    },
+    problems,
+  };
+}
+
+/** An optional `Record<string, string>` on the document, reported rather than coerced. */
+function stringMap(raw: unknown, name: string, problems: string[]): Record<string, string> {
+  if (raw === undefined) return {};
+  if (!isObject(raw)) {
+    problems.push(`"${name}" must be an object of string to string`);
+    return {};
+  }
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (typeof v === "string") out[k] = v;
+    else problems.push(`"${name}.${k}" must be a string`);
+  }
+  return out;
 }
 
 function parseMatch(raw: unknown, i: number, problems: string[]): AffixMatch | null {
@@ -212,11 +294,23 @@ function rulesFrom(doc: RuleDoc): RuleConfig {
   for (const [k, v] of Object.entries(doc.lowering?.map ?? {})) {
     if (typeof v === "string") map[k] = v;
   }
+  const redup = doc.reduplication;
+  const gem = doc.gemination;
+  const positions = (gem?.positions ?? []).filter(
+    (p): p is MorphPosition => p === "prefix" || p === "suffix",
+  );
   return {
     vowels: doc.vowels || DEFAULT_RULES.vowels,
     glides: doc.glides ?? DEFAULT_RULES.glides,
     digraphs: Array.isArray(doc.digraphs) ? doc.digraphs.filter((d) => typeof d === "string") : [],
-    reduplication: { enabled: !!doc.reduplication?.enabled },
+    reduplication: {
+      // A copy with no slot name can never be accepted by an order template, so an
+      // unnamed rule is inert rather than half-working. `parseSpec` says so out loud.
+      enabled: !!redup?.enabled && typeof redup.role === "string" && redup.role.trim() !== "",
+      role: typeof redup?.role === "string" ? redup.role.trim() : "",
+      gloss: typeof redup?.gloss === "string" ? redup.gloss : "",
+      copySyllables: numberOr(redup?.copySyllables, DEFAULT_RULES.reduplication.copySyllables),
+    },
     harmony: {
       enabled: !!doc.harmony?.enabled,
       pairs,
@@ -225,10 +319,16 @@ function rulesFrom(doc: RuleDoc): RuleConfig {
     elision: { enabled: !!doc.elision?.enabled },
     lowering: {
       enabled: !!doc.lowering?.enabled,
-      after: typeof doc.lowering?.after === "string" ? doc.lowering.after : "w",
-      map: Object.keys(map).length > 0 ? map : { u: "o" },
+      after: typeof doc.lowering?.after === "string" ? doc.lowering.after : "",
+      map,
     },
-    ngGemination: { enabled: !!doc.ngGemination?.enabled },
+    gemination: {
+      // Likewise: with nothing to rewrite there is no rule, only a flag.
+      enabled: !!gem?.enabled && !!gem.from && !!gem.to && positions.length > 0,
+      from: typeof gem?.from === "string" ? gem.from : "",
+      to: typeof gem?.to === "string" ? gem.to : "",
+      positions,
+    },
   };
 }
 

@@ -56,8 +56,14 @@ export interface RuleConfig {
   glides: string;
   /** Multi-character segments (e.g. "ng", "ts"). The syllabifier treats each as one unit. */
   digraphs: readonly string[];
-  /** Plural = a copy of the final two syllables prefixed to the stem. */
-  reduplication: { enabled: boolean };
+  /**
+   * A copy of the stem's final `copySyllables` syllables, prefixed to it. `role` is the
+   * slot name the copy fills and has to be one the order template lists, or every
+   * reduplicated reading is rejected; `gloss` is what the preview chip shows. Both are
+   * named by the project rather than assumed, because "plural" is only one of the things
+   * a language reduplicates for.
+   */
+  reduplication: { enabled: boolean; role: SlotRole; gloss: string; copySyllables: number };
   /** Non-low vowels agree in frontness across a morpheme boundary. `neutral` vowels do not. */
   harmony: { enabled: boolean; pairs: Readonly<Record<string, string>>; neutral: string };
   /** An onset glide after a consonant elides. */
@@ -65,11 +71,22 @@ export interface RuleConfig {
   /** A vowel lowers after a labiovelar glide, e.g. `u` → `o` after `w`. */
   lowering: { enabled: boolean; after: string; map: Readonly<Record<string, string>> };
   /**
-   * A suffix's onset /ŋ/ geminates (`ng` → `ngg`) when it lands intervocalically — the
-   * orthography rule fixed for the lexicon and corpus (see CLAUDE.md, "intervocalic /ŋ/").
-   * Suffix-only: a prefix's `ng` sits at the very start of the word, never between vowels.
+   * An affix-initial segment that doubles when it lands intervocalically: `from` as
+   * written becomes `to`. The segments are the project's, not this module's — one conlang
+   * geminates `ng` → `ngg`, another might do something else entirely.
+   *
+   * `positions` is which affix positions it applies to. It exists because gemination
+   * needs a vowel on *both* sides and `affixVariants` can only ever confirm the side
+   * inside the affix (the vowel after). A suffix gets the other side from whatever
+   * precedes it; a prefix never does, since it opens the word — so a language with this
+   * rule typically lists `["suffix"]` only.
    */
-  ngGemination: { enabled: boolean };
+  gemination: {
+    enabled: boolean;
+    from: string;
+    to: string;
+    positions: readonly MorphPosition[];
+  };
 }
 
 /** `"STEM"` marks where the stem sits between the ordered affix slots. */
@@ -210,13 +227,14 @@ export function syllabify(word: string, cfg: RuleConfig): string[] {
 }
 
 /**
- * The plural copy: the final two syllables of the word, or the whole word if it is
- * monosyllabic. Prefixed to the stem to form the plural.
+ * The reduplicated copy: the word's final `reduplication.copySyllables` syllables, or the
+ * whole word when it is shorter than that. Prefixed to the stem.
  */
 export function reduplicant(word: string, cfg: RuleConfig): string {
   const syls = syllabify(word, cfg);
   if (syls.length === 0) return word;
-  return syls.slice(-2).join("");
+  const take = Math.max(1, cfg.reduplication.copySyllables);
+  return syls.slice(-take).join("");
 }
 
 const swapAt = (segs: readonly string[], i: number, seg: string): string =>
@@ -231,10 +249,11 @@ const swapAt = (segs: readonly string[], i: number, seg: string): string =>
  * without knowing the stem it lands on, rather than deriving the one form a full ordered
  * rule pipeline would produce. Capped at `MAX_AFFIX_VARIANTS`.
  *
- * `position` matters only for `ngGemination`: gemination needs a vowel on *both* sides of
- * the /ŋ/, and this function can only ever confirm the side that lives inside the affix
- * itself (the vowel after). A suffix supplies the other side from whatever stem or affix
- * precedes it; a prefix never does, since it opens the word.
+ * `position` matters only for `gemination`: it needs a vowel on *both* sides of the
+ * rewritten segment, and this function can only ever confirm the side that lives inside
+ * the affix itself (the vowel after). A suffix supplies the other side from whatever stem
+ * or affix precedes it; a prefix never does, since it opens the word — which is why the
+ * rule carries its own `positions` list rather than assuming.
  */
 export function affixVariants(form: string, cfg: RuleConfig, position: MorphPosition): string[] {
   const forms = new Set<string>([form]);
@@ -285,12 +304,12 @@ export function affixVariants(form: string, cfg: RuleConfig, position: MorphPosi
     }
   }
 
-  if (cfg.ngGemination.enabled && position === "suffix") {
+  if (cfg.gemination.enabled && cfg.gemination.positions.includes(position)) {
     for (const f of [...forms]) {
       const segs = segmentize(f, cfg);
       // The affix supplies only the vowel *after* — see the doc comment above.
-      if (segs[0] === "ng" && isVowel(segs[1] ?? "", cfg)) {
-        forms.add(["ngg", ...segs.slice(1)].join(""));
+      if (segs[0] === cfg.gemination.from && isVowel(segs[1] ?? "", cfg)) {
+        forms.add([cfg.gemination.to, ...segs.slice(1)].join(""));
       }
     }
   }
@@ -310,7 +329,7 @@ export function affixVariants(form: string, cfg: RuleConfig, position: MorphPosi
  */
 export function tokenizeConlang(text: string): Token[] {
   const tokens: Token[] = [];
-  const re = /[\p{Letter}'ŋʔ]+/gu;
+  const re = /[\p{Letter}']+/gu;
   let cursor = 0;
   for (const match of text.matchAll(re)) {
     const start = match.index;
@@ -458,17 +477,17 @@ export function analyze(
         if (lemma.length < MIN_STEM_LENGTH || !str.endsWith(lemma)) continue;
         const head = str.slice(0, str.length - lemma.length);
         if (head === lemma || head === reduplicant(lemma, rules)) {
-          const plural: Morpheme = {
+          const copy: Morpheme = {
             form: head,
-            role: "plural",
+            role: rules.reduplication.role,
             entryKey: null,
-            gloss: "plural",
+            gloss: rules.reduplication.gloss,
             wordClass: null,
           };
           // Morpheme order, not surface order: the copy is prefixed on the surface, but
-          // the plural slot follows the stem, which is what the order templates check.
+          // the copy's slot follows the stem, which is what the order templates check.
           for (const stem of stems) {
-            out.push({ stem, morphemes: [stemMorpheme(stem), plural], reduplicated: true });
+            out.push({ stem, morphemes: [stemMorpheme(stem), copy], reduplicated: true });
           }
         }
       }

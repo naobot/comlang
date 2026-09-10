@@ -69,11 +69,15 @@ describe("parseLexiconCsv", () => {
   // only fills what the file left out — see the round-trip tests for a file that keeps its
   // own blank cells.
   it("fills meaning and word class from the key on a two-column import", () => {
-    const parsed = parseLexiconCsv("n_book,miŋgwem\na_black,ljaŋ\ntop_case,zwem\nʔo,ʔo\n");
+    const parsed = parseLexiconCsv("n_book,miŋgwem\na_black,ljaŋ\ntop_case,zwem\nʔo,ʔo\n", {
+      n: "noun",
+      a: "adjective",
+      v: "verb",
+    });
     expect(parsed.rows.map((r) => [r.entry_key, r.word_class, r.gloss])).toEqual([
       ["n_book", "noun", "book"],
       ["a_black", "adjective", "black"],
-      // Prefix isn't a part of speech the lexicon uses, so nothing is guessed.
+      // Prefix is not one the project declared, so nothing is guessed.
       ["top_case", "", ""],
       // No underscore to split on.
       ["ʔo", "", ""],
@@ -217,19 +221,45 @@ describe("round trip", () => {
 });
 
 describe("deriveFromKey", () => {
+  /** The prefixes a project might declare; nothing here is built in. */
+  const KEY_POS = { n: "noun", a: "adjective", v: "verb" };
+
   it("maps the part-of-speech prefix and reads the rest as the gloss", () => {
-    expect(deriveFromKey("n_book")).toEqual({ word_class: "noun", gloss: "book" });
-    expect(deriveFromKey("a_black")).toEqual({ word_class: "adjective", gloss: "black" });
-    expect(deriveFromKey("v_become")).toEqual({ word_class: "verb", gloss: "become" });
-    expect(deriveFromKey("n_student_a")).toEqual({ word_class: "noun", gloss: "student a" });
+    expect(deriveFromKey("n_book", KEY_POS)).toEqual({ word_class: "noun", gloss: "book" });
+    expect(deriveFromKey("a_black", KEY_POS)).toEqual({ word_class: "adjective", gloss: "black" });
+    expect(deriveFromKey("v_become", KEY_POS)).toEqual({ word_class: "verb", gloss: "become" });
+    expect(deriveFromKey("n_student_a", KEY_POS)).toEqual({
+      word_class: "noun",
+      gloss: "student a",
+    });
   });
 
   it("guesses nothing from a prefix that is not a part of speech, or a key with no split", () => {
-    expect(deriveFromKey("top_case")).toEqual({ word_class: "", gloss: "" });
-    expect(deriveFromKey("num_3")).toEqual({ word_class: "", gloss: "" });
-    expect(deriveFromKey("interrog")).toEqual({ word_class: "", gloss: "" });
-    expect(deriveFromKey("_leading")).toEqual({ word_class: "", gloss: "" });
-    expect(deriveFromKey("")).toEqual({ word_class: "", gloss: "" });
+    expect(deriveFromKey("top_case", KEY_POS)).toEqual({ word_class: "", gloss: "" });
+    expect(deriveFromKey("num_3", KEY_POS)).toEqual({ word_class: "", gloss: "" });
+    expect(deriveFromKey("interrog", KEY_POS)).toEqual({ word_class: "", gloss: "" });
+    expect(deriveFromKey("_leading", KEY_POS)).toEqual({ word_class: "", gloss: "" });
+    expect(deriveFromKey("", KEY_POS)).toEqual({ word_class: "", gloss: "" });
+  });
+
+  /**
+   * The convention belongs to the project, not to this module. A project that declares
+   * none gets no guessing at all, rather than inheriting another conlang's prefixes.
+   */
+  it("guesses nothing at all when the project declares no prefixes", () => {
+    expect(deriveFromKey("n_book", {})).toEqual({ word_class: "", gloss: "" });
+    expect(parseLexiconCsv("n_book,miŋgwem\n").rows[0]).toMatchObject({
+      entry_key: "n_book",
+      gloss: "",
+      word_class: "",
+    });
+  });
+
+  it("honours the prefixes the caller passes in", () => {
+    expect(parseLexiconCsv("n_book,miŋgwem\n", KEY_POS).rows[0]).toMatchObject({
+      gloss: "book",
+      word_class: "noun",
+    });
   });
 });
 

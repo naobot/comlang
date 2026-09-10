@@ -13,9 +13,14 @@ const row = (over: Partial<LexiconRow> & { lemma: string }): LexiconRow => ({
 
 const validDoc = () => ({
   version: 1,
-  rules: { vowels: "aeiou", glides: "jw", digraphs: ["ng"], reduplication: { enabled: true } },
+  rules: {
+    vowels: "aeiou",
+    glides: "jw",
+    digraphs: ["ng"],
+    reduplication: { enabled: true, role: "plural", gloss: "plural" },
+  },
   slots: {
-    nominal: ["STEM", "case"],
+    nominal: ["STEM", "plural", "case"],
     predicate: ["negation", "STEM", "tense"],
   },
   affixes: [
@@ -88,6 +93,56 @@ describe("parseSpec", () => {
     const { doc } = parseSpec(bad);
     expect(doc).not.toBeNull();
   });
+
+  /**
+   * `ngGemination` named one conlang's segments from inside the engine. Dropping it
+   * silently would leave a document that looks switched on and does nothing, so the
+   * rename is reported rather than ignored.
+   */
+  it("reports the retired ngGemination key instead of dropping it", () => {
+    const doc = validDoc();
+    (doc.rules as Record<string, unknown>).ngGemination = { enabled: true };
+    const { problems } = parseSpec(doc);
+    expect(problems.some((p) => p.includes("ngGemination") && p.includes("gemination"))).toBe(true);
+  });
+
+  it("reports a gemination rule that is enabled but says nothing to rewrite", () => {
+    const doc = validDoc();
+    (doc.rules as Record<string, unknown>).gemination = { enabled: true };
+    const { problems } = parseSpec(doc);
+    expect(problems).toContain('"rules.gemination" is enabled but is missing "from" and/or "to"');
+    expect(problems).toContain('"rules.gemination" is enabled but lists no "positions"');
+  });
+
+  it("reports a reduplication rule with no slot to fill, and one naming an unknown slot", () => {
+    const unnamed = validDoc();
+    unnamed.rules.reduplication = { enabled: true } as never;
+    expect(parseSpec(unnamed).problems).toContain(
+      '"rules.reduplication" is enabled but has no "role" naming the slot it fills',
+    );
+
+    const wrong = validDoc();
+    wrong.rules.reduplication = { enabled: true, role: "nowhere", gloss: "" } as never;
+    expect(parseSpec(wrong).problems.some((p) => p.includes("appears in no slot template"))).toBe(
+      true,
+    );
+  });
+
+  it("reads the project's input variants and entry-key prefixes", () => {
+    const doc = validDoc() as Record<string, unknown>;
+    doc.inputVariants = { ng: "ŋ", g: "ɡ" };
+    doc.entryKeyPos = { n: "noun", bad: 3 };
+    const { doc: parsed, problems } = parseSpec(doc);
+    expect(parsed?.inputVariants).toEqual({ ng: "ŋ", g: "ɡ" });
+    expect(parsed?.entryKeyPos).toEqual({ n: "noun" });
+    expect(problems).toContain('"entryKeyPos.bad" must be a string');
+  });
+
+  it("defaults both maps to empty for a document that declares neither", () => {
+    const { doc } = parseSpec(validDoc());
+    expect(doc?.inputVariants).toEqual({});
+    expect(doc?.entryKeyPos).toEqual({});
+  });
 });
 
 describe("assembleSpec", () => {
@@ -107,6 +162,26 @@ describe("assembleSpec", () => {
     const rec = buildRecognizer(spec);
     expect(analyze("buk", rec).ok).toBe(true);
     expect(analyze("bukbi", rec)).toEqual({ ok: false, reason: "no known stem" });
+  });
+
+  /**
+   * A project that declares no rule content must not inherit another conlang's. The
+   * lowering default used to be `u → o after w` — one language's rule, waiting to fire
+   * for everyone the moment they ticked the box.
+   */
+  it("defaults every rule to empty content, not to some particular conlang's", () => {
+    const { spec } = assembleSpec(lexicon, null);
+    expect(spec.rules.lowering).toEqual({ enabled: false, after: "", map: {} });
+    expect(spec.rules.gemination).toEqual({ enabled: false, from: "", to: "", positions: [] });
+    expect(spec.rules.reduplication.role).toBe("");
+  });
+
+  it("keeps an empty lowering map empty rather than substituting one", () => {
+    const doc = validDoc();
+    (doc.rules as Record<string, unknown>).lowering = { enabled: true, map: {} };
+    const { spec } = assembleSpec(lexicon, parseSpec(doc).doc);
+    expect(spec.rules.lowering.map).toEqual({});
+    expect(spec.rules.lowering.after).toBe("");
   });
 
   it("classifies affixes and stems from a document", () => {

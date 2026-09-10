@@ -4,11 +4,14 @@
     "vowels": "aeiou",
     "glides": "jw",
     "digraphs": ["ng", "ts"],
-    "reduplication": { "enabled": true },
+    "reduplication": { "enabled": true, "role": "plural", "gloss": "plural", "copySyllables": 2 },
     "harmony": { "enabled": false, "pairs": { "i": "u", "e": "o" }, "neutral": "a" },
     "elision": { "enabled": false },
-    "lowering": { "enabled": false, "after": "w", "map": { "u": "o" } }
+    "lowering": { "enabled": false, "after": "w", "map": { "u": "o" } },
+    "gemination": { "enabled": true, "from": "ng", "to": "ngg", "positions": ["suffix"] }
   },
+  "inputVariants": { "ng": "ŋ", "ts": "t͡s", "g": "ɡ", "r": "ɾ", "w": "ɰ" },
+  "entryKeyPos": { "n": "noun", "a": "adjective", "v": "verb" },
   "slots": {
     "nominal": ["numeral", "classifier", "STEM", "plural", "case", "semanticParticle"],
     "predicate": ["negation", "STEM", "tense", "force", "evidential", "conjunction"]

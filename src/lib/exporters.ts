@@ -222,7 +222,9 @@ export function toGrammarYaml(input: ExportInput): string {
     if (m.stems.length) {
       push("  stems:");
       for (const s of m.stems) {
-        push(`    - { slot_class: ${yamlScalar(s.slotClass, true)}, word_class: [${asList(s.wordClass)}] }`);
+        push(
+          `    - { slot_class: ${yamlScalar(s.slotClass, true)}, word_class: [${asList(s.wordClass)}] }`,
+        );
       }
     }
     if (m.affixes.length) {
@@ -244,12 +246,20 @@ export function toGrammarYaml(input: ExportInput): string {
     if (r.digraphs?.length) push(`    digraphs: ${list(r.digraphs)}`);
     for (const [key, on] of [
       ["reduplication", r.reduplication?.enabled],
-      ["ng_gemination", r.ngGemination?.enabled],
+      ["gemination", r.gemination?.enabled],
       ["harmony", r.harmony?.enabled],
       ["elision", r.elision?.enabled],
       ["lowering", r.lowering?.enabled],
     ] as const) {
       push(`    ${key}: ${on ? "enabled" : "disabled"}`);
+    }
+    // The segments a rule rewrites are the project's own, so they travel with it rather
+    // than being implied by the rule's name the way `ng_gemination` used to imply them.
+    if (r.gemination?.enabled && r.gemination.from && r.gemination.to) {
+      push(
+        `    gemination_rewrite: { from: ${yamlScalar(r.gemination.from, true)}, ` +
+          `to: ${yamlScalar(r.gemination.to, true)} }`,
+      );
     }
     push("");
   }

@@ -72,7 +72,7 @@ staying blank the way `notes` always had. The Orthography tab also moved earlier
 `projectTabs` — right after Phonotactics rather than last — since it is closer kin to the
 phoneme inventory than to word classes or the lexicon.
 
-**The intervocalic-/ŋ/ rule reaches the morphology recognizer too, as `rules.ngGemination`
+**The intervocalic-/ŋ/ rule reaches the morphology recognizer too, as `rules.gemination`
 in `src/lib/morphology.ts`.** Once the lexicon and corpus were re-spelled, the topic suffix
 `-ngom` (/ŋom/) surfaces as `-nggom` on any vowel-final stem — the same phonological rule,
 just crossing a morpheme boundary instead of sitting inside one root, and orthography rules
@@ -81,14 +81,20 @@ a rule *could* produce (harmony, lowering, elision) without seeing the neighbori
 morpheme, so gemination fits the same shape: given a suffix form, add the `ngg`-initial
 variant when the affix's own next segment is a vowel (the one half of "between two vowels"
 the affix can confirm by itself — the preceding half comes from whatever stem or affix
-lands before it, which `affixVariants` still can't see). It is **suffix-only**: gated on
-`position`, because a prefix's `ng` opens the word and can never be intervocalic, unlike
-every other rule here which doesn't care about position. A bare `/ŋ/` with no vowel of its
-own (`e_rel`, the reported evidential) correctly gets no geminated variant — there is
-nothing after it within the affix to confirm the environment against. Turned on for xenic
-directly in its stored `project_morphology.spec` (`rules.ngGemination.enabled: true`); off
-by default, like every other phonological rule here, until a project's plugin document
-opts in.
+lands before it, which `affixVariants` still can't see). It is **suffix-only** for xenic:
+`positions` lists which affix positions the rule reaches, and a prefix's `ng` opens the
+word and can never be intervocalic. A bare `/ŋ/` with no vowel of its own (`e_rel`, the
+reported evidential) correctly gets no geminated variant — there is nothing after it
+within the affix to confirm the environment against.
+
+**The segments are the project's, not the engine's.** The rule was once `ngGemination`,
+whose `enabled` flag was the only thing configurable — `"ng"` and `"ngg"` were literals in
+`affixVariants`, so one conlang's orthography was compiled into the code every project
+runs. It is now `gemination: { enabled, from, to, positions }`, and xenic's document
+states `from: "ng", to: "ngg", positions: ["suffix"]`. `parseSpec` **reports** the retired
+`ngGemination` key rather than dropping it, so a stale document says so instead of looking
+switched on and doing nothing; a rule enabled with nothing to rewrite is likewise reported
+and treated as off.
 
 **`lexicon_entries.underlying_phonology` (0033) split what `lemma` used to conflate.**
 Before an orthography existed, `lemma` was doing two jobs at once: it was close to a
@@ -138,6 +144,48 @@ provenance split across `inferred` / `confirmed_by` / `fitted_to` / `attested` /
 `contradicted_by` — two distinct evidence relations that want their own table. Each needs
 its own design pass rather than being folded into the existing free-text fields blind.
 Also deferred: changelog/version history, and any public/private flag.
+
+## One project's material lives apart from the app
+
+`src/` serves every project; **xenic's own facts, tooling and data do not live in it.**
+
+- **`scripts/xenic/`** — tooling hard-coded to xenic: the two seed importers (which read
+  the sibling harness repo's `grammar.yaml`), the snapshot exporter, and
+  `orthography/derive.py` + `rerender_corpus.py`, the forward spelling deriver that has
+  xenic's graphemes, orthography rules and phonotactic constraints written into it.
+- **`data/xenic/`** — `seed/` (the documents loaded into the project) and `exports/` (the
+  frozen dated snapshots handed to the harness). `data/**` is excluded from the formatter,
+  so a committed snapshot keeps the bytes it was handed over as.
+
+**The dependency runs one way: `scripts/xenic/**` may import from `src/lib/`, and nothing
+in `src/` may import from `scripts/`.** An oxlint `no-restricted-imports` rule in
+`vite.config.ts` enforces it. The `.ts` scripts reach `src/lib` by relative path
+(`../../src/lib/…`), not `@/` — that alias is a Vite alias and `tsconfig.node.json`, which
+type-checks `scripts/**`, has no `paths` mapping.
+
+**Anything language-specific in `src/` is read from the project's own document, not
+assumed.** `project_morphology.spec` (0029) is the one per-project config surface, and it
+now carries more than morphology:
+
+- `rules.gemination` — `{ enabled, from, to, positions }`, replacing the old
+  `ngGemination` whose segments were literals in the engine.
+- `rules.reduplication` — `{ enabled, role, gloss, copySyllables }`. `role` has to name a
+  slot the order template lists; it used to be the literal `"plural"`, which silently
+  rejected every reduplicated reading in a project that called the slot anything else.
+- `inputVariants` — typed→canonical substitutions for `underlying_phonology` (`g`→`ɡ`).
+  Was `IPA_VARIANTS`, five pairs of xenic's keyboard conventions applying to everyone.
+- `entryKeyPos` — entry-key prefix→word class for a `pos_meaning` key convention
+  (`n_book`). Was `KEY_POS` in `lexiconImport.ts`.
+
+Every one of them **defaults to empty, not to xenic's value.** A project that declares
+nothing gets no substitution, no guessing and no rule — which is the point: a default
+borrowed from one conlang is that conlang's rule waiting to fire for everyone else. The
+lexicon page and the import flow pass these through from the morphology store;
+`ProjectWorkspaceView` already fetches it on every project route.
+
+**`data/xenic/seed/morphology.json` and the live `project_morphology` row must not
+drift.** They had — the seed never carried `ngGemination`, which was only ever set
+directly on the row. Both now hold the same document.
 
 ## Gotchas that will otherwise be rediscovered as bugs
 
@@ -1026,8 +1074,8 @@ building classes, a template and two rules saves and comes back clean (`dirty` f
 `p ŋ s`, one orphaned rule and one orphaned member detected, the resolved grammar's C down
 to `p s`, and no generated word containing ŋ.
 
-The lexicon seed is generated: `pnpm import:lexicon` reads the harness repo's
-`grammar.yaml` and writes `supabase/seed/lexicon.json` (60 entries). It emits a file rather
+The lexicon seed is generated: `pnpm xenic:import-lexicon` reads the harness repo's
+`grammar.yaml` and writes `data/xenic/seed/lexicon.json` (60 entries). It emits a file rather
 than writing to the database so the output is reviewable and diffable against upstream and
 the script needs no credentials; load it with a one-off insert. `compound_of` and
 `lexicalised` are folded into `notes` as prose — a compound is a real relation and deserves
@@ -1113,8 +1161,8 @@ review. `get_advisors` showed nothing new beyond the two documented `create_proj
 `add_project_member` warnings. xenic was confirmed untouched afterwards: 559 lexicon
 entries, 23 phonemes, 64 corpus rows, 16 word classes.
 
-The word-class seed is generated the same way the lexicon's is: `pnpm import:word-classes`
-writes `supabase/seed/word-classes.json`. It combines **two** parts of grammar.yaml that
+The word-class seed is generated the same way the lexicon's is:
+`pnpm xenic:import-word-classes` writes `data/xenic/seed/word-classes.json`. It combines **two** parts of grammar.yaml that
 neither alone answers — the open classes are the distinct `pos` values on the lexicon
 entries, the closed ones are the *keys* of `closed_class` mapped to class names by hand
 (`case` there is a category whose members are case markers; `numerals` is a class) — plus

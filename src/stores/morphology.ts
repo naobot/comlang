@@ -57,6 +57,16 @@ export const useMorphologyStore = defineStore("morphology", () => {
     return parseSpec(safeParse(persistedText.value)).doc;
   });
 
+  /**
+   * The two project conventions the document declares for pages other than this one: what
+   * a typed `g` means in `underlying_phonology` (the lexicon editor's phonotactics check)
+   * and what an `n_` entry-key prefix means (a two-column lexicon import). Both default to
+   * empty, so a project that has declared nothing gets no substitution and no guessing —
+   * rather than inheriting whichever conlang happened to be built first.
+   */
+  const inputVariants = computed(() => specDoc.value?.inputVariants ?? {});
+  const entryKeyPos = computed(() => specDoc.value?.entryKeyPos ?? {});
+
   function adopt(text: string) {
     persistedText.value = text;
     draftText.value = text;
@@ -188,6 +198,8 @@ export const useMorphologyStore = defineStore("morphology", () => {
     persistedText,
     draftText,
     specDoc,
+    inputVariants,
+    entryKeyPos,
     dirty,
     isEmpty,
     loading,

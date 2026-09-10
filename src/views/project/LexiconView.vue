@@ -12,6 +12,7 @@ import { parseLexiconCsv } from "@/lib/lexiconImport";
 import { type MergePlan, type ResolvedImport, buildMergePlan } from "@/lib/lexiconMerge";
 import { useLexiconStore } from "@/stores/lexicon";
 import { useMembersStore } from "@/stores/members";
+import { useMorphologyStore } from "@/stores/morphology";
 import { usePhonemesStore } from "@/stores/phonemes";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
 
@@ -19,6 +20,7 @@ const props = defineProps<{ projectId: string }>();
 
 const lexicon = useLexiconStore();
 const members = useMembersStore();
+const morphology = useMorphologyStore();
 const phonemes = usePhonemesStore();
 const phonotactics = usePhonotacticsStore();
 const route = useRoute();
@@ -51,6 +53,7 @@ const lemmaWarnings = computed(() => {
       phonotactics.persistedGrammar,
       inventorySet.value,
       entry.underlying_phonology,
+      morphology.inputVariants,
     );
     if (!result.ok) out.set(entry.id, result.reason);
   }
@@ -63,7 +66,12 @@ const lemmaWarnings = computed(() => {
  *  for why that is a weaker signal than checking a stored entry's phonemic form. */
 function validateLemma(lemma: string): LemmaCheck {
   if (!phonotacticsReady.value) return { ok: true };
-  return checkLemma(phonotactics.persistedGrammar, inventorySet.value, lemma);
+  return checkLemma(
+    phonotactics.persistedGrammar,
+    inventorySet.value,
+    lemma,
+    morphology.inputVariants,
+  );
 }
 
 // The same composable the header menu uses, so the two exports cannot drift apart. This
@@ -97,7 +105,9 @@ async function onFile(event: Event) {
 
   outcome.value = null;
   importError.value = null;
-  const parsed = parseLexiconCsv(await file.text());
+  // The two-column form carries no meaning or word class; the project's own entry-key
+  // convention is what fills them in, and a project with no convention gets no guesses.
+  const parsed = parseLexiconCsv(await file.text(), morphology.entryKeyPos);
   if (parsed.problems.length) {
     // What is left here is only what the dialog cannot ask about: a file of the wrong
     // shape, and a line with no lemma — neither is a choice between two versions. Every

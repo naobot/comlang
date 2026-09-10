@@ -19,8 +19,8 @@ import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const SOURCE = resolve(here, "../../xenolinguistics-harness/packages/own-conlang/grammar.yaml");
-const OUT = resolve(here, "../supabase/seed/word-classes.json");
+const SOURCE = resolve(here, "../../../xenolinguistics-harness/packages/own-conlang/grammar.yaml");
+const OUT = resolve(here, "../../data/xenic/seed/word-classes.json");
 
 type Source = {
   categories?: Record<string, { values?: string[] }>;

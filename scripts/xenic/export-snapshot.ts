@@ -20,16 +20,15 @@ import {
   toGrammarYaml,
   toLexiconCsv,
   toLexiconCsvFull,
-} from "../src/lib/exporters";
-import { parseSpec } from "../src/lib/morphologySpec";
+} from "../../src/lib/exporters";
+import { parseSpec } from "../../src/lib/morphologySpec";
 
 const DATE = "2026-09-10";
 const here = dirname(fileURLToPath(import.meta.url));
-const DIR = resolve(here, `../exports/xenic-${DATE}`);
+const DIR = resolve(here, `../../data/xenic/exports/xenic-${DATE}`);
 const RAW = resolve(DIR, "raw");
 
-const readJson = (name: string): unknown =>
-  JSON.parse(readFileSync(resolve(RAW, name), "utf8"));
+const readJson = (name: string): unknown => JSON.parse(readFileSync(resolve(RAW, name), "utf8"));
 
 type StructuralDump = {
   snapshot_at: string;
@@ -54,16 +53,32 @@ type StructuralDump = {
     note: string | null;
   }[];
   grammar_rules:
-    | { name: string; effect: string | null; environment: string | null; examples: string | null; notes: string | null }[]
+    | {
+        name: string;
+        effect: string | null;
+        environment: string | null;
+        examples: string | null;
+        notes: string | null;
+      }[]
     | null;
-  word_classes: { name: string; kind: string; description: string | null; categories: string[] | null }[];
+  word_classes: {
+    name: string;
+    kind: string;
+    description: string | null;
+    categories: string[] | null;
+  }[];
   categories: {
     name: string;
     description: string | null;
     values: { value: string; notes: string | null }[] | null;
   }[];
   graphemes: { phoneme_ipa: string; grapheme: string }[];
-  orthography_rules: { name: string; rule_order: number; effect: string | null; examples: string | null }[];
+  orthography_rules: {
+    name: string;
+    rule_order: number;
+    effect: string | null;
+    examples: string | null;
+  }[];
   morphology_spec: unknown;
   corpus: { english: string; conlang: string; kind: string }[];
 };

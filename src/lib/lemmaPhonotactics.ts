@@ -30,13 +30,12 @@
  * compounds legitimately breaks its own rules, so nothing here blocks a save or an
  * import.
  *
- * Segmentation tolerates the character variants the co-designer's files have always
- * used — Latin `g` for `ɡ`, `r` for the tap `ɾ`, `w` for `ɰ`, and the digraphs `ng` and
- * `ts` for `ŋ` and `t͡s` (the same five the 0033 backfill folded in). Each only applies
+ * Segmentation tolerates whatever character variants the *project* declares in its
+ * plugin document (`inputVariants`) — a keyboard has no `ɡ` or `ŋ` key. Each only applies
  * when the language actually has the canonical phoneme and is not separately using the
- * typed form as a phoneme of its own — see `IPA_VARIANTS`. The togglable phoneme palette
- * beside the field is the way to type the exact glyphs; this is the safety net for when
- * someone doesn't.
+ * typed form as a phoneme of its own; see `variantMap`. Declare none and nothing is
+ * substituted. The togglable phoneme palette beside the field is the way to type the
+ * exact glyphs; this is the safety net for when someone doesn't.
  */
 
 import type { Grammar, ResolvedTemplate, Segment } from "./phonotactics";
@@ -60,28 +59,22 @@ export type LemmaCheck =
     };
 
 /**
- * Character-variant substitutions the lexicon has always tolerated, `[typed, canonical]`.
+ * Character-variant substitutions to tolerate on input, `typed → canonical`.
  *
- * The co-designer's source files use Latin `g` where IPA wants script `ɡ`, `r` for the
- * tap `ɾ`, `w` for the velar approximant `ɰ`, and the digraphs `ng` / `ts` for `ŋ` /
- * `t͡s`. Migration 0033's backfill made exactly these conversions when it split
- * `underlying_phonology` out of `lemma`.
+ * A keyboard has no `ɡ`, `ŋ` or `t͡s` key, so a project may declare that (say) Latin `g`
+ * typed into `underlying_phonology` means script `ɡ`. Which pairs those are is the
+ * project's business — declared in its plugin document's `inputVariants` — not this
+ * module's; a conlang that genuinely contrasts `g` and `ɡ` must be able to say nothing.
  *
  * `variantMap` keeps a pair only when the language *has* the canonical phoneme and does
- * *not* separately use the typed form as its own segment — so a project where `w` is a
- * real phoneme keeps `w` meaning `w`. Longer keys first, so `ng` is tried before `n`.
+ * *not* separately use the typed form as its own segment, so a declaration can never
+ * shadow a real contrast. Longer keys are tried first, so `ng` beats `n`.
  */
-const IPA_VARIANTS: readonly (readonly [string, string])[] = [
-  ["ng", "ŋ"],
-  ["ts", "t͡s"],
-  ["g", "ɡ"],
-  ["r", "ɾ"],
-  ["w", "ɰ"],
-];
+export type InputVariants = Readonly<Record<string, string>>;
 
-function variantMap(inventory: ReadonlySet<string>): Map<string, string> {
+function variantMap(inventory: ReadonlySet<string>, variants: InputVariants): Map<string, string> {
   const out = new Map<string, string>();
-  for (const [typed, canonical] of IPA_VARIANTS) {
+  for (const [typed, canonical] of Object.entries(variants)) {
     if (inventory.has(canonical) && !inventory.has(typed)) out.set(typed, canonical);
   }
   return out;
@@ -104,8 +97,9 @@ function variantMap(inventory: ReadonlySet<string>): Map<string, string> {
 function segment(
   inventory: ReadonlySet<string>,
   s: string,
+  declared: InputVariants,
 ): { ok: true; units: string[] } | { ok: false; bad: string } {
-  const variants = variantMap(inventory);
+  const variants = variantMap(inventory, declared);
 
   let maxLen = 1;
   for (const symbol of inventory) maxLen = Math.max(maxLen, symbol.length);
@@ -268,11 +262,16 @@ function parseMarked(
  * differently from a real phoneme that no slot here happens to accept ("does not fit the
  * templates"). Every degenerate input — blank, empty inventory, no usable template —
  * returns `ok`, so a missed gate upstream can only ever fail quiet.
+ *
+ * `variants` is the project's declared typed→canonical substitutions. It defaults to
+ * none: a project that has declared nothing gets its phonology read exactly as typed,
+ * rather than inheriting some other conlang's keyboard conventions.
  */
 export function checkLemma(
   grammar: Grammar,
   inventory: ReadonlySet<string>,
   phonology: string,
+  variants: InputVariants = {},
 ): LemmaCheck {
   const norm = phonology
     .trim()
@@ -293,7 +292,7 @@ export function checkLemma(
 
   const chunks: string[][] = [];
   for (const raw of rawChunks) {
-    const parsed = segment(inventory, raw);
+    const parsed = segment(inventory, raw, variants);
     if (!parsed.ok) {
       return {
         ok: false,

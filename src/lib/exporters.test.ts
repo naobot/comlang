@@ -265,7 +265,7 @@ describe("morphology in the export", () => {
         glides: "jw",
         digraphs: ["ng", "ts"],
         reduplication: { enabled: true },
-        ngGemination: { enabled: true },
+        gemination: { enabled: true, from: "ng", to: "ngg", positions: ["suffix"] },
         harmony: { enabled: false },
         elision: { enabled: false },
         lowering: { enabled: false },
@@ -274,6 +274,8 @@ describe("morphology in the export", () => {
         nominal: ["numeral", "classifier", "STEM", "plural", "case", "semanticParticle"],
         predicate: ["negation", "STEM", "tense", "force", "evidential", "conjunction"],
       },
+      inputVariants: {},
+      entryKeyPos: {},
       stems: [{ slotClass: "nominal", wordClass: ["noun", "pronoun"] }],
       affixes: [
         { role: "case", match: { entryKey: ["p_top", "p_nom"] }, position: "suffix" },
@@ -316,7 +318,9 @@ describe("morphology in the export", () => {
   it("flattens the phonological toggles to enabled / disabled", () => {
     const yaml = toGrammarYaml(withMorphology);
     expect(yaml).toContain("reduplication: enabled");
-    expect(yaml).toContain("ng_gemination: enabled");
+    expect(yaml).toContain("gemination: enabled");
+    // The rewritten segments travel with the rule rather than being implied by its name.
+    expect(yaml).toContain("gemination_rewrite: { from: ng, to: ngg }");
     expect(yaml).toContain("harmony: disabled");
   });
 });

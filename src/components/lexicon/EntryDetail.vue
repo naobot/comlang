@@ -5,6 +5,7 @@ import PhonemePalette from "@/components/lexicon/PhonemePalette.vue";
 import { checkLemma } from "@/lib/lemmaPhonotactics";
 import { useLexiconStore } from "@/stores/lexicon";
 import { useMembersStore } from "@/stores/members";
+import { useMorphologyStore } from "@/stores/morphology";
 import { usePhonemesStore } from "@/stores/phonemes";
 import { usePhonotacticsStore } from "@/stores/phonotactics";
 import { useWordClassesStore } from "@/stores/wordClasses";
@@ -14,6 +15,7 @@ const props = defineProps<{ projectId: string }>();
 const emit = defineEmits<{ pick: [id: string] }>();
 const lexicon = useLexiconStore();
 const members = useMembersStore();
+const morphology = useMorphologyStore();
 const phonemes = usePhonemesStore();
 const phonotactics = usePhonotacticsStore();
 const wordClasses = useWordClassesStore();
@@ -60,6 +62,9 @@ const lemmaWarning = computed(() => {
     phonotactics.persistedGrammar,
     new Set(phonemes.inventory.map((p) => p.ipa)),
     phonology,
+    // Which typed characters stand in for which phonemes is this project's own
+    // declaration, not something the checker assumes — see `morphologySpec.ts`.
+    morphology.inputVariants,
   );
   return result.ok ? null : result.reason;
 });

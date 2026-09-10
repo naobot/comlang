@@ -21,11 +21,11 @@ const RULES: RuleConfig = {
   vowels: "aeiou",
   glides: "jw",
   digraphs: ["ng", "ts"],
-  reduplication: { enabled: true },
+  reduplication: { enabled: true, role: "plural", gloss: "plural", copySyllables: 2 },
   harmony: { enabled: false, pairs: { i: "u", e: "o" }, neutral: "a" },
   elision: { enabled: false },
   lowering: { enabled: false, after: "w", map: { u: "o" } },
-  ngGemination: { enabled: false },
+  gemination: { enabled: false, from: "ng", to: "ngg", positions: ["suffix"] },
 };
 
 const stem = (over: Partial<StemEntry> & { lemma: string }): StemEntry => ({
@@ -224,7 +224,9 @@ describe("analyze", () => {
   });
 
   it("does not treat reduplication as plural when the flag is off", () => {
-    const off = buildRecognizer(spec({ rules: { ...RULES, reduplication: { enabled: false } } }));
+    const off = buildRecognizer(
+      spec({ rules: { ...RULES, reduplication: { ...RULES.reduplication, enabled: false } } }),
+    );
     const r = analyze("njuhjanjuhjade", off);
     if (r.ok) expect(r.analyses.every((a) => !a.reduplicated)).toBe(true);
   });
@@ -289,8 +291,8 @@ describe("affixVariants", () => {
     expect(affixVariants("wemeko", both, "suffix").length).toBeLessThanOrEqual(8);
   });
 
-  describe("ngGemination", () => {
-    const geminating = { ...RULES, ngGemination: { enabled: true } };
+  describe("gemination", () => {
+    const geminating = { ...RULES, gemination: { ...RULES.gemination, enabled: true } };
 
     it("adds the geminated form of a suffix whose onset /ŋ/ has its own following vowel", () => {
       expect(affixVariants("ngom", geminating, "suffix")).toContain("nggom");
@@ -343,7 +345,7 @@ describe("analyze with phonological rules", () => {
   it("peels -nggom as the topic suffix -ngom, geminated intervocalically", () => {
     const rec = buildRecognizer(
       spec({
-        rules: { ...RULES, ngGemination: { enabled: true } },
+        rules: { ...RULES, gemination: { ...RULES.gemination, enabled: true } },
         stems: [stem({ lemma: "po", entryKey: "pn_1sg", wordClass: "pronoun" })],
         affixes: [
           affix({

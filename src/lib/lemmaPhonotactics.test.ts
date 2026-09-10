@@ -169,6 +169,12 @@ describe("checkLemma — explicit syllable boundaries", () => {
 });
 
 describe("checkLemma — character variants", () => {
+  /**
+   * The substitutions a project declares in its plugin document. Nothing here is built
+   * in — `checkLemma` with no fourth argument substitutes nothing at all.
+   */
+  const VARIANTS = { ng: "ŋ", ts: "t͡s", g: "ɡ", r: "ɾ", w: "ɰ" };
+
   // An inventory that uses the real IPA glyphs, so the ASCII forms have to be mapped.
   const Ci: ResolvedClass = {
     id: "c",
@@ -195,23 +201,34 @@ describe("checkLemma — character variants", () => {
   });
 
   it("reads Latin g as ɡ and Latin r as the tap ɾ", () => {
-    expect(checkLemma(g, inv, "gat")).toEqual({ ok: true });
-    expect(checkLemma(g, inv, "ran")).toEqual({ ok: true });
+    expect(checkLemma(g, inv, "gat", VARIANTS)).toEqual({ ok: true });
+    expect(checkLemma(g, inv, "ran", VARIANTS)).toEqual({ ok: true });
   });
 
   it("reads the digraphs ng and ts as ŋ and t͡s", () => {
-    expect(checkLemma(g, inv, "ngang")).toEqual({ ok: true });
-    expect(checkLemma(g, inv, "tsi")).toEqual({ ok: true });
+    expect(checkLemma(g, inv, "ngang", VARIANTS)).toEqual({ ok: true });
+    expect(checkLemma(g, inv, "tsi", VARIANTS)).toEqual({ ok: true });
   });
 
   it("reads w as the velar approximant ɰ", () => {
-    expect(checkLemma(g, inv, "wa")).toEqual({ ok: true });
+    expect(checkLemma(g, inv, "wa", VARIANTS)).toEqual({ ok: true });
+  });
+
+  /**
+   * The whole point of the parameter: a project that has not declared a substitution
+   * does not inherit anyone else's. `gat` is `ɡat` only because this project said so.
+   */
+  it("substitutes nothing when the project declares no variants", () => {
+    const result = checkLemma(g, inv, "gat");
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("unreachable");
+    expect(result.kind).toBe("unknown-segment");
   });
 
   it("does not invent a phoneme the language does not have", () => {
     // ŋ is not in this inventory, so `ng` maps to nothing and `g` is flagged.
     const noNg = new Set(["p", "t", "k", "n", "s", "i", "e", "a", "o", "u"]);
-    const result = checkLemma(g, noNg, "ngi");
+    const result = checkLemma(g, noNg, "ngi", VARIANTS);
     expect(result.ok).toBe(false);
     if (result.ok) throw new Error("unreachable");
     expect(result.kind).toBe("unknown-segment");
@@ -235,7 +252,7 @@ describe("checkLemma — character variants", () => {
         },
       ],
     });
-    expect(checkLemma(gw, new Set([...inv, "w"]), "wa")).toEqual({ ok: true });
+    expect(checkLemma(gw, new Set([...inv, "w"]), "wa", VARIANTS)).toEqual({ ok: true });
   });
 });
 

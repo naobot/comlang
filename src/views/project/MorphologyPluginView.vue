@@ -20,12 +20,14 @@ const EXAMPLE = `{
     "vowels": "aeiou",
     "glides": "jw",
     "digraphs": ["ng", "ts"],
-    "reduplication": { "enabled": true },
+    "reduplication": { "enabled": true, "role": "plural", "gloss": "plural" },
     "harmony": { "enabled": false, "pairs": { "i": "u", "e": "o" }, "neutral": "a" },
     "elision": { "enabled": false },
     "lowering": { "enabled": false, "after": "w", "map": { "u": "o" } },
-    "ngGemination": { "enabled": false }
+    "gemination": { "enabled": false, "from": "ng", "to": "ngg", "positions": ["suffix"] }
   },
+  "inputVariants": {},
+  "entryKeyPos": {},
   "slots": {
     "nominal": ["numeral", "classifier", "STEM", "plural", "case", "semanticParticle"],
     "predicate": ["negation", "STEM", "tense", "force", "evidential", "conjunction"]
@@ -197,9 +199,16 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
             rules; recognition of their output is approximate.
           </li>
           <li>
-            <code>rules.ngGemination.enabled</code> — a suffix's onset /ŋ/ also surfaces geminated
-            (<code>ng</code> → <code>ngg</code>) when it lands intervocalically, e.g.
-            <code>-ngom</code> as <code>-nggom</code>.
+            <code>rules.gemination</code> — an affix-initial segment that doubles when it lands
+            intervocalically, as <code>from</code> → <code>to</code> in the
+            <code>positions</code> listed. Xenic writes <code>ng</code> → <code>ngg</code> on
+            suffixes, so <code>-ngom</code> surfaces as <code>-nggom</code>.
+          </li>
+          <li>
+            <code>inputVariants</code> / <code>entryKeyPos</code> — project conventions the rest of
+            the app reads: which typed characters stand in for which phonemes in
+            <em>Underlying phonology</em>, and which entry-key prefixes name a word class on a
+            two-column lexicon import. Both empty means neither is assumed.
           </li>
           <li>
             <code>slots.nominal</code> / <code>slots.predicate</code> — the ordered slot names of
