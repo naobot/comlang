@@ -79,7 +79,13 @@ export type ExportGrapheme = { phoneme_ipa: string; grapheme: string };
  * `environment` and `notes` from `orthography_rules` once every rule in practice folded
  * its environment into `effect`'s own prose, so this diverges from `ExportRule` now.
  */
-export type ExportOrthographyRule = { name: string; effect: string; examples: string };
+export type ExportOrthographyRule = {
+  name: string;
+  /** One sentence stating the rule as a rule (migration 0036); may be blank. */
+  summary: string;
+  effect: string;
+  examples: string;
+};
 
 export type ExportInput = {
   projectName: string;
@@ -195,7 +201,11 @@ export function toGrammarYaml(input: ExportInput): string {
       push("  rules:");
       for (const rule of input.orthographyRules) {
         push(`    ${yamlScalar(rule.name)}:`);
+        // `summary` leads: it is the statement of the rule, and `effect` the discussion
+        // of it. A reader scanning the export for what a rule *does* should hit the one
+        // disciplined sentence before the six discursive ones.
         for (const [key, value] of [
+          ["summary", rule.summary],
           ["effect", rule.effect],
           ["examples", rule.examples],
         ] as const) {

@@ -1,0 +1,863 @@
+# Exported from comlang on 2026-09-10.
+#
+# A partial grammar: it carries only what the app currently models. Absent by
+# design rather than by omission — alignment, closed_class, exceptions and
+# samples have no home in the app yet. Morpheme order lives under the morphology
+# key below.
+
+meta:
+  name: xenic
+  exported_at: 2026-09-10
+  source: comlang
+
+phonology:
+  consonants: [p, b, t, d, m, ŋ, k, ɡ, ɾ, n, h, x, s, t͡s, j, l, q, w]
+  vowels: [e, i, u, o, a]
+  classes:
+    C:
+      members: [b, d, ɡ, h, j, k, l, m, n, ŋ, p, q, ɾ, s, t, t͡s, w, x]
+    V:
+      members: [a, e, i, o, u]
+    A:
+      members: [j, l, ɾ, w]
+    non-codas:
+      members: [a, b, d, e, ɡ, h, i, j, o, q, ɾ, t͡s, u, w, x]
+    non-w approximants:
+      members: [j, l, ɾ]
+    liquids:
+      members: [l, ɾ]
+    h and x:
+      members: [h, x]
+    ts and ng:
+      members: [ŋ, t͡s]
+    front vowels:
+      members: [a, e, i]
+
+orthography:
+  graphemes:
+    a: a
+    b: b
+    d: d
+    e: e
+    ɡ: g
+    q: gk
+    h: h
+    i: i
+    j: i
+    k: k
+    x: kh
+    l: l
+    m: m
+    n: n
+    ŋ: ng
+    o: o
+    p: p
+    ɾ: r
+    s: s
+    t: t
+    t͡s: ts
+    u: u
+    w: w
+  rules:
+    /j/ and /w/ in the onset:
+      effect: "/j/ is written <y> when it is the only onset of its syllable, or when the next segment is /i/; as the second member of an onset cluster, and not before /i/, it is written <i>.\n/w/ is written <w> when it is the only onset of its syllable, or when the next segment is /u/; as the second member of an onset cluster, and not before /u/, it is written <u>."
+      examples: "/dusaju/ → dusayu \"motorcycle\" (j sole onset)\n/baphju/ → bappiu \"danger\" (j second member of an onset cluster, not before /i/)\n/kwawi/ → kuawi \"corridor\" (w sole onset)\n/bwi/ → bui \"road\" (w second member of an onset cluster, not before /u/)"
+    intervocalic /ŋ/:
+      effect: "/ŋ/ is written <ngg> when it begins the onset of a non-initial syllable and a vowel stands immediately before it — that is, the preceding syllable has no coda. A glide (/w/) between the /ŋ/ and its vowel does not block this; a coda consonant before the /ŋ/ does. Where the phonemes alone leave the syllable division ambiguous, the boundary marked with \".\" in the underlying phonology settles it: /soŋ.wo/ → songwo (/ŋ/ in the coda), /so.ŋwo/ → songguo (/ŋ/ leads the onset)."
+      examples: "/baŋes/ → bangges \"ugly\"\n/doŋu/ → donggu \"moon\"\n/dopwiŋe/ → dopuingge \"bar\"\n/soŋi/ → songgi \"following\"\n/ŋiŋwi/ → nginggui \"recently\" (a /w/ after the /ŋ/ does not block it)\n/dotŋwa/ → dotngua \"time\" (a coda /t/ before the /ŋ/ does)"
+    /h/ after a consonant:
+      effect: /h/ immediately after a consonant doubles that consonant in writing; the /h/ itself is dropped. Confirmed for both voiceless and voiced consonants (/p t s k l/ all attested).
+      examples: "/dwekhal/ → duekkal \"last\" (k+h → kk)\n/kothwu/ → kottwu \"cellphone\" (t+h → tt)\n/beshi/ → bessi \"item\" (s+h → ss)\n/tumxelho/ → tumkhello \"managing\" (l+h → ll)"
+
+morphology:
+  slots:
+    nominal: [numeral, classifier, STEM, plural, case, semanticParticle]
+    predicate: [negation, STEM, tense, force, evidential, conjunction]
+  stems:
+    - { slot_class: nominal, word_class: [noun, pronoun, quantifier, demonstrative, interrogative, numeral] }
+    - { slot_class: predicate, word_class: [verb, adjective, predicate] }
+    - { slot_class: both, word_class: [modal, adverb, particle, conjunction, negation] }
+  affixes:
+    - { role: negation, position: prefix, entry_key_prefix: p_neg }
+    - { role: negation, position: prefix, word_class: [negation] }
+    - { role: case, position: suffix, entry_key: [p_top, p_nom, p_acc, p_dat, p_gen, p_loc, p_ins] }
+    - { role: case, position: suffix, word_class: [case marker] }
+    - { role: semanticParticle, position: suffix, entry_key: [p_also, p_only, p_with] }
+    - { role: semanticParticle, position: suffix, word_class: [semantic particle] }
+    - { role: conjunction, position: suffix, entry_key: [p_conj, p_disj, p_cause, p_cond, p_temp] }
+    - { role: conjunction, position: suffix, word_class: [conjunction] }
+    - { role: tense, position: suffix, entry_key_prefix: t_ }
+    - { role: tense, position: suffix, word_class: [tense marker] }
+    - { role: force, position: suffix, entry_key_prefix: f_ }
+    - { role: force, position: suffix, word_class: [force marker] }
+    - { role: evidential, position: suffix, entry_key_prefix: e_ }
+    - { role: evidential, position: suffix, word_class: [evidential] }
+    - { role: classifier, position: prefix, entry_key: [q_class] }
+    - { role: classifier, position: prefix, word_class: [classifier] }
+  rules:
+    vowels: aeiou
+    glides: jw
+    digraphs: [ng, ts]
+    reduplication: enabled
+    gemination: enabled
+    harmony: disabled
+    elision: disabled
+    lowering: disabled
+    gemination_rewrite: { from: ng, to: ngg }
+
+phonotactics:
+  syllable_templates:
+    - name: maximal
+      notation: (C)(A)V(C′)
+      weight: 1
+      slots:
+        - { class: C, role: nucleus, optional: true }
+        - { class: A, role: onset, optional: true }
+        - { class: V, role: nucleus, optional: false }
+        - { class: C, role: coda, optional: true, phonemes: [p, t, k, m, n, ŋ, l, s] }
+  constraints:
+    - V followed by V not allowed
+    - A followed by A not allowed
+    - non-codas cannot be a coda
+    - h and x followed by liquids not allowed
+    - ts and ng followed by non-w approximants not allowed
+    - /q/ followed by front vowels not allowed
+    - /q/ followed by A not allowed
+
+word_classes:
+  adjective:
+    kind: open
+  noun:
+    kind: open
+    inflects_for: [case, number]
+  predicate:
+    kind: open
+    inflects_for: [evidential, force, tense]
+  verb:
+    kind: open
+    inflects_for: [evidential, force, tense]
+  case marker:
+    kind: closed
+    description: Occupies the case slot on a nominal.
+    inflects_for: [case]
+  semantic particle:
+    kind: closed
+    description: Occupies the case slot instead of a case marker.
+    inflects_for: [semantic_particle]
+  tense marker:
+    kind: closed
+    inflects_for: [tense]
+  force marker:
+    kind: closed
+    inflects_for: [force]
+  evidential:
+    kind: closed
+    description: A final coda rather than a full morpheme.
+    inflects_for: [evidential]
+  relativizer:
+    kind: closed
+    description: All three do modifier duty; a modifier is a relativized predicate.
+    inflects_for: [tense]
+  pronoun:
+    kind: closed
+    inflects_for: [number, person]
+  demonstrative:
+    kind: closed
+    inflects_for: [deixis]
+  particle:
+    kind: closed
+  numeral:
+    kind: closed
+  classifier:
+    kind: closed
+    description: One general classifier; the system is deferred upstream.
+  negation:
+    kind: closed
+    description: A prefix on the predicate word, with three allomorphs.
+  adverb:
+    kind: open
+    description: Manner, time and sequence modifiers (key prefix adv_).
+  quantifier:
+    kind: closed
+    description: any / each / every / none / some (key prefix d_).
+  modal:
+    kind: closed
+    description: Ability, desire, necessity, obligation, permission, potential, recommendation (key prefix g_).
+  conjunction:
+    kind: closed
+    description: "Coordinators and subordinators: and, or, but, because, if, when (key prefix p_)."
+  interrogative:
+    kind: closed
+    description: "Question words: who, what, which, when, where, why, how (key prefix qu_)."
+
+categories:
+  person:
+    values: [first, second, third]
+  number:
+    values: [singular, plural, paucal]
+    # paucal: reduplication without numeral+counter
+  case:
+    values: [topic, nominative, accusative, dative, genitive, locative, instrumental]
+  semantic_particle:
+    values: [only, with, too]
+    description: Occupies the case slot instead of a case marker; with the case cue gone the DP is expected in prototypical word order.
+  tense:
+    values: [past, present, future]
+  force:
+    values: [declarative, interrogative, imperative]
+    # declarative: no form; see meta.missing upstream
+  evidential:
+    values: [direct, indirect, unmarked]
+  deixis:
+    values: [proximal, medial, distal]
+
+lexicon:
+  - { key: a_alittle, lemma: wa, underlying: /wa/, pos: adjective, gloss: a little }
+  - { key: a_alive, lemma: wi, underlying: /wi/, pos: adjective, gloss: alive }
+  - { key: a_alot, lemma: bie, underlying: /bje/, pos: adjective, gloss: alot }
+  - { key: a_bad, lemma: ngap, underlying: /ŋap/, pos: adjective, gloss: bad }
+  - { key: a_beautiful, lemma: ngoro, underlying: /ŋoɾo/, pos: adjective, gloss: beautiful }
+  - { key: a_big, lemma: mwu, underlying: /mwu/, pos: adjective, gloss: big }
+  - { key: a_black, lemma: po, underlying: /po/, pos: adjective, gloss: black }
+  - { key: a_blue, lemma: nu, underlying: /nu/, pos: adjective, gloss: blue }
+  - { key: a_boring, lemma: nikha, underlying: /nixa/, pos: adjective, gloss: boring }
+  - { key: a_bright, lemma: ya, underlying: /ja/, pos: adjective, gloss: bright }
+  - { key: a_cold, lemma: to, underlying: /to/, pos: adjective, gloss: cold }
+  - { key: a_cool, lemma: khui, underlying: /xwi/, pos: adjective, gloss: cool }
+  - { key: a_dark, lemma: go, underlying: /ɡo/, pos: adjective, gloss: dark }
+  - { key: a_dead, lemma: khwu, underlying: /xwu/, pos: adjective, gloss: dead }
+  - { key: a_delicious, lemma: ngwuhol, underlying: /ŋwuhol/, pos: adjective, gloss: delicious }
+  - { key: a_dim, lemma: gkok, underlying: /qok/, pos: adjective, gloss: dim }
+  - { key: a_fast, lemma: tsi, underlying: /t͡si/, pos: adjective, gloss: fast }
+  - { key: a_few, lemma: muik, underlying: /mwik/, pos: adjective, gloss: few }
+  - { key: a_good, lemma: tsin, underlying: /t͡sin/, pos: adjective, gloss: good }
+  - { key: a_green, lemma: gung, underlying: /ɡuŋ/, pos: adjective, gloss: green }
+  - { key: a_grey, lemma: ro, underlying: /ɾo/, pos: adjective, gloss: grey }
+  - { key: a_heavy, lemma: mo, underlying: /mo/, pos: adjective, gloss: heavy }
+  - { key: a_high, lemma: ging, underlying: /ɡiŋ/, gloss: high }
+  - { key: a_hot, lemma: gko, underlying: /qo/, pos: adjective, gloss: hot }
+  - { key: a_interesting, lemma: kumiu, underlying: /kumju/, pos: adjective, gloss: interesting }
+  - { key: a_light, lemma: pyil, underlying: /pjil/, pos: adjective, gloss: light }
+  - { key: a_like, lemma: pyil, underlying: /pjil/, pos: adjective, gloss: like }
+  - { key: a_long, lemma: puo, underlying: /pwo/, pos: adjective, gloss: long }
+  - { key: a_low, lemma: wit, underlying: /wit/ }
+  - { key: a_many, lemma: tsua, underlying: /t͡swa/, pos: adjective, gloss: many }
+  - { key: a_narrow, lemma: nwu, underlying: /nwu/, pos: adjective, gloss: narrow }
+  - { key: a_new, lemma: mio, underlying: /mjo/, pos: adjective, gloss: new }
+  - { key: a_notlong, lemma: gi, underlying: /ɡi/, pos: adjective, gloss: notlong }
+  - { key: a_nottall, lemma: ru, underlying: /ɾu/, pos: adjective, gloss: nottall }
+  - { key: a_old, lemma: khuepue, underlying: /xwepwe/, pos: adjective, gloss: old }
+  - { key: a_old_age, lemma: dinyo, underlying: /dinjo/, pos: adjective, gloss: old age }
+  - { key: a_orange, lemma: he, underlying: /he/, pos: adjective, gloss: orange }
+  - { key: a_pink, lemma: tso, underlying: /t͡so/, pos: adjective, gloss: pink }
+  - { key: a_pretty, lemma: nopkui, underlying: /nopkwi/, pos: adjective, gloss: pretty }
+  - { key: a_purple, lemma: dia, underlying: /dja/, pos: adjective, gloss: purple }
+  - { key: a_red, lemma: gue, underlying: /ɡwe/, pos: adjective, gloss: red }
+  - { key: a_slow, lemma: gem, underlying: /ɡem/, pos: adjective, gloss: slow }
+  - { key: a_small, lemma: nguik, underlying: /ŋwik/, pos: adjective, gloss: small }
+  - { key: a_strong, lemma: ro, underlying: /ɾo/, pos: adjective, gloss: strong }
+  - { key: a_tall, lemma: kui, underlying: /kwi/, pos: adjective, gloss: tall }
+  - { key: a_tasteless, lemma: rungge, underlying: /ɾuŋe/, pos: adjective, gloss: tasteless }
+  - { key: a_thick, lemma: bi, underlying: /bi/, pos: adjective, gloss: thick }
+  - { key: a_thin, lemma: hua, underlying: /hwa/, pos: adjective, gloss: thin }
+  - { key: a_ugly, lemma: bangges, underlying: /baŋes/, pos: adjective, gloss: ugly }
+  - { key: a_warm, lemma: tsuo, underlying: /t͡swo/, pos: adjective, gloss: warm }
+  - { key: a_weak, lemma: sie, underlying: /sje/, pos: adjective, gloss: weak }
+  - { key: a_white, lemma: ku, underlying: /ku/, pos: adjective, gloss: white }
+  - { key: a_wide, lemma: yu, underlying: /ju/, pos: adjective, gloss: wide }
+  - { key: a_yellow, lemma: buo, underlying: /bwo/, pos: adjective, gloss: yellow }
+  - { key: a_young, lemma: himia, underlying: /himja/, pos: adjective, gloss: young }
+  - { key: adv_final, lemma: minya, underlying: /minja/, pos: adverb, gloss: final }
+  - { key: adv_first, lemma: wolu, underlying: /wolu/, pos: adverb, gloss: first }
+  - { key: adv_following, lemma: songgi, underlying: /soŋi/, pos: adverb, gloss: following }
+  - { key: adv_last, lemma: duekkal, underlying: /dwekhal/, pos: adverb, gloss: last }
+  - { key: adv_later, lemma: yentui, underlying: /jentwi/, pos: adverb, gloss: later }
+  - { key: adv_more, lemma: ra, underlying: /ɾa/ }
+  - { key: adv_next, lemma: hokhi, underlying: /hoxi/, pos: adverb, gloss: next }
+  - { key: adv_previous, lemma: mopui, underlying: /mopwi/, pos: adverb, gloss: previous }
+  - { key: adv_right, lemma: tsok, underlying: /t͡sok/, pos: adverb, gloss: right (immediately) }
+  - { key: d_any, lemma: kut, underlying: /kut/, pos: quantifier, gloss: any }
+  - { key: d_dst, lemma: tsu, underlying: /t͡su/, pos: demonstrative, gloss: that (distal) }
+  - { key: d_each, lemma: nos, underlying: /nos/, pos: quantifier, gloss: each }
+  - { key: d_every, lemma: dong, underlying: /doŋ/, pos: quantifier, gloss: every }
+  - { key: d_med, lemma: nge, underlying: /ŋe/, pos: demonstrative, gloss: that (medial) }
+  - { key: d_no, lemma: tsek, underlying: /t͡sek/, pos: quantifier, gloss: none }
+  - { key: d_prx, lemma: tse, underlying: /t͡se/, pos: demonstrative, gloss: this (proximal) }
+  - { key: d_some, lemma: guk, underlying: /ɡuk/, pos: quantifier, gloss: some }
+  - { key: e_dir, lemma: t, underlying: /t/, pos: evidential, gloss: direct evidential }
+  - { key: e_epi, lemma: li, underlying: /li/, pos: evidential, gloss: epistemic evidential }
+  - { key: e_ind, lemma: n, underlying: /n/, pos: evidential, gloss: indirect evidential }
+  - { key: e_mir, lemma: wam, underlying: /wam/, pos: evidential, gloss: mirative }
+  - { key: e_rel, lemma: ng, underlying: /ŋ/, pos: evidential, gloss: relativizer }
+  - { key: f_com, lemma: se, underlying: /se/, pos: force marker, gloss: commissive }
+  - { key: f_imp, lemma: la, underlying: /la/, pos: force marker, gloss: imperative }
+  - { key: f_int, lemma: ke, underlying: /ke/, pos: force marker, gloss: interrogative }
+  - { key: g_ability, lemma: ye, underlying: /je/, pos: noun, gloss: can (ability) }
+  - { key: g_command, lemma: tsang, gloss: command }
+  - { key: g_desire, lemma: ti, underlying: /ti/, pos: noun, gloss: want (desire) }
+  - { key: g_direction, lemma: puk, underlying: /puk/, pos: noun, gloss: direction }
+  - { key: g_language, lemma: nik, underlying: /nik/ }
+  - { key: g_necessity, lemma: ri, underlying: /ɾi/, pos: noun, gloss: must (necessity) }
+  - { key: g_obligation, lemma: ru, underlying: /ɾu/, pos: noun, gloss: should (obligation) }
+  - { key: g_permission, lemma: gko, underlying: /qo/, pos: noun, gloss: may (permission) }
+  - { key: g_potential, lemma: di, underlying: /di/, pos: noun, gloss: might (potential) }
+  - { key: g_question, lemma: mo, underlying: /mo/, pos: noun, gloss: question (particle) }
+  - { key: g_recommendation, lemma: pi, underlying: /pi/, pos: noun, gloss: ought (recommendation) }
+  - { key: g_time, lemma: ga, underlying: /ɡa/ }
+  - { key: n_0, lemma: dang, underlying: /daŋ/, pos: noun, gloss: "0" }
+  - { key: n_1, lemma: me, underlying: /me/, pos: noun, gloss: "1" }
+  - { key: n_10, lemma: wit, underlying: /wit/, pos: noun, gloss: 10 }
+  - { key: n_10-gon, lemma: wittsin, underlying: /witt͡sin/, pos: noun, gloss: 10-gon }
+  - { key: n_100, lemma: yu, underlying: /ju/, pos: noun, gloss: 100 }
+  - { key: n_1000, lemma: tsip, underlying: /t͡sip/, pos: noun, gloss: 1000 }
+  - { key: n_11-gon, lemma: mewittsin, underlying: /mewitt͡sin/, pos: noun, gloss: 11-gon }
+  - { key: n_12-gon, lemma: rawittsin, underlying: /ɾawitt͡sin/, pos: noun, gloss: 12-gon }
+  - { key: n_1pl, lemma: lu, underlying: /lu/, pos: noun, gloss: 1PL }
+  - { key: n_1sg, lemma: po, underlying: /po/, pos: noun, gloss: 1SG }
+  - { key: n_2, lemma: ra, underlying: /ɾa/, pos: noun, gloss: "2" }
+  - { key: n_2pl, lemma: tso, underlying: /t͡so/, pos: noun, gloss: 2PL }
+  - { key: n_2sg, lemma: ta, underlying: /ta/, pos: noun, gloss: 2SG }
+  - { key: n_3, lemma: hap, underlying: /hap/, pos: noun, gloss: "3" }
+  - { key: n_3pl, lemma: pa, underlying: /pa/, pos: noun, gloss: 3PL }
+  - { key: n_3sg, lemma: so, underlying: /so/, pos: noun, gloss: 3SG }
+  - { key: n_4, lemma: mol, underlying: /mol/, pos: noun, gloss: "4" }
+  - { key: n_5, lemma: tsim, underlying: /t͡sim/, pos: noun, gloss: "5" }
+  - { key: n_6, lemma: sum, underlying: /sum/, pos: noun, gloss: "6" }
+  - { key: n_7, lemma: nul, underlying: /nul/, pos: noun, gloss: "7" }
+  - { key: n_8, lemma: ngat, underlying: /ŋat/, pos: noun, gloss: "8" }
+  - { key: n_9, lemma: bes, underlying: /bes/, pos: noun, gloss: nine }
+  - { key: n_9-gon, lemma: bestsin, underlying: /best͡sin/, pos: noun, gloss: nonagon }
+  - { key: n_ability, lemma: kieskom, underlying: /kjeskom/, pos: noun, gloss: ability }
+  - { key: n_above, lemma: dul, underlying: /dul/, pos: noun, gloss: above }
+  - { key: n_accomplishment, lemma: gugias, underlying: /ɡuɡjas/, pos: noun, gloss: accomplishment }
+  - { key: n_achievement, lemma: suotua, underlying: /swotwa/, pos: noun, gloss: achievement }
+  - { key: n_acting, lemma: rotibiek, underlying: /ɾotibjek/, pos: noun, gloss: acting }
+  - { key: n_action, lemma: bit, underlying: /bit/, pos: noun, gloss: action }
+  - { key: n_activity, lemma: dakias, underlying: /dakjas/, pos: noun, gloss: activity }
+  - { key: n_actor, lemma: rotibiektui, underlying: /ɾotibjektwi/, pos: noun, gloss: actor }
+  - { key: n_afternoon, lemma: kiesui, underlying: /kjeswi/, pos: noun, gloss: afternoon }
+  - { key: n_air, lemma: tsa, underlying: /t͡sa/, pos: noun, gloss: air }
+  - { key: n_airplane, lemma: dekwu, underlying: /dekwu/, pos: noun, gloss: airplane }
+    # /kw/V becomes <gw>
+  - { key: n_angry, lemma: tuidying, underlying: /twidjiŋ/, pos: noun, gloss: angry }
+  - { key: n_animal, lemma: tsimuo, underlying: /t͡simwo/, pos: noun, gloss: animal }
+  - { key: n_animal0, lemma: tu, underlying: /tu/, pos: noun, gloss: animal0 }
+  - { key: n_animal1, lemma: khe, underlying: /xe/, pos: noun, gloss: animal1 }
+  - { key: n_animal2, lemma: ngikyi, underlying: /ŋikji/, pos: noun, gloss: animal2 }
+  - { key: n_animal3, lemma: gko, underlying: /qo/, pos: noun, gloss: animal3 }
+  - { key: n_animal4, lemma: nui, underlying: /nwi/, pos: noun, gloss: animal4 }
+  - { key: n_animal5, lemma: ge, underlying: /ɡe/, pos: noun, gloss: animal5 }
+  - { key: n_animal6, lemma: de, underlying: /de/, pos: noun, gloss: animal6 }
+  - { key: n_animal7, lemma: khyitwu, underlying: /xjitwu/, pos: noun, gloss: animal7 }
+  - { key: n_ankle, lemma: royunwu, underlying: /ɾojunwu/, pos: noun, gloss: ankle }
+  - { key: n_apartment, lemma: sumie, underlying: /sumje/, pos: noun, gloss: apartment }
+  - { key: n_apologetic, lemma: yenus, underlying: /jenus/, pos: noun, gloss: apologetic }
+  - { key: n_apology, lemma: tswuti, underlying: /t͡swuti/, pos: noun, gloss: apology }
+  - { key: n_appearance, lemma: win, underlying: /win/, pos: noun, gloss: appearance }
+  - { key: n_apple, lemma: tagup, underlying: /taɡup/, pos: noun, gloss: apple }
+  - { key: n_april, lemma: moltua, underlying: /moltwa/, pos: noun, gloss: april }
+  - { key: n_arm, lemma: mo, underlying: /mo/, pos: noun, gloss: arm }
+  - { key: n_around, lemma: ngil, underlying: /ŋil/, pos: noun, gloss: around }
+  - { key: n_art, lemma: tulisi, underlying: /tulisi/, pos: noun, gloss: art }
+  - { key: n_artist, lemma: tulisitui, underlying: /tulisitwi/, pos: noun, gloss: artist }
+  - { key: n_august, lemma: ngattua, underlying: /ŋattwa/, pos: noun, gloss: august }
+  - { key: n_bag, lemma: bak, underlying: /bak/, pos: noun, gloss: bag }
+  - { key: n_banana, lemma: tidi, underlying: /tidi/, pos: noun, gloss: banana }
+  - { key: n_bank, lemma: huptaktsa, underlying: /huptakt͡sa/, pos: noun, gloss: bank }
+  - { key: n_bar, lemma: dopuingge, underlying: /dopwiŋe/, pos: noun, gloss: bar }
+  - { key: n_beach, lemma: gu, underlying: /ɡu/, pos: noun, gloss: beach }
+  - { key: n_bed, lemma: tsimde, underlying: /t͡simde/, pos: noun, gloss: bed }
+  - { key: n_beef, lemma: lepgkusdu, underlying: /lepqusdu/, pos: noun, gloss: beef }
+  - { key: n_behind, lemma: yap, underlying: /jap/, pos: noun, gloss: behind }
+  - { key: n_belief, lemma: mip, underlying: /mip/, pos: noun, gloss: belief }
+  - { key: n_below, lemma: tis, underlying: /tis/, pos: noun, gloss: below }
+  - { key: n_belt, lemma: littiek, underlying: /lithjek/, pos: noun, gloss: belt }
+  - { key: n_beside, lemma: hik, underlying: /hik/, pos: noun, gloss: beside }
+  - { key: n_bicycle, lemma: petuegi, underlying: /petweɡi/, pos: noun, gloss: bicycle }
+  - { key: n_bird, lemma: hui, underlying: /hwi/, pos: noun, gloss: bird }
+  - { key: n_bird_meat, lemma: huidu, underlying: /hwidu/, pos: noun, gloss: bird meat }
+  - { key: n_boat, lemma: hu, underlying: /hu/, pos: noun, gloss: boat }
+  - { key: n_body, lemma: khe, underlying: /xe/, pos: noun, gloss: body }
+  - { key: n_book, lemma: syi, underlying: /sji/, pos: noun, gloss: book }
+  - { key: n_bored, lemma: base, underlying: /base/, pos: noun, gloss: bored }
+  - { key: n_box, lemma: wedop, underlying: /wedop/, pos: noun, gloss: box }
+  - { key: n_bread, lemma: tsi, underlying: /t͡si/, pos: noun, gloss: bread }
+  - { key: n_bridge, lemma: puisgibui, underlying: /pwisɡibwi/, pos: noun, gloss: bridge }
+  - { key: n_building, lemma: sunneng, underlying: /sunneŋ/, pos: noun, gloss: building }
+  - { key: n_bus, lemma: degal, underlying: /deɡal/, pos: noun, gloss: bus }
+  - { key: n_butter, lemma: boto, underlying: /boto/, pos: noun, gloss: butter }
+  - { key: n_cafe, lemma: kape, underlying: /kape/, pos: noun, gloss: cafe }
+  - { key: n_calm, lemma: wiyi, underlying: /wiji/, pos: noun, gloss: calm }
+  - { key: n_camera, lemma: khuahu, underlying: /xwahu/, pos: noun, gloss: camera }
+  - { key: n_camp, lemma: yasgu, underlying: /jasɡu/, pos: noun, gloss: camp }
+  - { key: n_canada, lemma: kanada, underlying: /kanada/, pos: noun, gloss: canada }
+  - { key: n_car, lemma: tumkyil, underlying: /tumkjil/, pos: noun, gloss: car }
+  - { key: n_carb0, lemma: nena, underlying: /nena/, pos: noun, gloss: carb0 }
+  - { key: n_carb1, lemma: khiu, underlying: /xju/, pos: noun, gloss: carb1 }
+  - { key: n_carb2, lemma: ken, underlying: /ken/, pos: noun, gloss: carb2 }
+  - { key: n_carb3, lemma: gap, underlying: /ɡap/, pos: noun, gloss: carb3 }
+  - { key: n_carb4, lemma: khungne, underlying: /xuŋne/, pos: noun, gloss: carb4 }
+  - { key: n_carb5, lemma: hi, underlying: /hi/, pos: noun, gloss: carb5 }
+  - { key: n_carb6, lemma: buhe, underlying: /buhe/, pos: noun, gloss: carb6 }
+  - { key: n_carb7, lemma: yakpo, underlying: /jakpo/, pos: noun, gloss: carb7 }
+  - { key: n_career, lemma: khakhemwu, underlying: /xaxemwu/, pos: noun, gloss: career }
+  - { key: n_cat, lemma: mie, underlying: /mje/, pos: noun, gloss: cat }
+  - { key: n_ceiling, lemma: nekhop, underlying: /nexop/, pos: noun, gloss: ceiling }
+  - { key: n_cellphone, lemma: kottwu, underlying: /kothwu/, pos: noun, gloss: cellphone }
+  - { key: n_centimetre, lemma: ro, underlying: /ɾo/, pos: noun, gloss: centimetre }
+  - { key: n_centre, lemma: kiosngon, underlying: /kjosŋon/, pos: noun, gloss: centre }
+  - { key: n_century, lemma: yunggit, underlying: /juŋit/, pos: noun, gloss: century }
+  - { key: n_chair, lemma: rahiu, underlying: /ɾahju/, pos: noun, gloss: chair }
+  - { key: n_chicken, lemma: khu, underlying: /xu/, pos: noun, gloss: chicken }
+  - { key: n_chicken_meat, lemma: khudu, underlying: /xudu/, pos: noun, gloss: chicken meat }
+  - { key: n_china, lemma: tsongguk, underlying: /t͡soŋɡuk/, pos: noun, gloss: china }
+  - { key: n_circle, lemma: ro, underlying: /ɾo/, pos: noun, gloss: circle }
+  - { key: n_city, lemma: khua, underlying: /xwa/, pos: noun, gloss: city }
+  - { key: n_clay, lemma: pwumki, underlying: /pwumki/, pos: noun, gloss: clay }
+  - { key: n_clock, lemma: tuimyima, underlying: /twimjima/, pos: noun, gloss: clock }
+  - { key: n_clothing, lemma: si, underlying: /si/, pos: noun, gloss: clothing }
+  - { key: n_cloud, lemma: piseng, underlying: /piseŋ/, pos: noun, gloss: cloud }
+  - { key: n_coat, lemma: katuanuil, underlying: /katwanwil/, pos: noun, gloss: coat }
+  - { key: n_coffee, lemma: kohi, underlying: /kohi/, pos: noun, gloss: coffee }
+  - { key: n_cold, lemma: tuwong, underlying: /tuwoŋ/, pos: noun, gloss: cold }
+  - { key: n_college, lemma: nedotsuan, underlying: /nedot͡swan/, pos: noun, gloss: college }
+  - { key: n_comfort, lemma: gonpyi, underlying: /ɡonpji/, pos: noun, gloss: comfort }
+  - { key: n_common, lemma: rukhe, underlying: /ɾuxe/, pos: noun, gloss: common }
+  - { key: n_community, lemma: ka, underlying: /ka/, pos: noun, gloss: community }
+  - { key: n_computer, lemma: hanluto, underlying: /hanluto/, pos: noun, gloss: computer }
+  - { key: n_computer_program, lemma: nubiakhyin, underlying: /nubjaxjin/, pos: noun, gloss: computer program }
+  - { key: n_condo, lemma: ngekhi, underlying: /ŋexi/, pos: noun, gloss: condo }
+  - { key: n_copper, lemma: puekhogue, underlying: /pwexoɡwe/, pos: noun, gloss: copper }
+  - { key: n_corner, lemma: gie, underlying: /ɡje/, pos: noun, gloss: corner }
+  - { key: n_corridor, lemma: kuawi, underlying: /kwawi/, pos: noun, gloss: corridor }
+  - { key: n_cost, lemma: langui, underlying: /laŋ.wi/, pos: noun, gloss: cost }
+  - { key: n_court, lemma: ngoso, underlying: /ŋoso/, pos: noun, gloss: court }
+  - { key: n_cow, lemma: lepgkus, underlying: /lepqus/, pos: noun, gloss: cow }
+  - { key: n_danger, lemma: bappiu, underlying: /baphju/, pos: noun, gloss: danger }
+  - { key: n_dark, lemma: letie, underlying: /letje/, pos: noun, gloss: dark }
+  - { key: n_date, lemma: nuenu, underlying: /nwenu/, pos: noun, gloss: date }
+  - { key: n_day, lemma: siu, underlying: /sju/, pos: noun, gloss: day }
+  - { key: n_daytime, lemma: towa, underlying: /towa/, pos: noun, gloss: daytime }
+  - { key: n_decade, lemma: witngit, underlying: /witŋit/, pos: noun, gloss: decade }
+  - { key: n_december, lemma: rawittua, underlying: /ɾawittwa/, pos: noun, gloss: december }
+  - { key: n_delicacy0, lemma: mepuska, underlying: /mepuska/, pos: noun, gloss: delicacy0 }
+  - { key: n_delicacy1, lemma: mieremui, underlying: /mjeɾemwi/, pos: noun, gloss: delicacy1 }
+  - { key: n_delicacy2, lemma: sedyisias, underlying: /sedjisjas/, pos: noun, gloss: delicacy2 }
+  - { key: n_delicacy3, lemma: minggilung, underlying: /miŋiluŋ/, pos: noun, gloss: delicacy3 }
+  - { key: n_desire, lemma: buogiu, underlying: /bwoɡju/, pos: noun, gloss: desire }
+  - { key: n_desk, lemma: ngopa, underlying: /ŋopa/, pos: noun, gloss: desk }
+  - { key: n_diamond, lemma: weguoyek, underlying: /weɡwojek/, pos: noun, gloss: diamond }
+  - { key: n_digit, lemma: komui, underlying: /komwi/, pos: noun, gloss: digit }
+  - { key: n_dimension, lemma: khari, underlying: /xaɾi/, pos: noun, gloss: dimension }
+  - { key: n_direction, lemma: khyipuk, underlying: /xjipuk/, pos: noun, gloss: direction }
+  - { key: n_dish0, lemma: nuelin, underlying: /nwelin/, pos: noun, gloss: dish0 }
+  - { key: n_dish1, lemma: kemwunan, underlying: /kemwunan/, pos: noun, gloss: dish1 }
+  - { key: n_dish2, lemma: miehim, underlying: /mjehim/, pos: noun, gloss: dish2 }
+  - { key: n_dish3, lemma: mesgkogi, underlying: /mesqoɡi/, pos: noun, gloss: dish3 }
+  - { key: n_dish4, lemma: wumabes, underlying: /wumabes/, pos: noun, gloss: dish4 }
+  - { key: n_dish5, lemma: mopepon, underlying: /mopepon/, pos: noun, gloss: dish5 }
+  - { key: n_dish6, lemma: hionat, underlying: /hjonat/, pos: noun, gloss: dish6 }
+  - { key: n_dish7, lemma: niutse, underlying: /njut͡se/, pos: noun, gloss: dish7 }
+  - { key: n_doctor, lemma: huosua, underlying: /hwoswa/, pos: noun, gloss: doctor }
+  - { key: n_dog, lemma: me, underlying: /me/, pos: noun, gloss: dog }
+  - { key: n_dot, lemma: tsa, underlying: /t͡sa/, pos: noun, gloss: dot }
+  - { key: n_down, lemma: khok, underlying: /xok/, pos: noun, gloss: down }
+  - { key: n_dress, lemma: mukne, underlying: /mukne/, pos: noun, gloss: dress }
+  - { key: n_driving, lemma: bappiu, underlying: /baphju/, pos: noun, gloss: driving }
+  - { key: n_durian, lemma: ba, underlying: /ba/, pos: noun, gloss: durian }
+  - { key: n_dust, lemma: tideng, underlying: /tideŋ/, pos: noun, gloss: dust }
+  - { key: n_east, lemma: ta, underlying: /ta/, pos: noun, gloss: east }
+  - { key: n_edge, lemma: heng, underlying: /heŋ/, pos: noun, gloss: edge }
+  - { key: n_elbow, lemma: moyunwu, underlying: /mojunwu/, pos: noun, gloss: elbow }
+  - { key: n_embarrass, lemma: tsesgo, underlying: /t͡sesɡo/ }
+  - { key: n_end, lemma: got, underlying: /ɡot/ }
+  - { key: n_england, lemma: yinglan, underlying: /jiŋlan/, pos: noun, gloss: england }
+  - { key: n_evening, lemma: lokhi, underlying: /loxi/, pos: noun, gloss: evening }
+  - { key: n_exam, lemma: diemek, underlying: /dje.mek/, pos: noun, gloss: exam }
+  - { key: n_excited, lemma: khuala, underlying: /xwala/, pos: noun, gloss: excited }
+  - { key: n_exterior, lemma: buk, underlying: /buk/, pos: noun, gloss: exterior }
+  - { key: n_face, lemma: ngibe, underlying: /ŋibe/ }
+  - { key: n_fame, lemma: muokup, underlying: /mwokup/, pos: noun, gloss: fame }
+  - { key: n_fan, lemma: biegiuwing, underlying: /bjeɡjuwiŋ/, pos: noun, gloss: fan }
+  - { key: n_farm, lemma: desing, underlying: /desiŋ/, pos: noun, gloss: farm }
+  - { key: n_february, lemma: ratua, underlying: /ɾatwa/, pos: noun, gloss: february }
+  - { key: n_feeling, lemma: ngopuo, underlying: /ŋopwo/, pos: noun, gloss: feeling }
+  - { key: n_finger, lemma: hekomui, underlying: /hekomwi/, pos: noun, gloss: finger }
+  - { key: n_fire, lemma: yu, underlying: /ju/, pos: noun, gloss: fire }
+  - { key: n_fish, lemma: wu, underlying: /wu/, pos: noun, gloss: fish }
+  - { key: n_fish_meat, lemma: wudu, underlying: /wudu/, pos: noun, gloss: fish meat }
+  - { key: n_floor, lemma: totie, underlying: /totje/, pos: noun, gloss: floor }
+  - { key: n_flower, lemma: khias, underlying: /xjas/, pos: noun, gloss: flower }
+  - { key: n_food, lemma: engtsik, underlying: /eŋt͡sik/, pos: noun, gloss: food }
+  - { key: n_foot, lemma: ro, underlying: /ɾo/, pos: noun, gloss: foot }
+  - { key: n_foot(measure), lemma: pa, underlying: /pa/, pos: noun, gloss: foot(measure) }
+  - { key: n_forest, lemma: yi, underlying: /ji/, pos: noun, gloss: forest }
+  - { key: n_friday, lemma: tsimsiu, underlying: /t͡simsju/, pos: noun, gloss: friday }
+  - { key: n_friend, lemma: nope, underlying: /nope/, pos: noun, gloss: friend }
+  - { key: n_front, lemma: gal, underlying: /ɡal/, pos: noun, gloss: front }
+  - { key: n_fruit, lemma: swuri, underlying: /swuɾi/ }
+  - { key: n_fruit0, lemma: khonggo, underlying: /xoŋo/, pos: noun, gloss: fruit0 }
+  - { key: n_fruit1, lemma: niugwu, underlying: /njuɡwu/, pos: noun, gloss: fruit1 }
+  - { key: n_fruit2, lemma: hema, underlying: /hema/, pos: noun, gloss: fruit2 }
+  - { key: n_fruit3, lemma: tsui, underlying: /t͡swi/, pos: noun, gloss: fruit3 }
+  - { key: n_fruit4, lemma: sugio, underlying: /suɡjo/, pos: noun, gloss: fruit4 }
+  - { key: n_fruit5, lemma: hil, underlying: /hil/, pos: noun, gloss: fruit5 }
+  - { key: n_fruit6, lemma: nugio, underlying: /nuɡjo/, pos: noun, gloss: fruit6 }
+  - { key: n_fruit7, lemma: kyinyi, underlying: /kjinji/, pos: noun, gloss: fruit7 }
+  - { key: n_germany, lemma: dotslang, underlying: /dot͡slaŋ/, pos: noun, gloss: germany }
+  - { key: n_glass, lemma: ngokho, underlying: /ŋoxo/, pos: noun, gloss: glass }
+  - { key: n_glasses, lemma: kokhengwu, underlying: /koxeŋwu/, pos: noun, gloss: glasses }
+  - { key: n_gold, lemma: miedi, underlying: /mjedi/, pos: noun, gloss: gold }
+  - { key: n_grass, lemma: dianem, underlying: /djanem/, pos: noun, gloss: grass }
+  - { key: n_ground, lemma: tietsue, underlying: /tjet͡swe/, pos: noun, gloss: ground }
+  - { key: n_guitar, lemma: gita, underlying: /ɡita/ }
+  - { key: n_hair, lemma: kuguok, underlying: /kuɡwok/, pos: noun, gloss: hair }
+  - { key: n_half, lemma: tueng, underlying: /tweŋ/, pos: noun, gloss: half }
+  - { key: n_hand, lemma: he, underlying: /he/, pos: noun, gloss: hand }
+  - { key: n_happy, lemma: topi, underlying: /topi/, pos: noun, gloss: happy }
+  - { key: n_hat, lemma: nontsuongsua, underlying: /nont͡swoŋswa/, pos: noun, gloss: hat }
+  - { key: n_head, lemma: sat, underlying: /sat/, pos: noun, gloss: head }
+  - { key: n_health, lemma: tyine, underlying: /tjine/, pos: noun, gloss: health }
+  - { key: n_heat, lemma: tsop, underlying: /t͡sop/, pos: noun, gloss: heat }
+  - { key: n_height, lemma: de, underlying: /de/, pos: noun, gloss: height }
+  - { key: n_heptagon, lemma: nultsin, underlying: /nult͡sin/, pos: noun, gloss: heptagon }
+  - { key: n_hexagon, lemma: sumtsin, underlying: /sumt͡sin/, pos: noun, gloss: hexagon }
+  - { key: n_hill, lemma: si, underlying: /si/, pos: noun, gloss: hill }
+  - { key: n_hole, lemma: taki, underlying: /taki/, pos: noun, gloss: hole }
+  - { key: n_home, lemma: ngatsak, underlying: /ŋat͡sak/, pos: noun, gloss: home }
+  - { key: n_horse, lemma: sel, underlying: /sel/, pos: noun, gloss: horse }
+  - { key: n_hospital, lemma: luhuolo, underlying: /luhwolo/, pos: noun, gloss: hospital }
+  - { key: n_hotel, lemma: buisyi, underlying: /bwisji/, pos: noun, gloss: hotel }
+  - { key: n_house, lemma: kali, underlying: /kali/, pos: noun, gloss: house }
+  - { key: n_ice, lemma: pui, underlying: /pwi/, pos: noun, gloss: ice }
+  - { key: n_image, lemma: pikhial, underlying: /pixjal/, pos: noun, gloss: image }
+  - { key: n_inch, lemma: muin, underlying: /mwin/, pos: noun, gloss: inch }
+  - { key: n_ingredient0, lemma: tsonggang, underlying: /t͡soŋaŋ/, pos: noun, gloss: ingredient0 }
+  - { key: n_ingredient1, lemma: nguinyo, underlying: /ŋwinjo/, pos: noun, gloss: ingredient1 }
+  - { key: n_ingredient2, lemma: swune, underlying: /swune/, pos: noun, gloss: ingredient2 }
+  - { key: n_ingredient3, lemma: piunbete, underlying: /pjunbete/, pos: noun, gloss: ingredient3 }
+  - { key: n_ingredient4, lemma: munggol, underlying: /muŋol/, pos: noun, gloss: ingredient4 }
+  - { key: n_ingredient5, lemma: gekhioniu, underlying: /ɡexjonju/, pos: noun, gloss: ingredient5 }
+  - { key: n_ingredient6, lemma: dunngwu, underlying: /dunŋwu/, pos: noun, gloss: ingredient6 }
+  - { key: n_ingredient7, lemma: nuiko, underlying: /nwiko/, pos: noun, gloss: ingredient7 }
+  - { key: n_injury, lemma: wotgo, underlying: /wotɡo/, pos: noun, gloss: injury }
+  - { key: n_inside, lemma: lengtui, underlying: /leŋtwi/, pos: noun, gloss: inside }
+  - { key: n_interior, lemma: lus, underlying: /lus/, pos: noun, gloss: interior }
+  - { key: n_island, lemma: du, underlying: /du/, pos: noun, gloss: island }
+  - { key: n_item, lemma: bessi, underlying: /beshi/, pos: noun, gloss: item }
+  - { key: n_jacket, lemma: ngidui, underlying: /ŋidwi/, pos: noun, gloss: jacket }
+  - { key: n_january, lemma: metua, underlying: /metwa/, pos: noun, gloss: january }
+  - { key: n_japan, lemma: ngihon, underlying: /ŋihon/, pos: noun, gloss: japan }
+  - { key: n_joint, lemma: yunwu, underlying: /junwu/, pos: noun, gloss: joint }
+  - { key: n_july, lemma: nultua, underlying: /nultwa/, pos: noun, gloss: july }
+  - { key: n_june, lemma: sumtua, underlying: /sumtwa/, pos: noun, gloss: june }
+  - { key: n_keyboard, lemma: wewagak, underlying: /wewaɡak/, pos: noun, gloss: keyboard }
+  - { key: n_kilogram, lemma: re, underlying: /ɾe/, pos: noun, gloss: kilogram }
+  - { key: n_knee, lemma: hueyunwu, underlying: /hwejunwu/, pos: noun, gloss: knee }
+  - { key: n_knife, lemma: kal, underlying: /kal/, pos: noun, gloss: knife }
+  - { key: n_korea, lemma: hangguk, underlying: /haŋuk/, pos: noun, gloss: korea }
+  - { key: n_lake, lemma: hot, underlying: /hot/, pos: noun, gloss: lake }
+  - { key: n_lamp, lemma: kumtio, underlying: /kumtjo/, pos: noun, gloss: lamp }
+  - { key: n_laptop, lemma: kuakhoke, underlying: /kwaxoke/, pos: noun, gloss: laptop }
+  - { key: n_law, lemma: teye, underlying: /teje/, pos: noun, gloss: law }
+  - { key: n_lawyer, lemma: teyetui, underlying: /tejetwi/, pos: noun, gloss: lawyer }
+  - { key: n_leaf, lemma: buip, underlying: /bwip/, pos: noun, gloss: leaf }
+  - { key: n_left, lemma: tsepyi, underlying: /t͡sepji/, pos: noun, gloss: left }
+  - { key: n_leg, lemma: hue, underlying: /hwe/, pos: noun, gloss: leg }
+  - { key: n_legume0, lemma: yomuo, underlying: /jomwo/, pos: noun, gloss: legume0 }
+  - { key: n_legume1, lemma: khuetsi, underlying: /xwet͡si/, pos: noun, gloss: legume1 }
+  - { key: n_legume2, lemma: guetmi, underlying: /ɡwetmi/, pos: noun, gloss: legume2 }
+  - { key: n_legume3, lemma: nunes, underlying: /nunes/, pos: noun, gloss: legume3 }
+  - { key: n_legume4, lemma: nokmwupo, underlying: /nokmwupo/, pos: noun, gloss: legume4 }
+  - { key: n_legume5, lemma: sobemin, underlying: /sobemin/, pos: noun, gloss: legume5 }
+  - { key: n_legume6, lemma: hekokhen, underlying: /hekoxen/, pos: noun, gloss: legume6 }
+  - { key: n_legume7, lemma: nguingge, underlying: /ŋwiŋe/, pos: noun, gloss: legume7 }
+  - { key: n_library, lemma: tuotu, underlying: /twotu/, pos: noun, gloss: library }
+  - { key: n_light, lemma: syipa, underlying: /sjipa/, pos: noun, gloss: light }
+  - { key: n_line, lemma: tam, underlying: /tam/, pos: noun, gloss: line }
+  - { key: n_lion, lemma: dyimie, underlying: /djimje/, pos: noun, gloss: lion }
+  - { key: n_location, lemma: pakuon, underlying: /pakwon/, pos: noun, gloss: location }
+  - { key: n_makeup, lemma: kiari, underlying: /kjaɾi/, pos: noun, gloss: makeup }
+  - { key: n_manager, lemma: tumkhellotui, underlying: /tumxelhotwi/, pos: noun, gloss: manager }
+  - { key: n_managing, lemma: tumkhello, underlying: /tumxelho/, pos: noun, gloss: managing }
+  - { key: n_mango, lemma: "no", underlying: /no/, pos: noun, gloss: mango }
+  - { key: n_march, lemma: haptua, underlying: /haptwa/, pos: noun, gloss: march }
+  - { key: n_market, lemma: ponkhanhel, underlying: /ponxanhel/, pos: noun, gloss: market }
+  - { key: n_material, lemma: nuikiu, underlying: /nwikju/, pos: noun, gloss: material }
+  - { key: n_may, lemma: tsimtua, underlying: /t͡simtwa/, pos: noun, gloss: may }
+  - { key: n_meaning, lemma: gin, underlying: /ɡin/, pos: noun, gloss: meaning }
+  - { key: n_meat, lemma: du, underlying: /du/, pos: noun, gloss: meat }
+  - { key: n_medicine, lemma: ringniokuis, underlying: /ɾiŋnjokwis/, pos: noun, gloss: medicine }
+  - { key: n_metal, lemma: nang, underlying: /naŋ/, pos: noun, gloss: metal }
+  - { key: n_metre, lemma: bui, underlying: /bwi/, pos: noun, gloss: metre }
+  - { key: n_midnight, lemma: kiosngonsose, underlying: /kjosŋonsose/, pos: noun, gloss: midnight }
+  - { key: n_miliary, lemma: piusiha, underlying: /pjusiha/, pos: noun, gloss: miliary }
+  - { key: n_millennium, lemma: tsipngit, underlying: /t͡sipŋit/, pos: noun, gloss: millennium }
+  - { key: n_monday, lemma: mesiu, underlying: /mesju/, pos: noun, gloss: monday }
+  - { key: n_month, lemma: tua, underlying: /twa/, pos: noun, gloss: month }
+  - { key: n_moon, lemma: donggu, underlying: /doŋu/, pos: noun, gloss: moon }
+  - { key: n_moped, lemma: kiutu, underlying: /kjutu/, pos: noun, gloss: moped }
+  - { key: n_morning, lemma: niopgu, underlying: /njopɡu/, pos: noun, gloss: morning }
+  - { key: n_motorcycle, lemma: dusayu, underlying: /dusaju/, pos: noun, gloss: motorcycle }
+  - { key: n_mountain, lemma: khies, underlying: /xjes/, pos: noun, gloss: mountain }
+  - { key: n_mouse, lemma: yogkuhio, underlying: /joquhjo/, pos: noun, gloss: mouse }
+  - { key: n_nature, lemma: yihiu, underlying: /jihju/, pos: noun, gloss: nature }
+  - { key: n_nearby, lemma: mel, underlying: /mel/, pos: noun, gloss: nearby }
+  - { key: n_necessity, lemma: khiyo, underlying: /xijo/, pos: noun, gloss: necessity }
+  - { key: n_neck, lemma: satiunwu, underlying: /satjunwu/, pos: noun, gloss: neck }
+  - { key: n_neighbourhood, lemma: nguiha, underlying: /ŋwiha/, pos: noun, gloss: neighbourhood }
+  - { key: n_nervous, lemma: mihui, underlying: /mihwi/, pos: noun, gloss: nervous }
+  - { key: n_network, lemma: biosia, underlying: /bjosja/, pos: noun, gloss: network }
+  - { key: n_nighttime, lemma: sose, underlying: /sose/, pos: noun, gloss: nighttime }
+  - { key: n_noise, lemma: tsoknuo, underlying: /t͡soknwo/, pos: noun, gloss: noise }
+  - { key: n_noodle, lemma: die, underlying: /dje/, pos: noun, gloss: noodle }
+  - { key: n_noon, lemma: kiosngontowa, underlying: /kjosŋontowa/, pos: noun, gloss: noon }
+  - { key: n_north, lemma: tuo, underlying: /two/, pos: noun, gloss: north }
+  - { key: n_november, lemma: mewittua, underlying: /mewittwa/, pos: noun, gloss: november }
+  - { key: n_null, lemma: ko, underlying: /ko/, pos: noun, gloss: (null/dummy nominal) }
+  - { key: n_number, lemma: huo, underlying: /hwo/, pos: noun, gloss: number }
+  - { key: n_numeral, lemma: gugku, underlying: /ɡuqu/, pos: noun, gloss: numeral }
+  - { key: n_nurse, lemma: buasmo, underlying: /bwasmo/, pos: noun, gloss: nurse }
+  - { key: n_obligation, lemma: kiure, underlying: /kjuɾe/, pos: noun, gloss: obligation }
+  - { key: n_occupation, lemma: khangwi, underlying: /xaŋwi/, pos: noun, gloss: occupation }
+  - { key: n_occupation0, lemma: ritsatui, underlying: /ɾit͡satwi/, pos: noun, gloss: occupation0 }
+  - { key: n_occupation1, lemma: khuilotui, underlying: /xwilotwi/, pos: noun, gloss: occupation1 }
+  - { key: n_occupation2, lemma: piawitui, underlying: /pjawitwi/, pos: noun, gloss: occupation2 }
+  - { key: n_occupation3, lemma: todiomtui, underlying: /todjomtwi/, pos: noun, gloss: occupation3 }
+  - { key: n_occupation4, lemma: hiaptiptui, underlying: /hjaptiptwi/, pos: noun, gloss: occupation4 }
+  - { key: n_occupation5, lemma: nokyitui, underlying: /nokjitwi/, pos: noun, gloss: occupation5 }
+  - { key: n_occupation6, lemma: khakitui, underlying: /xakitwi/, pos: noun, gloss: occupation6 }
+  - { key: n_occupation7, lemma: yikhwuttui, underlying: /jixwuttwi/, pos: noun, gloss: occupation7 }
+  - { key: n_occupational_task0, lemma: ritsa, underlying: /ɾit͡sa/, pos: noun, gloss: occupational task0 }
+  - { key: n_occupational_task1, lemma: khuilo, underlying: /xwilo/, pos: noun, gloss: occupational task1 }
+  - { key: n_occupational_task2, lemma: piawi, underlying: /pjawi/, pos: noun, gloss: occupational task2 }
+  - { key: n_occupational_task3, lemma: todiom, underlying: /todjom/, pos: noun, gloss: occupational task3 }
+  - { key: n_occupational_task4, lemma: hiaptip, underlying: /hjaptip/, pos: noun, gloss: occupational task4 }
+  - { key: n_occupational_task5, lemma: nokyi, underlying: /nokji/, pos: noun, gloss: occupational task5 }
+  - { key: n_occupational_task6, lemma: khaki, underlying: /xaki/, pos: noun, gloss: occupational task6 }
+  - { key: n_occupational_task7, lemma: yikhwut, underlying: /jixwut/, pos: noun, gloss: occupational task7 }
+  - { key: n_ocean, lemma: nionus, underlying: /njonus/, pos: noun, gloss: ocean }
+  - { key: n_octagon, lemma: ngattsin, underlying: /ŋatt͡sin/, pos: noun, gloss: octagon }
+  - { key: n_october, lemma: wittua, underlying: /wittwa/, pos: noun, gloss: october }
+  - { key: n_office, lemma: khakhungwo, underlying: /xaxuŋwo/, pos: noun, gloss: office }
+  - { key: n_organization, lemma: tsusawa, underlying: /t͡susawa/, pos: noun, gloss: organization }
+  - { key: n_outer_space, lemma: wikhu, underlying: /wixu/, pos: noun, gloss: outer space }
+  - { key: n_outside, lemma: mipyi, underlying: /mipji/, pos: noun, gloss: outside }
+  - { key: n_pain, lemma: tsuotsan, underlying: /t͡swot͡san/, pos: noun, gloss: pain }
+  - { key: n_panty, lemma: tere, underlying: /teɾe/, pos: noun, gloss: panty }
+  - { key: n_paper, lemma: pioga, underlying: /pjoɡa/, pos: noun, gloss: paper }
+  - { key: n_park, lemma: khuoba, underlying: /xwoba/, pos: noun, gloss: park }
+  - { key: n_part, lemma: gieptiu, underlying: /ɡjeptju/, pos: noun, gloss: part }
+  - { key: n_pattern, lemma: polnua, underlying: /polnwa/, pos: noun, gloss: pattern }
+  - { key: n_pearl, lemma: otmo, underlying: /otmo/, pos: noun, gloss: pearl }
+  - { key: n_pen, lemma: niuhia, underlying: /njuhja/, pos: noun, gloss: pen }
+  - { key: n_pencil, lemma: hangswul, underlying: /haŋswul/, pos: noun, gloss: pencil }
+  - { key: n_pentagon, lemma: tsimtsin, underlying: /t͡simt͡sin/, pos: noun, gloss: pentagon }
+  - { key: n_permission, lemma: tuilbiam, underlying: /twilbjam/, pos: noun, gloss: permission }
+  - { key: n_person, lemma: tui, underlying: /twi/, pos: noun, gloss: person }
+  - { key: n_piano, lemma: piano, underlying: /pjano/ }
+  - { key: n_piece, lemma: sadue, underlying: /sa.dwe/, pos: noun, gloss: piece }
+  - { key: n_pig, lemma: pires, underlying: /piɾes/, pos: noun, gloss: pig }
+  - { key: n_plane, lemma: tse, underlying: /t͡se/, pos: noun, gloss: plane }
+  - { key: n_planet, lemma: khe, underlying: /xe/, pos: noun, gloss: planet }
+  - { key: n_plant, lemma: hukhue, underlying: /hu.xwe/, pos: noun, gloss: plant }
+  - { key: n_plastic, lemma: yatop, underlying: /jatop/, pos: noun, gloss: plastic }
+  - { key: n_pocket, lemma: tswuli, underlying: /t͡swuli/, pos: noun, gloss: pocket }
+  - { key: n_point, lemma: kia, underlying: /kja/, pos: noun, gloss: point }
+  - { key: n_police_officer, lemma: khwunduitui, underlying: /xwundwitwi/, pos: noun, gloss: police officer }
+  - { key: n_policing, lemma: khwundui, underlying: /xwundwi/, pos: noun, gloss: policing }
+  - { key: n_pork, lemma: piresdu, underlying: /piɾesdu/, pos: noun, gloss: pork }
+  - { key: n_potential, lemma: khedu, underlying: /xedu/, pos: noun, gloss: potential }
+  - { key: n_pound, lemma: ti, underlying: /ti/, pos: noun, gloss: pound }
+  - { key: n_protein0, lemma: tudu, underlying: /tudu/, pos: noun, gloss: protein0 }
+  - { key: n_protein1, lemma: khedu, underlying: /xedu/, pos: noun, gloss: protein1 }
+  - { key: n_protein2, lemma: ngikyidu, underlying: /ŋikjidu/, pos: noun, gloss: protein2 }
+  - { key: n_protein3, lemma: gkodu, underlying: /qodu/, pos: noun, gloss: protein3 }
+  - { key: n_protein4, lemma: nuidu, underlying: /nwidu/, pos: noun, gloss: protein4 }
+  - { key: n_protein5, lemma: gedu, underlying: /ɡedu/, pos: noun, gloss: protein5 }
+  - { key: n_protein6, lemma: dedu, underlying: /dedu/, pos: noun, gloss: protein6 }
+  - { key: n_protein7, lemma: khyitwudu, underlying: /xjitwudu/, pos: noun, gloss: protein7 }
+  - { key: n_question, lemma: yektsam, underlying: /jekt͡sam/, pos: noun, gloss: question }
+  - { key: n_radio, lemma: monkibuk, underlying: /monkibuk/, pos: noun, gloss: radio }
+  - { key: n_rain, lemma: ge, underlying: /ɡe/, pos: noun, gloss: rain }
+  - { key: n_rainbow, lemma: gesyip, underlying: /ɡesjip/, pos: noun, gloss: rainbow }
+  - { key: n_recently, lemma: ngingwi, underlying: /ŋiŋwi/, gloss: recently }
+  - { key: n_receptionist, lemma: tsusawatui, underlying: /t͡susawatwi/, pos: noun, gloss: receptionist }
+  - { key: n_recommendation, lemma: toppwu, underlying: /tophwu/, pos: noun, gloss: recommendation }
+  - { key: n_rectangle, lemma: moltsin, underlying: /molt͡sin/, pos: noun, gloss: rectangle }
+  - { key: n_region, lemma: khabie, underlying: /xabje/, pos: noun, gloss: region }
+  - { key: n_reporter, lemma: lenutui, underlying: /lenutwi/, pos: noun, gloss: reporter }
+  - { key: n_reporting, lemma: lenu, underlying: /lenu/, pos: noun, gloss: reporting }
+  - { key: n_restaurant, lemma: pukhia, underlying: /puxja/, pos: noun, gloss: restaurant }
+  - { key: n_rice, lemma: me, underlying: /me/, pos: noun, gloss: rice }
+  - { key: n_right, lemma: nihik, underlying: /nihik/, pos: noun, gloss: right }
+  - { key: n_river, lemma: pakia, underlying: /pakja/, pos: noun, gloss: river }
+  - { key: n_road, lemma: bui, underlying: /bwi/, pos: noun, gloss: road }
+  - { key: n_room, lemma: gko, underlying: /qo/, pos: noun, gloss: room }
+  - { key: n_root, lemma: rete, underlying: /ɾete/, pos: noun, gloss: root }
+  - { key: n_sad, lemma: giakhyi, underlying: /ɡjaxji/, pos: noun, gloss: sad }
+  - { key: n_safety, lemma: puohie, underlying: /pwohje/, pos: noun, gloss: safety }
+  - { key: n_sailboat, lemma: sitki, underlying: /sitki/, pos: noun, gloss: sailboat }
+  - { key: n_sand, lemma: tsatsa, underlying: /t͡sat͡sa/, pos: noun, gloss: sand }
+  - { key: n_saturday, lemma: sumsiu, underlying: /sumsju/, pos: noun, gloss: saturday }
+  - { key: n_school, lemma: nyihenuo, underlying: /njihenwo/, pos: noun, gloss: school }
+  - { key: n_screen, lemma: tsungmiopep, underlying: /t͡suŋmjopep/, pos: noun, gloss: screen }
+  - { key: n_sea, lemma: gip, underlying: /ɡip/, pos: noun, gloss: sea }
+  - { key: n_seed, lemma: gosi, underlying: /ɡosi/, pos: noun, gloss: seed }
+  - { key: n_semelfactive, lemma: soha, underlying: /soha/, pos: noun, gloss: semelfactive }
+  - { key: n_september, lemma: bestua, underlying: /bestwa/, pos: noun, gloss: september }
+  - { key: n_shape, lemma: hie, underlying: /hje/, pos: noun, gloss: shape }
+  - { key: n_ship, lemma: kop, underlying: /kop/, pos: noun, gloss: ship }
+  - { key: n_shirt, lemma: nguotuowe, underlying: /ŋwotwowe/, pos: noun, gloss: shirt }
+  - { key: n_shoes, lemma: tobita, underlying: /tobita/, pos: noun, gloss: shoes }
+  - { key: n_shop, lemma: kopi, underlying: /kopi/, pos: noun, gloss: shop }
+  - { key: n_shorts, lemma: hogate, underlying: /hoɡate/, pos: noun, gloss: shorts }
+  - { key: n_side, lemma: tsin, underlying: /t͡sin/, pos: noun, gloss: side }
+  - { key: n_silver, lemma: lipdu, underlying: /lipdu/, pos: noun, gloss: silver }
+  - { key: n_skirt, lemma: binguohe, underlying: /biŋwohe/, pos: noun, gloss: skirt }
+  - { key: n_sky, lemma: lukho, underlying: /luxo/, pos: noun, gloss: sky }
+  - { key: n_sleepy, lemma: ngomo, underlying: /ŋomo/ }
+  - { key: n_snow, lemma: dekho, underlying: /dexo/, pos: noun, gloss: snow }
+  - { key: n_soil, lemma: go, underlying: /ɡo/, pos: noun, gloss: soil }
+  - { key: n_soldier, lemma: piusihatui, underlying: /pjusihatwi/, pos: noun, gloss: soldier }
+  - { key: n_sound, lemma: lappyi, underlying: /laphji/, pos: noun, gloss: sound }
+  - { key: n_south, lemma: tia, underlying: /tja/, pos: noun, gloss: south }
+  - { key: n_space, lemma: tio, underlying: /tjo/, pos: noun, gloss: space }
+  - { key: n_speech, lemma: tsek, underlying: /t͡sek/, pos: noun, gloss: speech }
+  - { key: n_spot, lemma: nge, underlying: /ŋe/, pos: noun, gloss: spot }
+  - { key: n_square, lemma: ni, underlying: /ni/, pos: noun, gloss: square }
+  - { key: n_star, lemma: wus, underlying: /wus/, pos: noun, gloss: star }
+  - { key: n_start, lemma: tsitsak, underlying: /t͡sit͡sak/ }
+  - { key: n_state, lemma: ngakhan, underlying: /ŋaxan/, pos: noun, gloss: state }
+  - { key: n_station, lemma: nguikyi, underlying: /ŋwikji/, pos: noun, gloss: station }
+  - { key: n_sticker, lemma: muebyitseng, underlying: /mwebjit͡seŋ/, pos: noun, gloss: sticker }
+  - { key: n_stone, lemma: hobe, underlying: /hobe/, pos: noun, gloss: stone }
+  - { key: n_stop, lemma: ho, underlying: /ho/, pos: noun, gloss: stop }
+  - { key: n_straight, lemma: tego, underlying: /teɡo/, pos: noun, gloss: straight }
+  - { key: n_street, lemma: lot, underlying: /lot/, pos: noun, gloss: street }
+  - { key: n_student, lemma: khulitui, underlying: /xulitwi/, pos: noun, gloss: student }
+  - { key: n_studying, lemma: khuli, underlying: /xuli/, pos: noun, gloss: studying }
+  - { key: n_subway, lemma: tesdo, underlying: /tesdo/, pos: noun, gloss: subway }
+  - { key: n_suit, lemma: bobiu, underlying: /bobju/, pos: noun, gloss: suit }
+  - { key: n_sun, lemma: khin, underlying: /xin/, pos: noun, gloss: sun }
+  - { key: n_sunday, lemma: nulsiu, underlying: /nulsju/, pos: noun, gloss: sunday }
+  - { key: n_surrounding, lemma: bik, underlying: /bik/, pos: noun, gloss: surrounding }
+  - { key: n_t-shirt, lemma: kanlokha, underlying: /kanloxa/, pos: noun, gloss: t-shirt }
+  - { key: n_table, lemma: konyang, underlying: /konjaŋ/, pos: noun, gloss: table }
+  - { key: n_tea, lemma: tsa, underlying: /t͡sa/, pos: noun, gloss: tea }
+  - { key: n_teacher, lemma: kuissilotui, underlying: /kwishilotwi/, pos: noun, gloss: teacher }
+  - { key: n_teaching, lemma: kuissilo, underlying: /kwishilo/, pos: noun, gloss: teaching }
+  - { key: n_television, lemma: pwunungguol, underlying: /pwunuŋwol/, pos: noun, gloss: television }
+  - { key: n_temperature, lemma: huo, underlying: /hwo/, pos: noun, gloss: temperature }
+  - { key: n_thankful, lemma: khiague, underlying: /xjaɡwe/, pos: noun, gloss: thankful }
+  - { key: n_theater, lemma: kiemkhie, underlying: /kjemxje/, pos: noun, gloss: theater }
+  - { key: n_thesedays, lemma: kulyi, underlying: /kulji/ }
+  - { key: n_thought, lemma: bip, underlying: /bip/, pos: noun, gloss: thought }
+  - { key: n_thursday, lemma: molsiu, underlying: /molsju/, pos: noun, gloss: thursday }
+  - { key: n_ticket, lemma: to, underlying: /to/, pos: noun, gloss: ticket }
+  - { key: n_time, lemma: dotngua, underlying: /dotŋwa/, pos: noun, gloss: time }
+  - { key: n_toast, lemma: tosto, underlying: /tosto/, pos: noun, gloss: toast }
+  - { key: n_today, lemma: tiakbal, underlying: /tjakbal/, pos: noun, gloss: today }
+  - { key: n_toe, lemma: rokomui, underlying: /ɾokomwi/, pos: noun, gloss: toe }
+  - { key: n_town, lemma: wa, underlying: /wa/, pos: noun, gloss: town }
+  - { key: n_townhouse, lemma: tsare, underlying: /t͡saɾe/, pos: noun, gloss: townhouse }
+  - { key: n_trackpad, lemma: sietiu, underlying: /sjetju/, pos: noun, gloss: trackpad }
+  - { key: n_train, lemma: gkorukpe, underlying: /qoɾukpe/, pos: noun, gloss: train }
+  - { key: n_tram, lemma: khakhut, underlying: /xaxut/, pos: noun, gloss: tram }
+  - { key: n_transportation, lemma: miewa, underlying: /mjewa/, pos: noun, gloss: transportation }
+  - { key: n_tree, lemma: pium, underlying: /pjum/, pos: noun, gloss: tree }
+  - { key: n_triangle, lemma: haptsin, underlying: /hapt͡sin/, pos: noun, gloss: triangle }
+  - { key: n_trousers, lemma: nenhigwu, underlying: /nenhiɡwu/, pos: noun, gloss: trousers }
+  - { key: n_tuesday, lemma: rasiu, underlying: /ɾasju/, pos: noun, gloss: tuesday }
+  - { key: n_underwear, lemma: nuolsiude, underlying: /nwolsjude/, pos: noun, gloss: underwear }
+  - { key: n_university, lemma: wukigis, underlying: /wukiɡis/, pos: noun, gloss: university }
+  - { key: n_up, lemma: hop, underlying: /hop/, pos: noun, gloss: up }
+  - { key: n_valley, lemma: bingya, underlying: /biŋja/, pos: noun, gloss: valley }
+  - { key: n_vegetable0, lemma: songwo, underlying: /soŋwo/, pos: noun, gloss: vegetable0 }
+  - { key: n_vegetable1, lemma: sotsari, underlying: /sot͡saɾi/, pos: noun, gloss: vegetable1 }
+  - { key: n_vegetable2, lemma: hahiere, underlying: /hahjeɾe/, pos: noun, gloss: vegetable2 }
+  - { key: n_vegetable3, lemma: byimwu, underlying: /bjimwu/, pos: noun, gloss: vegetable3 }
+  - { key: n_vegetable4, lemma: wobomkhop, underlying: /wobomxop/, pos: noun, gloss: vegetable4 }
+  - { key: n_vegetable5, lemma: ngepyim, underlying: /ŋepjim/, pos: noun, gloss: vegetable5 }
+  - { key: n_vegetable6, lemma: sowotuep, underlying: /sowotwep/, pos: noun, gloss: vegetable6 }
+  - { key: n_vegetable7, lemma: torokmia, underlying: /toɾokmja/, pos: noun, gloss: vegetable7 }
+  - { key: n_vietnam, lemma: bietnam, underlying: /bjetnam/, pos: noun, gloss: vietnam }
+  - { key: n_waist, lemma: wapkuo, underlying: /wapkwo/, pos: noun, gloss: waist }
+  - { key: n_waiter, lemma: kekhokka, underlying: /kexokha/, pos: noun, gloss: waiter }
+  - { key: n_walking, lemma: like, underlying: /like/, pos: noun, gloss: walking }
+  - { key: n_wall, lemma: kiga, underlying: /kiɡa/, pos: noun, gloss: wall }
+  - { key: n_wave, lemma: ri, underlying: /ɾi/, pos: noun, gloss: wave }
+  - { key: n_way, lemma: yi, underlying: /ji/, pos: noun, gloss: way }
+  - { key: n_weather, lemma: dyitual, underlying: /djitwal/, pos: noun, gloss: weather }
+  - { key: n_wednesday, lemma: hapsiu, underlying: /hapsju/, pos: noun, gloss: wednesday }
+  - { key: n_weight, lemma: nuam, underlying: /nwam/, pos: noun, gloss: weight }
+  - { key: n_west, lemma: tia, underlying: /tja/, pos: noun, gloss: west }
+  - { key: n_whale, lemma: tlungro, underlying: /tluŋɾo/, pos: noun, gloss: whale }
+  - { key: n_whole, lemma: ku, underlying: /ku/, pos: noun, gloss: whole }
+  - { key: n_wind, lemma: de, underlying: /de/, pos: noun, gloss: wind }
+  - { key: n_wolf, lemma: lome, underlying: /lome/, pos: noun, gloss: wolf }
+  - { key: n_wood, lemma: kuro, underlying: /kuɾo/, pos: noun, gloss: wood }
+  - { key: n_world, lemma: duohyi, underlying: /dwohji/, pos: noun, gloss: world }
+  - { key: n_worry, lemma: nagui, underlying: /naɡwi/, pos: noun, gloss: worry }
+  - { key: n_wrist, lemma: heyunwu, underlying: /hejunwu/, pos: noun, gloss: wrist }
+  - { key: n_writer, lemma: tuapbupngestui, underlying: /twapbupŋestwi/, pos: noun, gloss: writer }
+  - { key: n_writing, lemma: tuapbupnges, underlying: /twapbupŋes/, pos: noun, gloss: writing }
+  - { key: n_year, lemma: ngit, underlying: /ŋit/, pos: noun, gloss: year }
+  - { key: "no", lemma: dus, underlying: /dus/, pos: negation, gloss: "no" }
+  - { key: p_acc, lemma: ka, underlying: /ka/, pos: case marker, gloss: accusative }
+  - { key: p_adv, lemma: ni, underlying: /ni/, pos: particle, gloss: adverbializer }
+  - { key: p_also, lemma: ki, underlying: /ki/, pos: semantic particle, gloss: "also, too" }
+  - { key: p_but, lemma: de, underlying: /de/, pos: conjunction, gloss: but }
+  - { key: p_cause, lemma: do, underlying: /do/, pos: conjunction, gloss: because }
+  - { key: p_cond, lemma: ma, underlying: /ma/, pos: conjunction, gloss: if }
+  - { key: p_conj, lemma: ya, underlying: /ja/, pos: conjunction, gloss: and }
+  - { key: p_dat, lemma: si, underlying: /si/, pos: case marker, gloss: dative }
+  - { key: p_disj, lemma: tsi, underlying: /t͡si/, pos: conjunction, gloss: or }
+  - { key: p_gen, lemma: tu, underlying: /tu/, pos: case marker, gloss: genitive }
+  - { key: p_ins, lemma: yi, underlying: /ji/, pos: case marker, gloss: instrumental }
+  - { key: p_loc, lemma: bi, underlying: /bi/, pos: case marker, gloss: locative }
+  - { key: p_neg1, lemma: ha, underlying: /ha/, pos: negation, gloss: not (negation) }
+  - { key: p_neg2, lemma: hen, underlying: /hen/, pos: negation, gloss: not (negation) }
+  - { key: p_nom, lemma: de, underlying: /de/, pos: case marker, gloss: nominative }
+  - { key: p_only, lemma: tul, underlying: /tul/, pos: semantic particle, gloss: only }
+  - { key: p_top, lemma: ngom, underlying: /ŋom/, pos: case marker, gloss: topic }
+  - { key: p_with, lemma: kat, underlying: /kat/, pos: semantic particle, gloss: with }
+  - { key: q_class, lemma: to, underlying: /to/, pos: classifier, gloss: classifier }
+  - { key: qu_how, lemma: gi, underlying: /ɡi/, pos: interrogative, gloss: how }
+  - { key: qu_what, lemma: pi, underlying: /pi/, pos: interrogative, gloss: what }
+  - { key: qu_when, lemma: mu, underlying: /mu/, pos: interrogative, gloss: when }
+  - { key: qu_where, lemma: ni, underlying: /ni/, pos: interrogative, gloss: where }
+  - { key: qu_which, lemma: hi, underlying: /hi/, pos: interrogative, gloss: which }
+  - { key: qu_who, lemma: bu, underlying: /bu/, pos: interrogative, gloss: who }
+  - { key: qu_why, lemma: pu, underlying: /pu/, pos: interrogative, gloss: why }
+  - { key: t_fut, lemma: ne, underlying: /ne/, pos: tense marker, gloss: future }
+  - { key: t_inf, lemma: lo, underlying: /lo/, pos: tense marker, gloss: infinitive }
+  - { key: t_prs, lemma: wu, underlying: /wu/, pos: tense marker, gloss: present }
+  - { key: t_pst, lemma: na, underlying: /na/, pos: tense marker, gloss: past }
+  - { key: v_become, lemma: khe, underlying: /xe/, pos: verb, gloss: become }
+  - { key: v_bring, lemma: yakno, underlying: /jakno/, pos: verb, gloss: bring }
+  - { key: v_buy, lemma: mun, underlying: /mun/, pos: verb, gloss: buy }
+  - { key: v_cause, lemma: nge, underlying: /ŋe/, pos: verb, gloss: cause }
+  - { key: v_come, lemma: tsa, underlying: /t͡sa/, pos: verb, gloss: come }
+  - { key: v_cop, lemma: ya, underlying: /ja/, pos: predicate, gloss: be (copula) }
+  - { key: v_do, lemma: sa, underlying: /sa/, pos: verb, gloss: do }
+  - { key: v_drink, lemma: tukhi, underlying: /tuxi/, pos: verb, gloss: drink }
+  - { key: v_eat, lemma: hiu, underlying: /hju/, pos: verb, gloss: eat }
+  - { key: v_exist, lemma: ga, underlying: /ɡa/, pos: predicate, gloss: "exist, there is" }
+  - { key: v_getup, lemma: metsis, underlying: /met͡sis/ }
+  - { key: v_give, lemma: men, underlying: /men/, pos: verb, gloss: give }
+  - { key: v_go, lemma: yu, underlying: /ju/, pos: verb, gloss: go }
+  - { key: v_have, lemma: tiung, underlying: /tjuŋ/, pos: verb, gloss: have }
+  - { key: v_know, lemma: ngol, underlying: /ŋol/ }
+  - { key: v_nothave, lemma: pie, underlying: /pje/, pos: verb, gloss: not have }
+  - { key: v_read, lemma: wo, underlying: /wo/, pos: verb, gloss: read }
+  - { key: v_receive, lemma: tsu, underlying: /t͡su/, pos: verb, gloss: receive }
+  - { key: v_ride, lemma: mie, underlying: /mje/, pos: verb, gloss: ride }
+  - { key: v_see, lemma: die, underlying: /dje/, pos: verb, gloss: see }
+  - { key: v_sell, lemma: hel, underlying: /hel/, pos: verb, gloss: sell }
+  - { key: v_sit, lemma: gu, underlying: /ɡu/, pos: verb, gloss: sit }
+  - { key: v_sleep, lemma: ki, underlying: /ki/, pos: verb, gloss: sleep }
+  - { key: v_spread, lemma: muenwa, underlying: /mwenwa/, pos: verb, gloss: spread }
+  - { key: v_trim, lemma: dal, underlying: /dal/, pos: verb, gloss: trim }
+  - { key: v_use, lemma: tse, underlying: /t͡se/, pos: verb, gloss: use }
+  - { key: "yes", lemma: tsi, underlying: /t͡si/, pos: particle, gloss: "yes" }

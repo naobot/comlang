@@ -283,6 +283,7 @@ export type Database = {
           name: string
           project_id: string
           rule_order: number
+          summary: string | null
           updated_at: string
         }
         Insert: {
@@ -293,6 +294,7 @@ export type Database = {
           name: string
           project_id: string
           rule_order?: number
+          summary?: string | null
           updated_at?: string
         }
         Update: {
@@ -303,6 +305,7 @@ export type Database = {
           name?: string
           project_id?: string
           rule_order?: number
+          summary?: string | null
           updated_at?: string
         }
         Relationships: [

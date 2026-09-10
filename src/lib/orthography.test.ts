@@ -16,6 +16,7 @@ import {
 
 const emptyRule = (name: string) => ({
   name,
+  summary: "",
   effect: "",
   examples: "",
 });

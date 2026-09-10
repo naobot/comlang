@@ -18,6 +18,7 @@ const emptyDraft = (): Draft => ({ graphemes: [], rules: [] });
 
 const emptyRule = (name = "") => ({
   name,
+  summary: "",
   effect: "",
   examples: "",
 });
@@ -68,6 +69,7 @@ export const useOrthographyStore = defineStore("orthography", () => {
       })),
       rules: (rulesRes.data as OrthographyRule[]).map((r) => ({
         name: r.name,
+        summary: r.summary ?? "",
         effect: r.effect ?? "",
         examples: r.examples ?? "",
       })),

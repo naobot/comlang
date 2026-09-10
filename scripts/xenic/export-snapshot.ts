@@ -8,7 +8,9 @@
  * `exports/xenic-<date>/raw/` is produced out-of-band (Supabase MCP / SQL editor) and
  * committed; this script is the deterministic transform from it.
  *
- * Re-runnable: drop a fresh `raw/` dump next to a new dated folder and point DATE at it.
+ * Re-runnable: drop a fresh `raw/` dump next to a new dated folder and pass its suffix as
+ * the one argument (the folder is `exports/xenic-<suffix>/`). Two snapshots taken on one
+ * day disambiguate with a letter — `2026-09-10`, `2026-09-10b`.
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -23,7 +25,9 @@ import {
 } from "../../src/lib/exporters";
 import { parseSpec } from "../../src/lib/morphologySpec";
 
-const DATE = "2026-09-10";
+// Which dated snapshot under `data/xenic/exports/` to transform. Overridable so a new
+// dump needs a dump and a command, not an edit: `pnpm xenic:export-snapshot 2026-09-10b`.
+const DATE = process.argv[2] ?? "2026-09-10b";
 const here = dirname(fileURLToPath(import.meta.url));
 const DIR = resolve(here, `../../data/xenic/exports/xenic-${DATE}`);
 const RAW = resolve(DIR, "raw");
@@ -76,6 +80,7 @@ type StructuralDump = {
   orthography_rules: {
     name: string;
     rule_order: number;
+    summary: string | null;
     effect: string | null;
     examples: string | null;
   }[];
@@ -161,7 +166,12 @@ const input: ExportInput = {
   graphemes: s.graphemes,
   orthographyRules: [...s.orthography_rules]
     .sort((a, b) => a.rule_order - b.rule_order)
-    .map((r) => ({ name: r.name, effect: r.effect ?? "", examples: r.examples ?? "" })),
+    .map((r) => ({
+      name: r.name,
+      summary: r.summary ?? "",
+      effect: r.effect ?? "",
+      examples: r.examples ?? "",
+    })),
   morphology,
 };
 

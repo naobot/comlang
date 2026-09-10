@@ -53,7 +53,9 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
       <p class="muted">
         How the language is written down: a character (or a digraph) for each phoneme, and any
         spelling rules that don't reduce to a one-to-one mapping — digraph resolution,
-        capitalization, punctuation. Everything but a rule's name is free text for now.
+        capitalization, punctuation. Everything but a rule's name is free text for now — a rule's
+        <strong>summary</strong> states it in one checkable sentence, its
+        <strong>effect</strong> explains it.
       </p>
     </header>
 
@@ -188,6 +190,15 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
             </div>
 
             <div class="fields">
+              <label>
+                Summary
+                <textarea
+                  v-model="rule.summary"
+                  :readonly="!members.canEdit"
+                  rows="2"
+                  placeholder="the rule in one sentence, stated so it can be checked"
+                ></textarea>
+              </label>
               <label>
                 Effect
                 <textarea

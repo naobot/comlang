@@ -30,9 +30,16 @@ export type DraftGrapheme = { phoneme_ipa: string; grapheme: string };
  * of a word's first syllable"), so the split was two boxes for one idea rather than real
  * structure. `examples` stays, meant to be filled from real lexicon spellings. Order is
  * kept because it may be a pipeline the same way grammar rules are.
+ *
+ * `summary` (0036) is the one addition since, and it is not `environment` returning.
+ * `effect` teaches a reader: it hedges, gives context, and points at neighbouring rules.
+ * `summary` states the rule as a rule, in one sentence, so that a consumer of the export
+ * has something to check an implementation against. Both are optional and free text; a
+ * rule with only `effect` is exactly as valid as it was before.
  */
 export type DraftRule = {
   name: string;
+  summary: string;
   effect: string;
   examples: string;
 };

@@ -218,7 +218,14 @@ describe("orthography in the export", () => {
       { phoneme_ipa: "p", grapheme: "p" },
       { phoneme_ipa: "ŋ", grapheme: "ng" },
     ],
-    orthographyRules: [{ name: "ng-digraph", effect: 'write /ŋ/ as "ng"', examples: "" }],
+    orthographyRules: [
+      {
+        name: "ng-digraph",
+        summary: '<ŋ> is spelled "ng" everywhere',
+        effect: 'write /ŋ/ as "ng"',
+        examples: "",
+      },
+    ],
   });
 
   it("drops the section entirely when there is nothing mapped or written", () => {
@@ -237,6 +244,25 @@ describe("orthography in the export", () => {
       orthography: { rules: Record<string, Record<string, string>> };
     };
     expect(doc.orthography.rules["ng-digraph"]?.effect).toBe('write /ŋ/ as "ng"');
+  });
+
+  it("carries a rule's summary, and puts it before the effect", () => {
+    const yaml = toGrammarYaml(withOrthography);
+    const doc = parse(yaml) as { orthography: { rules: Record<string, Record<string, string>> } };
+    expect(doc.orthography.rules["ng-digraph"]?.summary).toBe('<ŋ> is spelled "ng" everywhere');
+    // Order is the point: the statement of the rule reads before the discussion of it.
+    const block = yaml.slice(yaml.indexOf("  rules:"));
+    expect(block.indexOf("summary:")).toBeLessThan(block.indexOf("effect:"));
+  });
+
+  it("omits summary for a rule that has none, rather than writing an empty one", () => {
+    const yaml = toGrammarYaml(
+      input({
+        graphemes: [{ phoneme_ipa: "p", grapheme: "p" }],
+        orthographyRules: [{ name: "bare", summary: "", effect: "something", examples: "" }],
+      }),
+    );
+    expect(yaml).not.toContain("summary:");
   });
 
   it("is not folded into phonology, since upstream has no such key", () => {
