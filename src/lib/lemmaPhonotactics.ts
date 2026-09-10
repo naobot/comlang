@@ -23,7 +23,7 @@
  * A `.` in the phonology is an explicit syllable boundary the conlang designer writes
  * in, not a phoneme. It matters because the orthography derivation keys spelling off
  * syllable position, and the phonemes alone can be ambiguous — `soŋwo` is `so.ŋwo`
- * (→ "songuo") or `soŋ.wo` (→ "songwo"). `segment` never sees the `.`; when it is
+ * (→ "songguo") or `soŋ.wo` (→ "songwo"). `segment` never sees the `.`; when it is
  * present the check validates that one marked split rather than searching all of them.
  *
  * The warning is advisory everywhere it appears: a lexicon full of loanwords and frozen

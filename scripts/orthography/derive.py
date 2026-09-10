@@ -35,8 +35,11 @@ Ordered rules, from `orthography_rules`:
              <i>  as the second member of an onset cluster otherwise.
        /w/ -> <w>  when it is the only onset, or the nucleus is /u/;
              <u>  as the second member of an onset cluster otherwise.
-  1. intervocalic /ŋ/: /ŋ/ -> <ngg> when it is the sole onset of a NON-initial
-       syllable and the preceding syllable has no coda (a vowel sits on each side).
+  1. intervocalic /ŋ/: /ŋ/ -> <ngg> when it begins the onset of a NON-initial
+       syllable and the preceding syllable has no coda (a vowel sits immediately
+       before it). An onset glide after the /ŋ/ does NOT block this:
+       /soŋi/ -> songgi, /ŋiŋwi/ -> nginggui. A coda consonant before it does:
+       /dotŋwa/ -> dotngua.
   2. /h/ after a consonant: an onset /h/ immediately after a coda consonant in
        {p t s k l} doubles that consonant in writing and is itself dropped.
 
@@ -53,12 +56,19 @@ Phonotactic constraints that shape syllabification, from `phonotactic_constraint
 
 Validation
 ----------
-Run against all 648 xenic lexicon entries (2026-09-10): 632 reproduced the stored
-`lemma` exactly; 16 stale glide spellings were corrected in the DB from this
+First run against all 648 xenic lexicon entries (2026-09-10): 632 reproduced the
+stored `lemma` exactly; 16 stale glide spellings were corrected in the DB from this
 output; 6 are legitimately underivable and were left alone
 (`e_dir`/`e_ind`/`e_rel` are vowelless clitics, `g_command` has no phonology,
 `n_germany` /dot͡slaŋ/ has an unsyllabifiable /t͡sl/, `n_ingredient5` has an
 ambiguous /nj/ split).
+
+Rule 1 was later reworded so an onset glide after the /ŋ/ no longer blocks
+gemination (`/ŋiŋwi/` → nginggui). After that, seven more entries with an
+intervocalic /ŋw/ derive a geminate under maximal onset — `n_cost`, `n_glasses`,
+`n_occupation`, `n_office`, `n_skirt`, `n_television`, `n_vegetable0` — but the
+outcome there now hinges on where the designer marks the `.` boundary
+(`soŋ.wo` keeps `/ŋ/` in the coda), so those were left for the marked re-derive.
 
 Usage
 -----
@@ -226,7 +236,10 @@ def render(sylls):
         elif ph == "w":
             res.append("w" if (orig_sole[si] or nx == "u") else "u")
         elif ph == "ŋ":
-            res.append("ngg" if (orig_sole[si] and si >= 1 and coda_empty_prev[si]) else "ng")
+            # rule 1: an onset-leading /ŋ/ of a non-initial syllable, with a vowel
+            # right before it (previous syllable has no coda), geminates. A glide
+            # after the /ŋ/ in the same onset does not block it.
+            res.append("ngg" if (si >= 1 and coda_empty_prev[si]) else "ng")
         else:
             res.append(BASE_G[ph])
     return "".join(res), notes
@@ -237,7 +250,7 @@ def derive(up):
 
     A `.` in the input is an explicit syllable boundary the conlang designer wrote in
     (not a phoneme): the string is split on it and each part syllabified on its own, so
-    the marked split -- e.g. `soŋ.wo` (-> "songwo") vs `so.ŋwo` (-> "songuo") -- is what
+    the marked split -- e.g. `soŋ.wo` (-> "songwo") vs `so.ŋwo` (-> "songguo") -- is what
     is rendered instead of maximal onset guessing.
     """
     parts = [p for p in up.strip().strip("/").split(".") if p.strip()]

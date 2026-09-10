@@ -38,7 +38,7 @@ parses — inferred from `dinjo→dinyo`, `minja→minya`, `konjaŋ→konyang`, 
 written rule.
 
 A `.` in the phonemic string is an **explicit syllable boundary** the conlang
-designer marks in (`soŋ.wo` → "songwo", `so.ŋwo` → "songuo"). When present it is
+designer marks in (`soŋ.wo` → "songwo", `so.ŋwo` → "songguo"). When present it is
 split out and each part syllabified on its own, so the marked division is what gets
 rendered instead of maximal onset guessing. `src/lib/lemmaPhonotactics.ts` reads it
 the same way — the phonotactics check validates the marked split and never flags
