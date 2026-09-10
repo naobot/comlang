@@ -65,8 +65,12 @@ const orNull = (value: string) => {
   return trimmed === "" ? null : trimmed;
 };
 
-/** List order. Recency is the default; alphabetical is still a click away for lookup. */
-export type LexiconSort = "updated" | "lemma";
+/**
+ * List order. Recency is the default; alphabetical is still a click away for lookup.
+ * The two recency modes differ in which timestamp: `updated` is last-edited, `created`
+ * is when the entry was first added.
+ */
+export type LexiconSort = "updated" | "created" | "lemma";
 
 export const useLexiconStore = defineStore("lexicon", () => {
   // Patched live, exactly like stores/projects.ts. Keyed by id so an echo converges on
@@ -106,10 +110,9 @@ export const useLexiconStore = defineStore("lexicon", () => {
         (a, b) => a.lemma.localeCompare(b.lemma) || (a.gloss ?? "").localeCompare(b.gloss ?? ""),
       );
     }
-    // Most recently touched first; lemma breaks ties so the order is stable.
-    return rows.sort(
-      (a, b) => b.updated_at.localeCompare(a.updated_at) || a.lemma.localeCompare(b.lemma),
-    );
+    // Newest first, by the chosen timestamp; lemma breaks ties so the order is stable.
+    const stamp = sortBy.value === "created" ? "created_at" : "updated_at";
+    return rows.sort((a, b) => b[stamp].localeCompare(a[stamp]) || a.lemma.localeCompare(b.lemma));
   });
 
   const count = computed(() => byId.value.size);

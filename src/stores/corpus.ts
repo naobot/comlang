@@ -30,8 +30,12 @@ import type { CorpusEntry, CorpusKind } from "@/types/models";
 
 export type CorpusDraft = { english: string; conlang: string };
 
-/** List order. Recency by default; the entered/imported order is one click away. */
-export type CorpusSort = "updated" | "order";
+/**
+ * List order. Recency by default; the entered/imported order is one click away.
+ * The two recency modes differ in which timestamp: `updated` is last-edited, `created`
+ * is when the row was first added.
+ */
+export type CorpusSort = "updated" | "created" | "order";
 
 /** A new row that has not been inserted yet. It knows which view it was started in. */
 export type PendingEntry = CorpusDraft & { kind: CorpusKind };
@@ -84,10 +88,9 @@ export const useCorpusStore = defineStore("corpus", () => {
         (a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at),
       );
     }
-    // Most recently touched first; sort_order breaks ties so the order is stable.
-    return rows.sort(
-      (a, b) => b.updated_at.localeCompare(a.updated_at) || a.sort_order - b.sort_order,
-    );
+    // Newest first, by the chosen timestamp; sort_order breaks ties so the order is stable.
+    const stamp = sortBy.value === "created" ? "created_at" : "updated_at";
+    return rows.sort((a, b) => b[stamp].localeCompare(a[stamp]) || a.sort_order - b.sort_order);
   });
 
   const count = computed(() => byId.value.size);

@@ -239,7 +239,8 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
           :aria-label="`Search the ${view === 'passage' ? 'passages' : 'sentences'}`"
         />
         <select v-model="corpus.sortBy" class="sort" aria-label="Sort the corpus">
-          <option value="updated">Recently updated</option>
+          <option value="updated">Last updated</option>
+          <option value="created">Date added</option>
           <option value="order">In order</option>
         </select>
         <p class="count">

@@ -51,7 +51,8 @@ const exactLemma = computed(() =>
         <span v-if="query.trim()">of {{ lexicon.count }}</span>
       </p>
       <select v-model="lexicon.sortBy" class="sort" aria-label="Sort the lexicon">
-        <option value="updated">Recent</option>
+        <option value="updated">Last updated</option>
+        <option value="created">Date added</option>
         <option value="lemma">A–Z</option>
       </select>
     </div>
