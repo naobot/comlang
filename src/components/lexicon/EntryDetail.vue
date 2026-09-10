@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, nextTick, ref } from "vue";
 
+import PhonemePalette from "@/components/lexicon/PhonemePalette.vue";
 import { checkLemma } from "@/lib/lemmaPhonotactics";
 import { useLexiconStore } from "@/stores/lexicon";
 import { useMembersStore } from "@/stores/members";
@@ -66,6 +67,34 @@ const title = computed(() => {
   return lexicon.draft.lemma.trim() || "—";
 });
 
+/**
+ * The phoneme palette beside the underlying-phonology field: a keyboard has no `ɡ` or `ŋ`
+ * key, and that column is meant to hold the real phonemic string. Toggled shut by default
+ * — most entries are typed, not clicked — and only offered when the project has a saved
+ * inventory to draw from.
+ */
+const showPalette = ref(false);
+const underlyingInput = ref<HTMLInputElement | null>(null);
+
+/**
+ * Drop `ipa` in at the caret (replacing any selection), then put the caret after it. Falls
+ * back to appending when the input has not reported a selection — e.g. the palette chip
+ * was reached by keyboard, so the input is not focused.
+ */
+function insertPhoneme(ipa: string) {
+  const el = underlyingInput.value;
+  const current = lexicon.draft.underlying_phonology;
+  const start = el?.selectionStart ?? current.length;
+  const end = el?.selectionEnd ?? current.length;
+  lexicon.draft.underlying_phonology = current.slice(0, start) + ipa + current.slice(end);
+  void nextTick(() => {
+    if (!el) return;
+    el.focus();
+    const caret = start + ipa.length;
+    el.setSelectionRange(caret, caret);
+  });
+}
+
 async function save() {
   await lexicon.saveOpen(props.projectId);
 }
@@ -115,6 +144,7 @@ async function remove() {
       <label class="wide">
         Underlying phonology
         <input
+          ref="underlyingInput"
           v-model="lexicon.draft.underlying_phonology"
           class="mono"
           :class="{ warn: lemmaWarning }"
@@ -124,6 +154,17 @@ async function remove() {
           aria-label="Underlying phonology"
         />
         <small v-if="lemmaWarning" class="hint">{{ lemmaWarning }}</small>
+        <div v-if="members.canEdit && phonemes.count > 0" class="palette-wrap">
+          <button
+            type="button"
+            class="palette-toggle"
+            :aria-expanded="showPalette"
+            @click="showPalette = !showPalette"
+          >
+            {{ showPalette ? "Hide phonemes" : "Insert phoneme…" }}
+          </button>
+          <PhonemePalette v-if="showPalette" @insert="insertPhoneme" />
+        </div>
       </label>
 
       <label class="wide">
@@ -301,6 +342,24 @@ label textarea {
 
 .mono {
   font-family: var(--font-mono);
+}
+
+/* The palette sits under the field as its own block. `label > *` has already put it back
+   to the UI face at 400 with normal casing, which is what the toggle and chips want. */
+.palette-wrap {
+  display: grid;
+  gap: var(--sp-1);
+  justify-items: start;
+}
+
+.palette-toggle {
+  padding: 2px var(--sp-2);
+  font-size: 0.75rem;
+  color: var(--c-muted);
+}
+
+.palette-toggle:hover {
+  color: var(--c-text);
 }
 
 textarea {

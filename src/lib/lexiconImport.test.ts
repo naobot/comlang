@@ -5,10 +5,37 @@ import { describe, expect, it } from "vite-plus/test";
 import source from "./lexiconImport.ts?raw";
 
 import { type ExportInput, toLexiconCsv, toLexiconCsvFull } from "./exporters";
-import { parseLexiconCsv } from "./lexiconImport";
+import { deriveFromKey, parseLexiconCsv } from "./lexiconImport";
 
 describe("parseLexiconCsv", () => {
   it("reads the full export, header and all", () => {
+    const parsed = parseLexiconCsv(
+      "key,lemma,underlying,pos,gloss,notes\nn_book,miŋgwem,/miŋɡɰem/,noun,book,\n",
+    );
+    expect(parsed.problems).toEqual([]);
+    expect(parsed.fields).toEqual([
+      "lemma",
+      "underlying_phonology",
+      "gloss",
+      "word_class",
+      "notes",
+    ]);
+    expect(parsed.rows).toEqual([
+      {
+        line: 2,
+        entry_key: "n_book",
+        lemma: "miŋgwem",
+        underlying_phonology: "/miŋɡɰem/",
+        gloss: "book",
+        word_class: "noun",
+        notes: "",
+      },
+    ]);
+  });
+
+  // Files written before `underlying` (0033) was a column still import — their `pos`,
+  // `gloss` and `notes` sit one column to the left.
+  it("reads the older five-column full export without an underlying column", () => {
     const parsed = parseLexiconCsv("key,lemma,pos,gloss,notes\nn_book,miŋgwem,noun,book,\n");
     expect(parsed.problems).toEqual([]);
     expect(parsed.fields).toEqual(["lemma", "gloss", "word_class", "notes"]);
@@ -17,6 +44,7 @@ describe("parseLexiconCsv", () => {
         line: 2,
         entry_key: "n_book",
         lemma: "miŋgwem",
+        underlying_phonology: "",
         gloss: "book",
         word_class: "noun",
         notes: "",
@@ -35,6 +63,21 @@ describe("parseLexiconCsv", () => {
     expect(parsed.fields).toEqual(["lemma"]);
     expect(parsed.rows).toHaveLength(2);
     expect(parsed.rows[0]?.lemma).toBe("miŋgwem");
+  });
+
+  // The two-column file carries no meaning or word class, but `n_book` names both. This
+  // only fills what the file left out — see the round-trip tests for a file that keeps its
+  // own blank cells.
+  it("fills meaning and word class from the key on a two-column import", () => {
+    const parsed = parseLexiconCsv("n_book,miŋgwem\na_black,ljaŋ\ntop_case,zwem\nʔo,ʔo\n");
+    expect(parsed.rows.map((r) => [r.entry_key, r.word_class, r.gloss])).toEqual([
+      ["n_book", "noun", "book"],
+      ["a_black", "adjective", "black"],
+      // Prefix isn't a part of speech the lexicon uses, so nothing is guessed.
+      ["top_case", "", ""],
+      // No underscore to split on.
+      ["ʔo", "", ""],
+    ]);
   });
 
   it("refuses columns it does not recognise", () => {
@@ -89,7 +132,7 @@ describe("round trip", () => {
       {
         entry_key: "v_exist",
         lemma: "ga",
-        underlying: null,
+        underlying: "/ɡa/",
         gloss: "exist, there is",
         word_class: "predicate",
         notes: null,
@@ -102,7 +145,14 @@ describe("round trip", () => {
         word_class: "noun",
         notes: 'Compound of pam + ŋwathoŋ. Says "frozen".',
       },
-      { entry_key: null, lemma: "ʔo", underlying: null, gloss: "leg", word_class: "noun", notes: null },
+      {
+        entry_key: null,
+        lemma: "ʔo",
+        underlying: null,
+        gloss: "leg",
+        word_class: "noun",
+        notes: null,
+      },
     ],
   });
 
@@ -117,6 +167,7 @@ describe("round trip", () => {
         line: 2,
         entry_key: "v_exist",
         lemma: "ga",
+        underlying_phonology: "/ɡa/",
         gloss: "exist, there is",
         word_class: "predicate",
         notes: "",
@@ -125,12 +176,29 @@ describe("round trip", () => {
         line: 3,
         entry_key: "n_neck",
         lemma: "pamŋwathoŋ",
+        underlying_phonology: "",
         gloss: "neck",
         word_class: "noun",
         notes: 'Compound of pam + ŋwathoŋ. Says "frozen".',
       },
-      { line: 4, entry_key: null, lemma: "ʔo", gloss: "leg", word_class: "noun", notes: "" },
+      {
+        line: 4,
+        entry_key: null,
+        lemma: "ʔo",
+        underlying_phonology: "",
+        gloss: "leg",
+        word_class: "noun",
+        notes: "",
+      },
     ]);
+  });
+
+  // A full file's own blank cells are kept blank: `n_neck` and `ʔo` carry no underlying
+  // phonology and no meaning is invented for them from the key.
+  it("does not fill from the key when the file carries the column", () => {
+    const csv = "key,lemma,underlying,pos,gloss,notes\nn_book,miŋgwem,,,,\n";
+    const parsed = parseLexiconCsv(csv);
+    expect(parsed.rows[0]).toMatchObject({ gloss: "", word_class: "", underlying_phonology: "" });
   });
 
   /**
@@ -145,6 +213,23 @@ describe("round trip", () => {
     expect(parsed.problems).toEqual([]);
     expect(parsed.fields).toEqual(["lemma"]);
     expect(parsed.rows.map((r) => r.entry_key)).toEqual(["v_exist", "n_neck", "ʔo"]);
+  });
+});
+
+describe("deriveFromKey", () => {
+  it("maps the part-of-speech prefix and reads the rest as the gloss", () => {
+    expect(deriveFromKey("n_book")).toEqual({ word_class: "noun", gloss: "book" });
+    expect(deriveFromKey("a_black")).toEqual({ word_class: "adjective", gloss: "black" });
+    expect(deriveFromKey("v_become")).toEqual({ word_class: "verb", gloss: "become" });
+    expect(deriveFromKey("n_student_a")).toEqual({ word_class: "noun", gloss: "student a" });
+  });
+
+  it("guesses nothing from a prefix that is not a part of speech, or a key with no split", () => {
+    expect(deriveFromKey("top_case")).toEqual({ word_class: "", gloss: "" });
+    expect(deriveFromKey("num_3")).toEqual({ word_class: "", gloss: "" });
+    expect(deriveFromKey("interrog")).toEqual({ word_class: "", gloss: "" });
+    expect(deriveFromKey("_leading")).toEqual({ word_class: "", gloss: "" });
+    expect(deriveFromKey("")).toEqual({ word_class: "", gloss: "" });
   });
 });
 

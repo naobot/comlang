@@ -351,10 +351,12 @@ describe("toLexiconCsv", () => {
 });
 
 describe("toLexiconCsvFull", () => {
-  it("has a header and every column", () => {
+  it("has a header and every column, underlying phonology included", () => {
     const csv = toLexiconCsvFull(input());
-    expect(csv.split("\n")[0]).toBe("key,lemma,pos,gloss,notes");
-    expect(csv).toContain("n_book,miŋgwem,noun,book,");
+    expect(csv.split("\n")[0]).toBe("key,lemma,underlying,pos,gloss,notes");
+    expect(csv).toContain("n_book,miŋgwem,/miŋɡɰem/,noun,book,");
+    // Absent underlying is an empty column, not a dropped one (this row also has no key).
+    expect(csv).toContain(",ʔo,,noun,leg,Compound.");
   });
 
   it("escapes embedded quotes by doubling them", () => {

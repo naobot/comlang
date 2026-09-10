@@ -30,6 +30,7 @@ export type StoredEntry = {
   id: string;
   entry_key: string | null;
   lemma: string;
+  underlying_phonology: string | null;
   gloss: string | null;
   word_class: string | null;
   notes: string | null;
@@ -71,11 +72,18 @@ export type MergePlan = {
   fields: ImportField[];
 };
 
-/** Display order, matching the full export's own columns (key,lemma,pos,gloss,notes). */
-export const FIELD_ORDER: ImportField[] = ["lemma", "word_class", "gloss", "notes"];
+/** Display order, matching the full export's columns (key,lemma,underlying,pos,gloss,notes). */
+export const FIELD_ORDER: ImportField[] = [
+  "lemma",
+  "underlying_phonology",
+  "word_class",
+  "gloss",
+  "notes",
+];
 
 export const FIELD_LABEL: Record<ImportField, string> = {
   lemma: "Lemma",
+  underlying_phonology: "Underlying phonology",
   word_class: "Word class",
   gloss: "Meaning",
   notes: "Notes",

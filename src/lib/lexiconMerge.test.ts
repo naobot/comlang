@@ -20,6 +20,7 @@ const FULL: ImportField[] = ["lemma", "gloss", "word_class", "notes"];
 const stored = (over: Partial<StoredEntry> & { id: string }): StoredEntry => ({
   entry_key: null,
   lemma: "",
+  underlying_phonology: null,
   gloss: null,
   word_class: null,
   notes: null,
@@ -29,6 +30,7 @@ const stored = (over: Partial<StoredEntry> & { id: string }): StoredEntry => ({
 const row = (over: Partial<ParsedRow> & { line: number }): ParsedRow => ({
   entry_key: null,
   lemma: "",
+  underlying_phonology: "",
   gloss: "",
   word_class: "",
   notes: "",

@@ -22,6 +22,14 @@
  * The warning is advisory everywhere it appears: a lexicon full of loanwords and frozen
  * compounds legitimately breaks its own rules, so nothing here blocks a save or an
  * import.
+ *
+ * Segmentation tolerates the character variants the co-designer's files have always
+ * used — Latin `g` for `ɡ`, `r` for the tap `ɾ`, `w` for `ɰ`, and the digraphs `ng` and
+ * `ts` for `ŋ` and `t͡s` (the same five the 0033 backfill folded in). Each only applies
+ * when the language actually has the canonical phoneme and is not separately using the
+ * typed form as a phoneme of its own — see `IPA_VARIANTS`. The togglable phoneme palette
+ * beside the field is the way to type the exact glyphs; this is the safety net for when
+ * someone doesn't.
  */
 
 import type { Grammar, ResolvedTemplate, Segment } from "./phonotactics";
@@ -45,24 +53,56 @@ export type LemmaCheck =
     };
 
 /**
+ * Character-variant substitutions the lexicon has always tolerated, `[typed, canonical]`.
+ *
+ * The co-designer's source files use Latin `g` where IPA wants script `ɡ`, `r` for the
+ * tap `ɾ`, `w` for the velar approximant `ɰ`, and the digraphs `ng` / `ts` for `ŋ` /
+ * `t͡s`. Migration 0033's backfill made exactly these conversions when it split
+ * `underlying_phonology` out of `lemma`.
+ *
+ * `variantMap` keeps a pair only when the language *has* the canonical phoneme and does
+ * *not* separately use the typed form as its own segment — so a project where `w` is a
+ * real phoneme keeps `w` meaning `w`. Longer keys first, so `ng` is tried before `n`.
+ */
+const IPA_VARIANTS: readonly (readonly [string, string])[] = [
+  ["ng", "ŋ"],
+  ["ts", "t͡s"],
+  ["g", "ɡ"],
+  ["r", "ɾ"],
+  ["w", "ɰ"],
+];
+
+function variantMap(inventory: ReadonlySet<string>): Map<string, string> {
+  const out = new Map<string, string>();
+  for (const [typed, canonical] of IPA_VARIANTS) {
+    if (inventory.has(canonical) && !inventory.has(typed)) out.set(typed, canonical);
+  }
+  return out;
+}
+
+/**
  * Split `s` into phonemes by greedy longest match against the inventory.
  *
  * The input is already the project's own IPA (see the module doc comment), so — unlike
- * when this matched a hand-written, Latin-orthography lemma — there is no glyph
- * reconciliation to do first: a symbol either is or isn't in the inventory's own set of
- * spellings.
+ * when this matched a hand-written, Latin-orthography lemma — there is little glyph
+ * reconciliation to do: a symbol either is in the inventory's own set of spellings, or is
+ * one of the character variants `variantMap` maps back onto it.
  *
  * Longest-first is the conventional resolution for a phonemic transcription; it can in
  * principle mis-cut a prefix-ambiguous inventory (`t`, `t͡s`, `s` all present), but a
- * backtracking segmenter multiplies the search for no practical gain here. A substring
- * that matches nothing is reported rather than skipped.
+ * backtracking segmenter multiplies the search for no practical gain here. An exact
+ * inventory match always beats a variant of the same length. A substring that matches
+ * nothing is reported rather than skipped.
  */
 function segment(
   inventory: ReadonlySet<string>,
   s: string,
 ): { ok: true; units: string[] } | { ok: false; bad: string } {
+  const variants = variantMap(inventory);
+
   let maxLen = 1;
   for (const symbol of inventory) maxLen = Math.max(maxLen, symbol.length);
+  for (const typed of variants.keys()) maxLen = Math.max(maxLen, typed.length);
 
   const units: string[] = [];
   let i = 0;
@@ -72,6 +112,12 @@ function segment(
       const candidate = s.slice(i, i + len);
       if (inventory.has(candidate)) {
         matched = candidate;
+        i += len;
+        break;
+      }
+      const canonical = variants.get(candidate);
+      if (canonical !== undefined) {
+        matched = canonical;
         i += len;
         break;
       }

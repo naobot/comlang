@@ -132,8 +132,9 @@ const fieldsOf = (fields: ImportField[]) => fields.map((f) => FIELD_LABEL[f]).jo
   <ModalDialog :open="open" :title="`Review import — ${fileName}`" @close="emit('close')">
     <div class="review">
       <p v-if="partialColumns" class="note">
-        This file carries only {{ fieldsOf(plan.fields).toLowerCase() }}. Meanings, word classes and
-        notes on existing entries are left exactly as they are.
+        This file carries only {{ fieldsOf(plan.fields).toLowerCase() }}. Meanings, word classes,
+        underlying phonology and notes on existing entries are left exactly as they are; on new
+        entries, a meaning and word class are filled in from the key where it gives one.
       </p>
 
       <p v-if="lemmaWarnings.size" class="note">

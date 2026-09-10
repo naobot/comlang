@@ -185,7 +185,7 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
 </script>
 
 <template>
-  <section>
+  <section class="lexicon">
     <header>
       <!-- Visually hidden, not deleted: the tab already names the page, so showing it
            twice is noise — but a page with no h1 leaves a screen reader with nothing to
@@ -318,8 +318,13 @@ header p {
  * spilled out of the cap rather than scrolling within it. That was the bug.
  *
  * dvh rather than vh so mobile browser chrome does not leave the panes below the fold.
+ *
+ * Scoped to a class, not the bare `section` element: Vue stamps this component's scope id
+ * onto a child component's root node too, and `EntryDetail`'s root is a `<section>` — a
+ * bare `section {}` rule here gave the open-entry pane a full-viewport height of its own,
+ * which overflowed the grid track and pushed the list pane's "+ New entry" below the fold.
  */
-section {
+.lexicon {
   display: flex;
   flex-direction: column;
   height: calc(100dvh - var(--header-h) - var(--sp-8) * 2);

@@ -396,14 +396,27 @@ export function toLexiconCsv(input: ExportInput): string {
     .join("\n")}\n`;
 }
 
-/** The richer CSV, with a header, for reading rather than for feeding the old tools. */
+/**
+ * The richer CSV, with a header, for reading rather than for feeding the old tools.
+ *
+ * `underlying` (the phonemic form, 0033) sits right after `lemma`, matching the order the
+ * YAML export uses. Files written before that column existed have five columns and no
+ * `underlying`; `parseLexiconCsv` still reads those.
+ */
 export function toLexiconCsvFull(input: ExportInput): string {
   const rows = input.lexicon.map((e) =>
-    [e.entry_key ?? "", e.lemma, e.word_class ?? "", e.gloss ?? "", e.notes ?? ""]
+    [
+      e.entry_key ?? "",
+      e.lemma,
+      e.underlying ?? "",
+      e.word_class ?? "",
+      e.gloss ?? "",
+      e.notes ?? "",
+    ]
       .map(csvField)
       .join(","),
   );
-  return `key,lemma,pos,gloss,notes\n${rows.join("\n")}\n`;
+  return `key,lemma,underlying,pos,gloss,notes\n${rows.join("\n")}\n`;
 }
 
 // corpus CSV ---------------------------------------------------------------------------
