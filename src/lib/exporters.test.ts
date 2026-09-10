@@ -248,7 +248,9 @@ describe("orthography in the export", () => {
 
 describe("underlying phonology in the export", () => {
   it("carries `underlying` alongside `lemma` when the entry has one", () => {
-    const doc = parse(toGrammarYaml(input())) as { lexicon: { lemma: string; underlying?: string }[] };
+    const doc = parse(toGrammarYaml(input())) as {
+      lexicon: { lemma: string; underlying?: string }[];
+    };
     expect(doc.lexicon[0]).toMatchObject({ lemma: "miŋgwem", underlying: "/miŋɡɰem/" });
     expect(doc.lexicon[1]?.underlying).toBeUndefined();
   });
@@ -332,7 +334,16 @@ describe("toLexiconCsv", () => {
   it("quotes a field containing a comma", () => {
     const csv = toLexiconCsv(
       input({
-        lexicon: [{ entry_key: "k", lemma: "a,b", underlying: null, gloss: null, word_class: null, notes: null }],
+        lexicon: [
+          {
+            entry_key: "k",
+            lemma: "a,b",
+            underlying: null,
+            gloss: null,
+            word_class: null,
+            notes: null,
+          },
+        ],
       }),
     );
     expect(csv).toBe('k,"a,b"\n');
@@ -350,7 +361,14 @@ describe("toLexiconCsvFull", () => {
     const csv = toLexiconCsvFull(
       input({
         lexicon: [
-          { entry_key: "k", lemma: "x", underlying: null, gloss: 'a "quoted" word', word_class: null, notes: null },
+          {
+            entry_key: "k",
+            lemma: "x",
+            underlying: null,
+            gloss: 'a "quoted" word',
+            word_class: null,
+            notes: null,
+          },
         ],
       }),
     );
@@ -411,7 +429,14 @@ describe("the emitted YAML actually parses", () => {
             },
           ],
           lexicon: [
-            { entry_key: "k", lemma: "- dash", underlying: null, gloss: "null", word_class: null, notes: null },
+            {
+              entry_key: "k",
+              lemma: "- dash",
+              underlying: null,
+              gloss: "null",
+              word_class: null,
+              notes: null,
+            },
           ],
         }),
       ),

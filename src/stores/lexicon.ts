@@ -65,6 +65,9 @@ const orNull = (value: string) => {
   return trimmed === "" ? null : trimmed;
 };
 
+/** List order. Recency is the default; alphabetical is still a click away for lookup. */
+export type LexiconSort = "updated" | "lemma";
+
 export const useLexiconStore = defineStore("lexicon", () => {
   // Patched live, exactly like stores/projects.ts. Keyed by id so an echo converges on
   // the same row rather than appending a duplicate.
@@ -93,11 +96,21 @@ export const useLexiconStore = defineStore("lexicon", () => {
   /** Set when someone else deletes the entry we have open. */
   const openDeletedElsewhere = ref(false);
 
-  const entries = computed(() =>
-    [...byId.value.values()].sort(
-      (a, b) => a.lemma.localeCompare(b.lemma) || (a.gloss ?? "").localeCompare(b.gloss ?? ""),
-    ),
-  );
+  /** Which order the list renders in. Not persisted — a per-session view preference. */
+  const sortBy = ref<LexiconSort>("updated");
+
+  const entries = computed(() => {
+    const rows = [...byId.value.values()];
+    if (sortBy.value === "lemma") {
+      return rows.sort(
+        (a, b) => a.lemma.localeCompare(b.lemma) || (a.gloss ?? "").localeCompare(b.gloss ?? ""),
+      );
+    }
+    // Most recently touched first; lemma breaks ties so the order is stable.
+    return rows.sort(
+      (a, b) => b.updated_at.localeCompare(a.updated_at) || a.lemma.localeCompare(b.lemma),
+    );
+  });
 
   const count = computed(() => byId.value.size);
 
@@ -446,6 +459,7 @@ export const useLexiconStore = defineStore("lexicon", () => {
 
   return {
     entries,
+    sortBy,
     count,
     wordClasses,
     byEntryKey,

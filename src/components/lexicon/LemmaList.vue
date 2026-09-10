@@ -44,11 +44,17 @@ const exactLemma = computed(() =>
       />
     </div>
 
-    <p class="count">
-      {{ matches.length }}
-      {{ matches.length === 1 ? "entry" : "entries" }}
-      <span v-if="query.trim()">of {{ lexicon.count }}</span>
-    </p>
+    <div class="listhead">
+      <p class="count">
+        {{ matches.length }}
+        {{ matches.length === 1 ? "entry" : "entries" }}
+        <span v-if="query.trim()">of {{ lexicon.count }}</span>
+      </p>
+      <select v-model="lexicon.sortBy" class="sort" aria-label="Sort the lexicon">
+        <option value="updated">Recent</option>
+        <option value="lemma">A–Z</option>
+      </select>
+    </div>
 
     <ul class="lemmas">
       <li v-for="entry in matches" :key="entry.id">
@@ -111,10 +117,23 @@ const exactLemma = computed(() =>
   width: 100%;
 }
 
+.listhead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
 .count {
   margin: var(--sp-2) 0;
   color: var(--c-muted);
   font-size: 0.75rem;
+}
+
+.sort {
+  flex: none;
+  font-size: 0.75rem;
+  padding: var(--sp-1) var(--sp-2);
 }
 
 .lemmas {

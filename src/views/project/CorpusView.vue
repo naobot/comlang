@@ -238,6 +238,10 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
           :placeholder="view === 'passage' ? 'Search the passages' : 'Search either side'"
           :aria-label="`Search the ${view === 'passage' ? 'passages' : 'sentences'}`"
         />
+        <select v-model="corpus.sortBy" class="sort" aria-label="Sort the corpus">
+          <option value="updated">Recently updated</option>
+          <option value="order">In order</option>
+        </select>
         <p class="count">
           {{ shown }}
           <template v-if="view === 'passage'">{{ shown === 1 ? "passage" : "passages" }}</template>
@@ -357,6 +361,12 @@ header p {
 
 .toolbar input[type="search"] {
   width: min(24rem, 100%);
+}
+
+.toolbar .sort {
+  flex: none;
+  font-size: 0.8125rem;
+  padding: var(--sp-1) var(--sp-2);
 }
 
 .count {

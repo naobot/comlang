@@ -30,6 +30,9 @@ import type { CorpusEntry, CorpusKind } from "@/types/models";
 
 export type CorpusDraft = { english: string; conlang: string };
 
+/** List order. Recency by default; the entered/imported order is one click away. */
+export type CorpusSort = "updated" | "order";
+
 /** A new row that has not been inserted yet. It knows which view it was started in. */
 export type PendingEntry = CorpusDraft & { kind: CorpusKind };
 
@@ -70,12 +73,22 @@ export const useCorpusStore = defineStore("corpus", () => {
   const savingNew = ref(false);
   const error = ref<string | null>(null);
 
-  /** Spreadsheet order: as entered, and as an import laid them down. */
-  const entries = computed(() =>
-    [...byId.value.values()].sort(
-      (a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at),
-    ),
-  );
+  /** Which order the lists render in. Not persisted — a per-session view preference. */
+  const sortBy = ref<CorpusSort>("updated");
+
+  const entries = computed(() => {
+    const rows = [...byId.value.values()];
+    if (sortBy.value === "order") {
+      // Spreadsheet order: as entered, and as an import laid them down.
+      return rows.sort(
+        (a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at),
+      );
+    }
+    // Most recently touched first; sort_order breaks ties so the order is stable.
+    return rows.sort(
+      (a, b) => b.updated_at.localeCompare(a.updated_at) || a.sort_order - b.sort_order,
+    );
+  });
 
   const count = computed(() => byId.value.size);
 
@@ -404,6 +417,7 @@ export const useCorpusStore = defineStore("corpus", () => {
 
   return {
     entries,
+    sortBy,
     passages,
     utterances,
     matching,
