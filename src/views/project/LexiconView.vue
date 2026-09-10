@@ -260,7 +260,7 @@ useEventListener(window, "beforeunload", (event: BeforeUnloadEvent) => {
     <div v-else class="panes">
       <LemmaList :warnings="lemmaWarnings" @pick="pick" @create="create" />
 
-      <EntryDetail v-if="lexicon.openId || lexicon.creating" :project-id="projectId" />
+      <EntryDetail v-if="lexicon.openId || lexicon.creating" :project-id="projectId" @pick="pick" />
       <p v-else class="placeholder muted">Pick a word from the list, or add one.</p>
     </div>
   </section>

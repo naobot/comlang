@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref } from "vue";
+import { computed, nextTick, ref, watch } from "vue";
 
 import PhonemePalette from "@/components/lexicon/PhonemePalette.vue";
 import { checkLemma } from "@/lib/lemmaPhonotactics";
@@ -10,6 +10,8 @@ import { usePhonotacticsStore } from "@/stores/phonotactics";
 import { useWordClassesStore } from "@/stores/wordClasses";
 
 const props = defineProps<{ projectId: string }>();
+/** Opening another entry from the homonyms list goes through the view's guarded navigation. */
+const emit = defineEmits<{ pick: [id: string] }>();
 const lexicon = useLexiconStore();
 const members = useMembersStore();
 const phonemes = usePhonemesStore();
@@ -66,6 +68,32 @@ const title = computed(() => {
   if (lexicon.creating) return lexicon.draft.lemma.trim() || "New entry";
   return lexicon.draft.lemma.trim() || "—";
 });
+
+/**
+ * Other entries written exactly this way. The language has homographs — `gwan` is both
+ * "meaning" (noun) and "become" (verb) — which is why `lexicon_entries` has no unique
+ * constraint on `lemma` (0014). Reads the live draft, so it also flags a new word being
+ * typed onto a spelling that already exists; the open entry itself is never listed.
+ */
+const homonyms = computed(() => {
+  const lemma = lexicon.draft.lemma.trim();
+  if (!lemma) return [];
+  return (lexicon.byLemma.get(lemma) ?? []).filter((e) => e.id !== lexicon.openId);
+});
+
+/**
+ * Notes start collapsed on every entry — they are the long tail of a record, not the
+ * first thing to read. A dot and a one-line preview mark content behind the toggle;
+ * opening one entry's notes does not leave the next entry's open.
+ */
+const showNotes = ref(false);
+const hasNotes = computed(() => lexicon.draft.notes.trim().length > 0);
+watch(
+  () => lexicon.openId ?? (lexicon.creating ? "new" : null),
+  () => {
+    showNotes.value = false;
+  },
+);
 
 /**
  * The phoneme palette beside the underlying-phonology field: a keyboard has no `ɡ` or `ŋ`
@@ -141,6 +169,24 @@ async function remove() {
         />
       </label>
 
+      <!-- Homographs are expected in this language, so this is context, not a warning:
+           it names the other entries that share this spelling and links to each. -->
+      <div v-if="homonyms.length" class="homonyms">
+        <span class="homonyms-label">
+          {{ homonyms.length }}
+          {{ homonyms.length === 1 ? "other entry is" : "other entries are" }}
+          written “{{ lexicon.draft.lemma.trim() }}” too
+        </span>
+        <ul>
+          <li v-for="h in homonyms" :key="h.id">
+            <button type="button" class="homonym" @click="emit('pick', h.id)">
+              <span class="h-gloss">{{ h.gloss || "—" }}</span>
+              <span v-if="h.word_class" class="h-class">{{ h.word_class }}</span>
+            </button>
+          </li>
+        </ul>
+      </div>
+
       <label class="wide">
         Underlying phonology
         <input
@@ -215,10 +261,30 @@ async function remove() {
         />
       </label>
 
-      <label class="wide">
-        Notes
-        <textarea v-model="lexicon.draft.notes" :readonly="!members.canEdit" rows="5"></textarea>
-      </label>
+      <div class="notes-field">
+        <button
+          type="button"
+          class="notes-toggle"
+          :aria-expanded="showNotes"
+          aria-controls="entry-notes"
+          @click="showNotes = !showNotes"
+        >
+          {{ showNotes ? "Hide notes" : hasNotes ? "Notes" : "Add notes" }}
+          <span v-if="!showNotes && hasNotes" class="notes-dot" aria-hidden="true">•</span>
+        </button>
+        <p v-if="!showNotes && hasNotes" class="notes-preview">
+          {{ lexicon.draft.notes.trim() }}
+        </p>
+        <label v-if="showNotes">
+          Notes
+          <textarea
+            id="entry-notes"
+            v-model="lexicon.draft.notes"
+            :readonly="!members.canEdit"
+            rows="5"
+          ></textarea>
+        </label>
+      </div>
 
       <div v-if="members.canEdit" class="actions">
         <button type="submit" :disabled="!lexicon.dirty || lexicon.saving">
@@ -360,6 +426,90 @@ label textarea {
 
 .palette-toggle:hover {
   color: var(--c-text);
+}
+
+/* Other entries sharing this spelling. Quiet, raised panel — homographs are expected
+   here, so it is context on the lemma, not a flag. */
+.homonyms {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  background: var(--c-raised);
+}
+
+.homonyms-label {
+  color: var(--c-muted);
+  font-size: 0.75rem;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.homonyms ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+}
+
+/* A chip that is really content: UI face, no casing — same opt-out the lemma list uses. */
+.homonym {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding: 2px var(--sp-2);
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.homonym:hover {
+  border-color: var(--c-accent);
+}
+
+.h-class {
+  color: var(--c-muted);
+  font-size: 0.6875rem;
+}
+
+/* Notes are collapsed on every entry. The toggle is a quiet control like the phoneme
+   palette's; when there is content behind it, a dot and a one-line preview say so. */
+.notes-field {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.notes-toggle {
+  justify-self: start;
+  padding: 2px var(--sp-2);
+  font-size: 0.75rem;
+  color: var(--c-muted);
+}
+
+.notes-toggle:hover {
+  color: var(--c-text);
+}
+
+.notes-dot {
+  color: var(--c-accent);
+}
+
+.notes-preview {
+  margin: 0;
+  overflow: hidden;
+  color: var(--c-muted);
+  font-size: 0.8125rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 textarea {
