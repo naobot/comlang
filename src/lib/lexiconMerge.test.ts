@@ -12,6 +12,7 @@ import {
   emptyDecisions,
   resolveImport,
   tally,
+  undecidedConflicts,
   unresolved,
 } from "./lexiconMerge";
 
@@ -155,15 +156,26 @@ describe("decisions", () => {
       FULL,
     );
 
-  it("defaults to the imported version, adds unkeyed rows, and deletes nothing", () => {
+  it("leaves an undecided conflict out of the payload and blocks Import on it", () => {
     const p = plan();
     const d = emptyDecisions();
     const { rows, deleteIds } = resolveImport(p, d);
 
-    expect(rows.map((r) => r.lemma)).toEqual(["tome", "new", "unkeyed"]);
+    // n_book is a conflict with no side chosen: not written, not counted, and blocking —
+    // exactly like the undecided `dup` group beside it. Only the addition and the unkeyed
+    // row go through.
+    expect(rows.map((r) => r.lemma)).toEqual(["new", "unkeyed"]);
     expect(deleteIds).toEqual([]);
-    // The duplicate is undecided, so it is left out — and Import is blocked meanwhile.
+    expect(undecidedConflicts(p, d).map((c) => c.key)).toEqual(["n_book"]);
     expect(unresolved(p, d).map((g) => g.key)).toEqual(["dup"]);
+    expect(tally(p, d)).toEqual({ created: 2, updated: 0, unchanged: 0, deleted: 0 });
+  });
+
+  it("sends and counts a conflict once it is resolved as take, and clears the block", () => {
+    const p = plan();
+    const d: Decisions = { ...emptyDecisions(), conflicts: { n_book: "take" } };
+    expect(resolveImport(p, d).rows.map((r) => r.lemma)).toEqual(["tome", "new", "unkeyed"]);
+    expect(undecidedConflicts(p, d)).toEqual([]);
     expect(tally(p, d)).toEqual({ created: 2, updated: 1, unchanged: 0, deleted: 0 });
   });
 
@@ -176,7 +188,11 @@ describe("decisions", () => {
 
   it("sends only the winning row of a duplicated key, and counts it as an add", () => {
     const p = plan();
-    const d: Decisions = { ...emptyDecisions(), duplicates: { dup: 6 } };
+    const d: Decisions = {
+      ...emptyDecisions(),
+      conflicts: { n_book: "take" },
+      duplicates: { dup: 6 },
+    };
     expect(resolveImport(p, d).rows.map((r) => r.lemma)).toEqual(["tome", "new", "unkeyed", "two"]);
     expect(unresolved(p, d)).toEqual([]);
     expect(tally(p, d)).toEqual({ created: 3, updated: 1, unchanged: 0, deleted: 0 });
@@ -191,13 +207,21 @@ describe("decisions", () => {
 
   it("skips an unkeyed row without touching anything else", () => {
     const p = plan();
-    const d: Decisions = { ...emptyDecisions(), unkeyed: { 4: "skip" } };
+    const d: Decisions = {
+      ...emptyDecisions(),
+      conflicts: { n_book: "take" },
+      unkeyed: { 4: "skip" },
+    };
     expect(resolveImport(p, d).rows.map((r) => r.lemma)).toEqual(["tome", "new"]);
   });
 
   it("deletes only what was ticked, and only from the absent list", () => {
     const p = plan();
-    const d: Decisions = { ...emptyDecisions(), absent: { b: "delete" } };
+    const d: Decisions = {
+      ...emptyDecisions(),
+      conflicts: { n_book: "take" },
+      absent: { b: "delete" },
+    };
     const { rows, deleteIds } = resolveImport(p, d);
 
     expect(deleteIds).toEqual(["b"]);

@@ -16,6 +16,7 @@ import {
   emptyDecisions,
   resolveImport,
   tally,
+  undecidedConflicts,
   unresolved,
 } from "@/lib/lexiconMerge";
 
@@ -28,7 +29,8 @@ import {
  * the confirm could not show at all, and each is a decision rather than a notice:
  *
  * - a **conflict**, where the file and the lexicon hold the same key with different
- *   content, laid out as a diff and defaulting to the imported version;
+ *   content, laid out as a diff with no default — Import stays blocked until a side is
+ *   picked for each one;
  * - a key claimed **twice inside the file**, which used to refuse the whole file — the
  *   good rows with it — and is now a question with an answer;
  * - stored entries the file **does not carry**, which may be deleted, but only one tick at
@@ -68,7 +70,13 @@ const shown = reactive<Record<string, boolean>>({
 const toggle = (name: string) => (shown[name] = !shown[name]);
 
 const counts = computed(() => tally(props.plan, decisions));
-const blocking = computed(() => unresolved(props.plan, decisions));
+// The two things that keep Import disabled: a duplicated key with no winner picked, and
+// a conflict with no side chosen. Both must be cleared before anything is written.
+const blockingDuplicates = computed(() => unresolved(props.plan, decisions));
+const blockingConflicts = computed(() => undecidedConflicts(props.plan, decisions));
+const blocked = computed(
+  () => blockingDuplicates.value.length > 0 || blockingConflicts.value.length > 0,
+);
 
 /** The one field-set warning the old confirm did carry, kept: absent columns are not writes. */
 const partialColumns = computed(() => !props.plan.fields.includes("gloss"));
@@ -121,7 +129,7 @@ function deleteAll() {
 const empty = (value: string) => value.length === 0;
 
 function submit() {
-  if (blocking.value.length || props.busy) return;
+  if (blocked.value || props.busy) return;
   emit("confirm", resolveImport(props.plan, decisions));
 }
 
@@ -199,6 +207,9 @@ const fieldsOf = (fields: ImportField[]) => fields.map((f) => FIELD_LABEL[f]).jo
             <span class="caret">{{ shown.conflicts ? "▾" : "▸" }}</span>
             {{ plan.conflicts.length }} entr{{ plan.conflicts.length === 1 ? "y" : "ies" }} differ
             from what is stored
+            <span v-if="blockingConflicts.length" class="pending">
+              — {{ blockingConflicts.length }} still to decide
+            </span>
           </button>
           <div class="bulk">
             <button type="button" @click="takeAll('keep')">Keep all stored</button>
@@ -210,7 +221,10 @@ const fieldsOf = (fields: ImportField[]) => fields.map((f) => FIELD_LABEL[f]).jo
             v-for="conflict in plan.conflicts"
             :key="conflict.key"
             class="card"
-            :class="{ kept: decideConflict(decisions, conflict.key) === 'keep' }"
+            :class="{
+              kept: decideConflict(decisions, conflict.key) === 'keep',
+              undecided: decideConflict(decisions, conflict.key) === undefined,
+            }"
           >
             <div class="card-head">
               <span class="lemma">{{ conflict.existing.lemma }}</span>
@@ -383,15 +397,21 @@ const fieldsOf = (fields: ImportField[]) => fields.map((f) => FIELD_LABEL[f]).jo
         <span v-if="counts.deleted" class="danger">{{ counts.deleted }} deleted</span>
         <span v-if="!counts.created && !counts.updated && !counts.deleted"> nothing to write </span>
       </p>
-      <p v-if="blocking.length" class="blocked">
-        Decide the {{ blocking.length }} repeated key{{ blocking.length === 1 ? "" : "s" }} first.
+      <p v-if="blockingConflicts.length" class="blocked">
+        Choose a version for the
+        {{ blockingConflicts.length }} entr{{ blockingConflicts.length === 1 ? "y" : "ies" }} that
+        differ from what is stored.
+      </p>
+      <p v-if="blockingDuplicates.length" class="blocked">
+        Decide the {{ blockingDuplicates.length }} repeated key{{
+          blockingDuplicates.length === 1 ? "" : "s"
+        }}
+        first.
       </p>
       <button type="button" @click="emit('close')">Cancel</button>
       <button
         type="submit"
-        :disabled="
-          busy || blocking.length > 0 || (!counts.created && !counts.updated && !counts.deleted)
-        "
+        :disabled="busy || blocked || (!counts.created && !counts.updated && !counts.deleted)"
         @click="submit"
       >
         {{ busy ? "Importing…" : "Import" }}
@@ -488,6 +508,18 @@ const fieldsOf = (fields: ImportField[]) => fields.map((f) => FIELD_LABEL[f]).jo
 .card.kept .diff,
 .line-row.off > :not(.pick) {
   opacity: 0.5;
+}
+
+/* No side picked yet — this one blocks Import, so it carries a marker that survives the
+   section being scrolled past: a danger rule down its edge, matching the duplicates it is
+   now grouped with in weight. */
+.card.undecided {
+  border-left: 3px solid var(--c-danger);
+}
+
+.pending {
+  color: var(--c-danger);
+  font-weight: 400;
 }
 
 .card-head,

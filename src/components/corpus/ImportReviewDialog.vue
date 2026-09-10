@@ -13,6 +13,7 @@ import {
   emptyDecisions,
   resolveImport,
   tally,
+  undecidedConflicts,
   unresolved,
 } from "@/lib/corpusMerge";
 
@@ -22,8 +23,9 @@ import {
  * The lexicon's `ImportReviewDialog` by the same idea and now, since 0028, close to the
  * same shape: English is a key exactly the way `entry_key` is, so this shows the same four
  * situations that dialog does — a conflict (the file's conlang differs from what is
- * stored), a duplicated key inside the file, a row the stored corpus doesn't carry (kept
- * unless deletion is opted into), and a row with no key at all. What differs is only that
+ * stored, no default, blocking until a side is picked), a duplicated key inside the file,
+ * a row the stored corpus doesn't carry (kept unless deletion is opted into), and a row
+ * with no key at all. What differs is only that
  * a conflict here has one field to show, not four — English is the key and cannot itself
  * change without becoming a different row, so `before`/`after` is the conlang alone rather
  * than a per-field diff table.
@@ -58,7 +60,13 @@ const shown = reactive<Record<string, boolean>>({
 const toggle = (name: string) => (shown[name] = !shown[name]);
 
 const counts = computed(() => tally(props.plan, decisions));
-const blocking = computed(() => unresolved(props.plan, decisions));
+// The two things that keep Import disabled: a duplicated English with no winner picked,
+// and a conflict with no side chosen. Both must be cleared before anything is written.
+const blockingDuplicates = computed(() => unresolved(props.plan, decisions));
+const blockingConflicts = computed(() => undecidedConflicts(props.plan, decisions));
+const blocked = computed(
+  () => blockingDuplicates.value.length > 0 || blockingConflicts.value.length > 0,
+);
 
 function takeAll(choice: "take" | "keep") {
   for (const c of props.plan.conflicts) decisions.conflicts[c.key] = choice;
@@ -83,7 +91,7 @@ function deleteAll() {
 }
 
 function submit() {
-  if (blocking.value.length || props.busy) return;
+  if (blocked.value || props.busy) return;
   emit("confirm", resolveImport(props.plan, decisions));
 }
 </script>
@@ -143,6 +151,9 @@ function submit() {
             <span class="caret">{{ shown.conflicts ? "▾" : "▸" }}</span>
             {{ plan.conflicts.length }} example{{ plan.conflicts.length === 1 ? "" : "s" }} differ
             from what is stored
+            <span v-if="blockingConflicts.length" class="pending">
+              — {{ blockingConflicts.length }} still to decide
+            </span>
           </button>
           <div class="bulk">
             <button type="button" @click="takeAll('keep')">Keep all stored</button>
@@ -154,7 +165,10 @@ function submit() {
             v-for="conflict in plan.conflicts"
             :key="conflict.key"
             class="card"
-            :class="{ kept: decideConflict(decisions, conflict.key) === 'keep' }"
+            :class="{
+              kept: decideConflict(decisions, conflict.key) === 'keep',
+              undecided: decideConflict(decisions, conflict.key) === undefined,
+            }"
           >
             <div class="card-head">
               <span class="english">{{ conflict.existing.english }}</span>
@@ -309,16 +323,21 @@ function submit() {
         <span v-if="counts.deleted" class="danger">{{ counts.deleted }} deleted</span>
         <span v-if="!counts.created && !counts.updated && !counts.deleted"> nothing to write </span>
       </p>
-      <p v-if="blocking.length" class="blocked">
-        Decide the {{ blocking.length }} repeated sentence{{ blocking.length === 1 ? "" : "s" }}
+      <p v-if="blockingConflicts.length" class="blocked">
+        Choose a version for the
+        {{ blockingConflicts.length }} example{{ blockingConflicts.length === 1 ? "" : "s" }} that
+        differ from what is stored.
+      </p>
+      <p v-if="blockingDuplicates.length" class="blocked">
+        Decide the {{ blockingDuplicates.length }} repeated sentence{{
+          blockingDuplicates.length === 1 ? "" : "s"
+        }}
         first.
       </p>
       <button type="button" @click="emit('close')">Cancel</button>
       <button
         type="submit"
-        :disabled="
-          busy || blocking.length > 0 || (!counts.created && !counts.updated && !counts.deleted)
-        "
+        :disabled="busy || blocked || (!counts.created && !counts.updated && !counts.deleted)"
         @click="submit"
       >
         {{ busy ? "Importing…" : "Import" }}
@@ -418,6 +437,18 @@ function submit() {
 .card.kept .diff,
 .line-row.off > :not(.pick) {
   opacity: 0.5;
+}
+
+/* No side picked yet — this one blocks Import, so it carries a marker that survives the
+   section being scrolled past: a danger rule down its edge, matching the duplicates it is
+   now grouped with in weight. */
+.card.undecided {
+  border-left: 3px solid var(--c-danger);
+}
+
+.pending {
+  color: var(--c-danger);
+  font-weight: 400;
 }
 
 .card-head,

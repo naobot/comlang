@@ -11,7 +11,8 @@
  * - **The same key on both sides, with different content.** This was applied blind — the
  *   old confirm said "update 30 entries" and nothing else, so importing `n_book,foo` over
  *   a stored `n_book,miŋgwem` replaced the lemma without a word. Now it is a conflict with
- *   a diff, defaulting to the imported version but flippable per row.
+ *   a diff and **no default** — Import stays blocked until the user picks a side for each
+ *   one (or takes/keeps all in one click).
  * - **A key on one side only.** New rows are added (that was already true and needs no
  *   decision); stored entries the file does not carry are listed and may be deleted, but
  *   only by explicit opt-in.
@@ -174,7 +175,12 @@ function strip(row: ParsedRow): ImportRow {
  * spelled out again in the component would be a second place for it to drift.
  */
 export type Decisions = {
-  /** By entry key. Default `take`: the imported file is what the user just chose. */
+  /**
+   * By entry key. **No default** — an undecided conflict blocks Import, the same as a
+   * key claimed twice. A file overwriting a stored entry is a choice the user makes,
+   * one row at a time or with the bulk buttons, not one they fall through by clicking
+   * Import.
+   */
   conflicts: Record<string, "take" | "keep">;
   /** By line. Default `add`, which is what an unkeyed row has always done. */
   unkeyed: Record<number, "add" | "skip">;
@@ -191,20 +197,27 @@ export const emptyDecisions = (): Decisions => ({
   absent: {},
 });
 
-export const decideConflict = (d: Decisions, key: string) => d.conflicts[key] ?? "take";
+/** No fallback: `undefined` means "not yet decided", which `undecidedConflicts` blocks on. */
+export const decideConflict = (d: Decisions, key: string) => d.conflicts[key];
 export const decideUnkeyed = (d: Decisions, line: number) => d.unkeyed[line] ?? "add";
 export const decideAbsent = (d: Decisions, id: string) => d.absent[id] ?? "keep";
 export const decideDuplicate = (d: Decisions, key: string) => d.duplicates[key];
 
-/** True while some duplicate group has no answer — the one thing that blocks Import. */
+/** Duplicate groups with no answer — one of the two things that block Import. */
 export const unresolved = (plan: MergePlan, d: Decisions) =>
   plan.duplicates.filter((g) => decideDuplicate(d, g.key) === undefined);
+
+/** Conflicts the user has not chosen a side for yet — the other thing that blocks Import. */
+export const undecidedConflicts = (plan: MergePlan, d: Decisions) =>
+  plan.conflicts.filter((c) => decideConflict(d, c.key) === undefined);
 
 export type ResolvedImport = { rows: ImportRow[]; deleteIds: string[] };
 
 /**
- * The payload. A conflict resolved as `keep` is simply left out — row-level resolution
- * needs nothing from the RPC, which only ever touches the rows it is handed.
+ * The payload. A conflict resolved as `keep` — or not yet decided at all — is simply left
+ * out; row-level resolution needs nothing from the RPC, which only ever touches the rows
+ * it is handed. Import is blocked while any conflict is undecided, so "left out" is a
+ * safe floor rather than the expected path.
  */
 export function resolveImport(plan: MergePlan, d: Decisions): ResolvedImport {
   const rows: ImportRow[] = [];
@@ -237,8 +250,11 @@ export function tally(plan: MergePlan, d: Decisions): Tally {
   let unchanged = plan.identical;
 
   for (const conflict of plan.conflicts) {
-    if (decideConflict(d, conflict.key) === "take") updated++;
-    else unchanged++;
+    const choice = decideConflict(d, conflict.key);
+    if (choice === "take") updated++;
+    else if (choice === "keep") unchanged++;
+    // An undecided conflict counts as neither: Import is blocked, and the tally must not
+    // claim it will be left "unchanged" when no choice has been made.
   }
   for (const row of plan.unkeyed) {
     if (decideUnkeyed(d, row.line) === "add") created++;
