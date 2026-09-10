@@ -411,7 +411,7 @@ describe("the emitted YAML actually parses", () => {
             },
           ],
           lexicon: [
-            { entry_key: "k", lemma: "- dash", gloss: "null", word_class: null, notes: null },
+            { entry_key: "k", lemma: "- dash", underlying: null, gloss: "null", word_class: null, notes: null },
           ],
         }),
       ),
@@ -456,6 +456,7 @@ describe("flow context", () => {
             {
               entry_key: "v_exist",
               lemma: "ga",
+              underlying: null,
               gloss: "exist, there is",
               word_class: "predicate",
               notes: null,
@@ -479,6 +480,7 @@ describe("flow context", () => {
             {
               entry_key: "k",
               lemma: "x",
+              underlying: null,
               gloss: "a [bracket] and {brace}",
               word_class: null,
               notes: null,
