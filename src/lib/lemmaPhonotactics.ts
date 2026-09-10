@@ -13,11 +13,18 @@
  * position) in ways that would make checking it against the grammar meaningless.
  *
  * `generateWord` runs the grammar forwards; this runs it backwards. Given a string it
- * (1) splits it into inventory phonemes, (2) finds a way to cut that sequence into
- * syllables each matching some syllable template, and (3) reuses `violation()` — which
- * already works on a flat `Segment[]` and already anticipates this use — to check the
+ * (1) splits it into inventory phonemes, (2) cuts that sequence into syllables — at the
+ * `.` markers the string carries, or every way it could split when it carries none —
+ * each matching some syllable template, and (3) reuses `violation()` — which already
+ * works on a flat `Segment[]` and already anticipates this use — to check the
  * constraints. A word "fits" if *any* such syllabification also passes the constraints;
  * only when every parse fails does a warning show.
+ *
+ * A `.` in the phonology is an explicit syllable boundary the conlang designer writes
+ * in, not a phoneme. It matters because the orthography derivation keys spelling off
+ * syllable position, and the phonemes alone can be ambiguous — `soŋwo` is `so.ŋwo`
+ * (→ "songuo") or `soŋ.wo` (→ "songwo"). `segment` never sees the `.`; when it is
+ * present the check validates that one marked split rather than searching all of them.
  *
  * The warning is advisory everywhere it appears: a lexicon full of loanwords and frozen
  * compounds legitimately breaks its own rules, so nothing here blocks a save or an
@@ -207,11 +214,54 @@ function parseWord(grammar: Grammar, units: string[]): { parses: Segment[][]; ex
 }
 
 /**
+ * Like `parseWord`, but the boundaries are already fixed: `chunks` is the unit sequence
+ * split at the `.` markers the phonology carried. Each chunk has to be one whole syllable
+ * under some template; the cross-product of the per-chunk matches is returned so
+ * `violation()` still sees a flat parse. A chunk that is not a possible syllable yields
+ * no parses at all — the caller reports that as "fits no syllable pattern", same as an
+ * unmarked word that will not split.
+ */
+function parseMarked(
+  grammar: Grammar,
+  chunks: string[][],
+): { parses: Segment[][]; exhausted: boolean } {
+  const usable = grammar.templates.filter((t) => t.slots.length > 0);
+  let parses: Segment[][] = [[]];
+  let exhausted = false;
+
+  for (const chunk of chunks) {
+    const options: Segment[][] = [];
+    for (const tmpl of usable) {
+      for (const { end, segs } of matchSyllable(tmpl, chunk, 0)) {
+        if (end === chunk.length) options.push(segs);
+      }
+    }
+    if (options.length === 0) return { parses: [], exhausted: false };
+
+    const next: Segment[][] = [];
+    for (const prefix of parses) {
+      for (const opt of options) {
+        if (next.length >= MAX_PARSES) {
+          exhausted = true;
+          break;
+        }
+        next.push([...prefix, ...opt]);
+      }
+      if (exhausted) break;
+    }
+    parses = next;
+  }
+  return { parses, exhausted };
+}
+
+/**
  * Whether `phonology` fits the grammar, and if not, the first reason it does not.
  *
  * `phonology` is expected to be `underlying_phonology` — optionally wrapped in
  * `/slashes/`, which are stripped before matching — not `lemma`. See the module doc
  * comment for why the two are not interchangeable once a project has an orthography.
+ * A `.` is read as a syllable boundary, not a forbidden character: when the string
+ * carries them the check validates that one marked syllabification.
  *
  * `inventory` is passed rather than read off `grammar` on purpose: it is the language's
  * actual sound set, which lets an unknown symbol ("not a phoneme at all") read
@@ -230,22 +280,32 @@ export function checkLemma(
     .replace(/\/$/, "")
     .normalize("NFC")
     .toLowerCase();
-  if (norm === "") return { ok: true };
+  if (norm.replace(/\./g, "") === "") return { ok: true };
   if (inventory.size === 0) return { ok: true };
 
   const usable = grammar.templates.filter((t) => t.slots.length > 0);
   if (usable.length === 0) return { ok: true };
 
-  const parsed = segment(inventory, norm);
-  if (!parsed.ok) {
-    return {
-      ok: false,
-      kind: "unknown-segment",
-      reason: `“${norm}” uses “${parsed.bad}”, which isn’t in the phoneme inventory.`,
-    };
+  // `.` is an explicit syllable boundary, not a phoneme — split it out before
+  // segmenting, and if it was there at all, hold the resulting split fixed.
+  const marked = norm.includes(".");
+  const rawChunks = marked ? norm.split(".").filter((m) => m !== "") : [norm];
+
+  const chunks: string[][] = [];
+  for (const raw of rawChunks) {
+    const parsed = segment(inventory, raw);
+    if (!parsed.ok) {
+      return {
+        ok: false,
+        kind: "unknown-segment",
+        reason: `“${norm}” uses “${parsed.bad}”, which isn’t in the phoneme inventory.`,
+      };
+    }
+    chunks.push(parsed.units);
   }
 
-  const { parses, exhausted } = parseWord(grammar, parsed.units);
+  const flat = !marked && chunks.length === 1 ? chunks[0] : null;
+  const { parses, exhausted } = flat ? parseWord(grammar, flat) : parseMarked(grammar, chunks);
   if (parses.length === 0) {
     if (exhausted) return { ok: true };
     return {

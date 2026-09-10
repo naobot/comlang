@@ -127,6 +127,47 @@ describe("checkLemma — syllabification", () => {
   });
 });
 
+describe("checkLemma — explicit syllable boundaries", () => {
+  const forbidCoda: ResolvedConstraint = {
+    kind: "forbid_in_role",
+    role: "coda",
+    a: { kind: "class", classId: "c" },
+  };
+
+  it("reads `.` as a boundary, not a forbidden character", () => {
+    expect(checkLemma(grammar(), inventory, "soŋ.wo")).toEqual({ ok: true });
+    expect(checkLemma(grammar(), inventory, "/soŋ.wo/")).toEqual({ ok: true });
+  });
+
+  it("validates the marked split, even where the phonemes alone are ambiguous", () => {
+    // "ata" is fine unmarked — it can split a.ta, keeping t out of the coda …
+    expect(checkLemma(grammar({ constraints: [forbidCoda] }), inventory, "ata")).toEqual({
+      ok: true,
+    });
+    // … but "at.a" pins t into the coda, so now the constraint bites.
+    const result = checkLemma(grammar({ constraints: [forbidCoda] }), inventory, "at.a");
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("unreachable");
+    expect(result.kind).toBe("constraint");
+  });
+
+  it("flags a marked chunk that is not a possible syllable", () => {
+    const result = checkLemma(grammar(), inventory, "tlp.k");
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("unreachable");
+    expect(result.kind).toBe("no-syllabification");
+  });
+
+  it("tolerates leading, trailing and doubled dots", () => {
+    expect(checkLemma(grammar(), inventory, ".hot.")).toEqual({ ok: true });
+    expect(checkLemma(grammar(), inventory, "soŋ..wo")).toEqual({ ok: true });
+  });
+
+  it("treats a phonology of only dots as blank", () => {
+    expect(checkLemma(grammar(), inventory, " . ")).toEqual({ ok: true });
+  });
+});
+
 describe("checkLemma — character variants", () => {
   // An inventory that uses the real IPA glyphs, so the ASCII forms have to be mapped.
   const Ci: ResolvedClass = {
