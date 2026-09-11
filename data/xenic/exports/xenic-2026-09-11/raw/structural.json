@@ -1,0 +1,1456 @@
+{
+  "project": {
+    "name": "xenic",
+    "is_public": false
+  },
+  "snapshot_at": "2026-09-11T03:28:37.328469+00:00",
+  "phonemes": [
+    {
+      "ipa": "p",
+      "kind": "consonant"
+    },
+    {
+      "ipa": "b",
+      "kind": "consonant"
+    },
+    {
+      "ipa": "t",
+      "kind": "consonant"
+    },
+    {
+      "ipa": "d",
+      "kind": "consonant"
+    },
+    {
+      "ipa": "m",
+      "kind": "consonant"
+    },
+    {
+      "ipa": "ŋ",
+      "kind": "consonant"
+    },
+    {
+      "ipa": "k",
+      "kind": "consonant"
+    },
+    {
+      "ipa": "ɡ",
+      "kind": "consonant"
+    },
+    {
+      "ipa": "e",
+      "kind": "vowel"
+    },
+    {
+      "ipa": "i",
+      "kind": "vowel"
+    },
+    {
+      "ipa": "u",
+      "kind": "vowel"
+    },
+    {
+      "ipa": "o",
+      "kind": "vowel"
+    },
+    {
+      "ipa": "a",
+      "kind": "vowel"
+    },
+    {
+      "ipa": "ɾ",
+      "kind": "consonant"
+    },
+    {
+      "ipa": "n",
+      "kind": "consonant"
+    },
+    {
+      "ipa": "h",
+      "kind": "consonant"
+    },
+    {
+      "ipa": "x",
+      "kind": "consonant"
+    },
+    {
+      "ipa": "s",
+      "kind": "consonant"
+    },
+    {
+      "ipa": "t͡s",
+      "kind": "consonant"
+    },
+    {
+      "ipa": "j",
+      "kind": "consonant"
+    },
+    {
+      "ipa": "l",
+      "kind": "consonant"
+    },
+    {
+      "ipa": "q",
+      "kind": "consonant"
+    },
+    {
+      "ipa": "w",
+      "kind": "consonant"
+    }
+  ],
+  "phoneme_classes": [
+    {
+      "label": null,
+      "symbol": "C",
+      "members": [
+        "b",
+        "d",
+        "ɡ",
+        "h",
+        "j",
+        "k",
+        "l",
+        "m",
+        "n",
+        "ŋ",
+        "p",
+        "q",
+        "ɾ",
+        "s",
+        "t",
+        "t͡s",
+        "w",
+        "x"
+      ]
+    },
+    {
+      "label": null,
+      "symbol": "V",
+      "members": [
+        "a",
+        "e",
+        "i",
+        "o",
+        "u"
+      ]
+    },
+    {
+      "label": null,
+      "symbol": "A",
+      "members": [
+        "j",
+        "l",
+        "ɾ",
+        "w"
+      ]
+    },
+    {
+      "label": null,
+      "symbol": "non-codas",
+      "members": [
+        "a",
+        "b",
+        "d",
+        "e",
+        "ɡ",
+        "h",
+        "i",
+        "j",
+        "o",
+        "q",
+        "ɾ",
+        "t͡s",
+        "u",
+        "w",
+        "x"
+      ]
+    },
+    {
+      "label": null,
+      "symbol": "non-w approximants",
+      "members": [
+        "j",
+        "l",
+        "ɾ"
+      ]
+    },
+    {
+      "label": null,
+      "symbol": "liquids",
+      "members": [
+        "l",
+        "ɾ"
+      ]
+    },
+    {
+      "label": null,
+      "symbol": "h and x",
+      "members": [
+        "h",
+        "x"
+      ]
+    },
+    {
+      "label": null,
+      "symbol": "ts and ng",
+      "members": [
+        "ŋ",
+        "t͡s"
+      ]
+    },
+    {
+      "label": null,
+      "symbol": "front vowels",
+      "members": [
+        "a",
+        "e",
+        "i"
+      ]
+    }
+  ],
+  "syllable_templates": [
+    {
+      "name": "maximal",
+      "notes": null,
+      "weight": 1
+    }
+  ],
+  "syllable_slots": [
+    {
+      "role": "nucleus",
+      "optional": true,
+      "slot_index": 0,
+      "phoneme_ipa": null,
+      "class_symbol": "C"
+    },
+    {
+      "role": "onset",
+      "optional": true,
+      "slot_index": 1,
+      "phoneme_ipa": null,
+      "class_symbol": "A"
+    },
+    {
+      "role": "nucleus",
+      "optional": false,
+      "slot_index": 2,
+      "phoneme_ipa": null,
+      "class_symbol": "V"
+    },
+    {
+      "role": "coda",
+      "optional": true,
+      "slot_index": 3,
+      "phoneme_ipa": [
+        "p",
+        "t",
+        "k",
+        "m",
+        "n",
+        "ŋ",
+        "l",
+        "s"
+      ],
+      "class_symbol": "C"
+    }
+  ],
+  "phonotactic_constraints": [
+    {
+      "kind": "forbid_in_role",
+      "role": "coda",
+      "seq_position": null,
+      "a_class_symbol": "non-codas",
+      "a_phoneme_ipa": null,
+      "b_class_symbol": null,
+      "b_phoneme_ipa": null,
+      "note": null
+    },
+    {
+      "kind": "forbid_sequence",
+      "role": null,
+      "seq_position": "anywhere",
+      "a_class_symbol": "A",
+      "a_phoneme_ipa": null,
+      "b_class_symbol": "A",
+      "b_phoneme_ipa": null,
+      "note": null
+    },
+    {
+      "kind": "forbid_sequence",
+      "role": null,
+      "seq_position": "anywhere",
+      "a_class_symbol": "V",
+      "a_phoneme_ipa": null,
+      "b_class_symbol": "V",
+      "b_phoneme_ipa": null,
+      "note": null
+    },
+    {
+      "kind": "forbid_sequence",
+      "role": null,
+      "seq_position": "anywhere",
+      "a_class_symbol": "h and x",
+      "a_phoneme_ipa": null,
+      "b_class_symbol": "liquids",
+      "b_phoneme_ipa": null,
+      "note": null
+    },
+    {
+      "kind": "forbid_sequence",
+      "role": null,
+      "seq_position": "anywhere",
+      "a_class_symbol": null,
+      "a_phoneme_ipa": "q",
+      "b_class_symbol": "A",
+      "b_phoneme_ipa": null,
+      "note": null
+    },
+    {
+      "kind": "forbid_sequence",
+      "role": null,
+      "seq_position": "anywhere",
+      "a_class_symbol": null,
+      "a_phoneme_ipa": "q",
+      "b_class_symbol": "front vowels",
+      "b_phoneme_ipa": null,
+      "note": null
+    },
+    {
+      "kind": "forbid_sequence",
+      "role": null,
+      "seq_position": "anywhere",
+      "a_class_symbol": "ts and ng",
+      "a_phoneme_ipa": null,
+      "b_class_symbol": "non-w approximants",
+      "b_phoneme_ipa": null,
+      "note": null
+    }
+  ],
+  "grammar_rules": null,
+  "word_classes": [
+    {
+      "kind": "open",
+      "name": "adjective",
+      "categories": null,
+      "description": null
+    },
+    {
+      "kind": "open",
+      "name": "noun",
+      "categories": [
+        "case",
+        "number"
+      ],
+      "description": null
+    },
+    {
+      "kind": "open",
+      "name": "predicate",
+      "categories": [
+        "evidential",
+        "force",
+        "tense"
+      ],
+      "description": null
+    },
+    {
+      "kind": "open",
+      "name": "verb",
+      "categories": [
+        "evidential",
+        "force",
+        "tense"
+      ],
+      "description": null
+    },
+    {
+      "kind": "closed",
+      "name": "case marker",
+      "categories": [
+        "case"
+      ],
+      "description": "Occupies the case slot on a nominal."
+    },
+    {
+      "kind": "closed",
+      "name": "semantic particle",
+      "categories": [
+        "semantic_particle"
+      ],
+      "description": "Occupies the case slot instead of a case marker."
+    },
+    {
+      "kind": "closed",
+      "name": "tense marker",
+      "categories": [
+        "tense"
+      ],
+      "description": null
+    },
+    {
+      "kind": "closed",
+      "name": "force marker",
+      "categories": [
+        "force"
+      ],
+      "description": null
+    },
+    {
+      "kind": "closed",
+      "name": "evidential",
+      "categories": [
+        "evidential"
+      ],
+      "description": "A final coda rather than a full morpheme."
+    },
+    {
+      "kind": "closed",
+      "name": "relativizer",
+      "categories": [
+        "tense"
+      ],
+      "description": "All three do modifier duty; a modifier is a relativized predicate."
+    },
+    {
+      "kind": "closed",
+      "name": "pronoun",
+      "categories": [
+        "number",
+        "person"
+      ],
+      "description": null
+    },
+    {
+      "kind": "closed",
+      "name": "demonstrative",
+      "categories": [
+        "deixis"
+      ],
+      "description": null
+    },
+    {
+      "kind": "closed",
+      "name": "particle",
+      "categories": null,
+      "description": null
+    },
+    {
+      "kind": "closed",
+      "name": "numeral",
+      "categories": null,
+      "description": null
+    },
+    {
+      "kind": "closed",
+      "name": "classifier",
+      "categories": null,
+      "description": "One general classifier; the system is deferred upstream."
+    },
+    {
+      "kind": "closed",
+      "name": "negation",
+      "categories": null,
+      "description": "A prefix on the predicate word, with three allomorphs."
+    },
+    {
+      "kind": "open",
+      "name": "adverb",
+      "categories": null,
+      "description": "Manner, time and sequence modifiers (key prefix adv_)."
+    },
+    {
+      "kind": "closed",
+      "name": "quantifier",
+      "categories": null,
+      "description": "any / each / every / none / some (key prefix d_)."
+    },
+    {
+      "kind": "closed",
+      "name": "modal",
+      "categories": null,
+      "description": "Ability, desire, necessity, obligation, permission, potential, recommendation (key prefix g_)."
+    },
+    {
+      "kind": "closed",
+      "name": "conjunction",
+      "categories": null,
+      "description": "Coordinators and subordinators: and, or, but, because, if, when (key prefix p_)."
+    },
+    {
+      "kind": "closed",
+      "name": "interrogative",
+      "categories": null,
+      "description": "Question words: who, what, which, when, where, why, how (key prefix qu_)."
+    }
+  ],
+  "categories": [
+    {
+      "name": "person",
+      "values": [
+        {
+          "notes": null,
+          "value": "first"
+        },
+        {
+          "notes": null,
+          "value": "second"
+        },
+        {
+          "notes": null,
+          "value": "third"
+        }
+      ],
+      "description": null
+    },
+    {
+      "name": "number",
+      "values": [
+        {
+          "notes": null,
+          "value": "singular"
+        },
+        {
+          "notes": null,
+          "value": "plural"
+        },
+        {
+          "notes": "reduplication without numeral+counter",
+          "value": "paucal"
+        }
+      ],
+      "description": null
+    },
+    {
+      "name": "case",
+      "values": [
+        {
+          "notes": null,
+          "value": "topic"
+        },
+        {
+          "notes": null,
+          "value": "nominative"
+        },
+        {
+          "notes": null,
+          "value": "accusative"
+        },
+        {
+          "notes": null,
+          "value": "dative"
+        },
+        {
+          "notes": null,
+          "value": "genitive"
+        },
+        {
+          "notes": null,
+          "value": "locative"
+        },
+        {
+          "notes": null,
+          "value": "instrumental"
+        }
+      ],
+      "description": null
+    },
+    {
+      "name": "semantic_particle",
+      "values": [
+        {
+          "notes": null,
+          "value": "only"
+        },
+        {
+          "notes": null,
+          "value": "with"
+        },
+        {
+          "notes": null,
+          "value": "too"
+        }
+      ],
+      "description": "Occupies the case slot instead of a case marker; with the case cue gone the DP is expected in prototypical word order."
+    },
+    {
+      "name": "tense",
+      "values": [
+        {
+          "notes": null,
+          "value": "past"
+        },
+        {
+          "notes": null,
+          "value": "present"
+        },
+        {
+          "notes": null,
+          "value": "future"
+        }
+      ],
+      "description": null
+    },
+    {
+      "name": "force",
+      "values": [
+        {
+          "notes": "no form; see meta.missing upstream",
+          "value": "declarative"
+        },
+        {
+          "notes": null,
+          "value": "interrogative"
+        },
+        {
+          "notes": null,
+          "value": "imperative"
+        }
+      ],
+      "description": null
+    },
+    {
+      "name": "evidential",
+      "values": [
+        {
+          "notes": null,
+          "value": "direct"
+        },
+        {
+          "notes": null,
+          "value": "indirect"
+        },
+        {
+          "notes": null,
+          "value": "unmarked"
+        }
+      ],
+      "description": null
+    },
+    {
+      "name": "deixis",
+      "values": [
+        {
+          "notes": null,
+          "value": "proximal"
+        },
+        {
+          "notes": null,
+          "value": "medial"
+        },
+        {
+          "notes": null,
+          "value": "distal"
+        }
+      ],
+      "description": null
+    }
+  ],
+  "graphemes": [
+    {
+      "grapheme": "a",
+      "phoneme_ipa": "a"
+    },
+    {
+      "grapheme": "b",
+      "phoneme_ipa": "b"
+    },
+    {
+      "grapheme": "d",
+      "phoneme_ipa": "d"
+    },
+    {
+      "grapheme": "e",
+      "phoneme_ipa": "e"
+    },
+    {
+      "grapheme": "g",
+      "phoneme_ipa": "ɡ"
+    },
+    {
+      "grapheme": "gk",
+      "phoneme_ipa": "q"
+    },
+    {
+      "grapheme": "h",
+      "phoneme_ipa": "h"
+    },
+    {
+      "grapheme": "i",
+      "phoneme_ipa": "i"
+    },
+    {
+      "grapheme": "i",
+      "phoneme_ipa": "j"
+    },
+    {
+      "grapheme": "k",
+      "phoneme_ipa": "k"
+    },
+    {
+      "grapheme": "kh",
+      "phoneme_ipa": "x"
+    },
+    {
+      "grapheme": "l",
+      "phoneme_ipa": "l"
+    },
+    {
+      "grapheme": "m",
+      "phoneme_ipa": "m"
+    },
+    {
+      "grapheme": "n",
+      "phoneme_ipa": "n"
+    },
+    {
+      "grapheme": "ng",
+      "phoneme_ipa": "ŋ"
+    },
+    {
+      "grapheme": "o",
+      "phoneme_ipa": "o"
+    },
+    {
+      "grapheme": "p",
+      "phoneme_ipa": "p"
+    },
+    {
+      "grapheme": "r",
+      "phoneme_ipa": "ɾ"
+    },
+    {
+      "grapheme": "s",
+      "phoneme_ipa": "s"
+    },
+    {
+      "grapheme": "t",
+      "phoneme_ipa": "t"
+    },
+    {
+      "grapheme": "ts",
+      "phoneme_ipa": "t͡s"
+    },
+    {
+      "grapheme": "u",
+      "phoneme_ipa": "u"
+    },
+    {
+      "grapheme": "w",
+      "phoneme_ipa": "w"
+    }
+  ],
+  "orthography_rules": [
+    {
+      "name": "/j/ and /w/ in the onset",
+      "effect": "/j/ is written <y> when it is the only onset of its syllable, or when the next segment is /i/; as the second member of an onset cluster, and not before /i/, it is written <i>.\n/w/ is written <w> when it is the only onset of its syllable, or when the next segment is /u/; as the second member of an onset cluster, and not before /u/, it is written <u>.",
+      "examples": "/dusaju/ → dusayu \"motorcycle\" (j sole onset)\n/baphju/ → bappiu \"danger\" (j second member of an onset cluster, not before /i/)\n/kwawi/ → kuawi \"corridor\" (w sole onset)\n/bwi/ → bui \"road\" (w second member of an onset cluster, not before /u/)",
+      "rule_order": 0,
+      "summary": null
+    },
+    {
+      "name": "/h/ after a consonant",
+      "effect": "/h/ immediately after a consonant doubles that consonant in writing; the /h/ itself is dropped. Confirmed for both voiceless and voiced consonants (/p t s k l/ all attested).",
+      "examples": "/dwekhal/ → duekkal \"last\" (k+h → kk)\n/kothwu/ → kottwu \"cellphone\" (t+h → tt)\n/beshi/ → bessi \"item\" (s+h → ss)\n/tumxelho/ → tumkhello \"managing\" (l+h → ll)",
+      "rule_order": 1,
+      "summary": null
+    }
+  ],
+  "morphology_spec": {
+    "rules": {
+      "glides": "jw",
+      "vowels": "aeiou",
+      "elision": {
+        "enabled": false
+      },
+      "harmony": {
+        "pairs": {
+          "e": "o",
+          "i": "u"
+        },
+        "enabled": false,
+        "neutral": "a"
+      },
+      "digraphs": [
+        "ng",
+        "ts"
+      ],
+      "lowering": {
+        "map": {
+          "u": "o"
+        },
+        "after": "w",
+        "enabled": false
+      },
+      "gemination": {
+        "to": "ngg",
+        "from": "ng",
+        "enabled": false,
+        "positions": [
+          "suffix"
+        ]
+      },
+      "reduplication": {
+        "role": "plural",
+        "gloss": "plural",
+        "enabled": true,
+        "copySyllables": 2
+      }
+    },
+    "slots": {
+      "nominal": [
+        "numeral",
+        "classifier",
+        "STEM",
+        "plural",
+        "case",
+        "semanticParticle"
+      ],
+      "predicate": [
+        "negation",
+        "STEM",
+        "tense",
+        "force",
+        "evidential",
+        "conjunction"
+      ]
+    },
+    "stems": [
+      {
+        "slotClass": "nominal",
+        "wordClass": [
+          "noun",
+          "pronoun",
+          "quantifier",
+          "demonstrative",
+          "interrogative",
+          "numeral"
+        ]
+      },
+      {
+        "slotClass": "predicate",
+        "wordClass": [
+          "verb",
+          "adjective",
+          "predicate"
+        ]
+      },
+      {
+        "slotClass": "both",
+        "wordClass": [
+          "modal",
+          "adverb",
+          "particle",
+          "conjunction",
+          "negation"
+        ]
+      }
+    ],
+    "affixes": [
+      {
+        "role": "negation",
+        "match": {
+          "entryKeyPrefix": "p_neg"
+        },
+        "position": "prefix"
+      },
+      {
+        "role": "negation",
+        "match": {
+          "wordClass": "negation"
+        },
+        "position": "prefix"
+      },
+      {
+        "role": "case",
+        "match": {
+          "entryKey": [
+            "p_top",
+            "p_nom",
+            "p_acc",
+            "p_dat",
+            "p_gen",
+            "p_loc",
+            "p_ins"
+          ]
+        },
+        "position": "suffix"
+      },
+      {
+        "role": "case",
+        "match": {
+          "wordClass": "case marker"
+        },
+        "position": "suffix"
+      },
+      {
+        "role": "semanticParticle",
+        "match": {
+          "entryKey": [
+            "p_also",
+            "p_only",
+            "p_with"
+          ]
+        },
+        "position": "suffix"
+      },
+      {
+        "role": "semanticParticle",
+        "match": {
+          "wordClass": "semantic particle"
+        },
+        "position": "suffix"
+      },
+      {
+        "role": "conjunction",
+        "match": {
+          "entryKey": [
+            "p_conj",
+            "p_disj",
+            "p_cause",
+            "p_cond",
+            "p_temp"
+          ]
+        },
+        "position": "suffix"
+      },
+      {
+        "role": "conjunction",
+        "match": {
+          "wordClass": "conjunction"
+        },
+        "position": "suffix"
+      },
+      {
+        "role": "tense",
+        "match": {
+          "entryKeyPrefix": "t_"
+        },
+        "position": "suffix"
+      },
+      {
+        "role": "tense",
+        "match": {
+          "wordClass": "tense marker"
+        },
+        "position": "suffix"
+      },
+      {
+        "role": "force",
+        "match": {
+          "entryKeyPrefix": "f_"
+        },
+        "position": "suffix"
+      },
+      {
+        "role": "force",
+        "match": {
+          "wordClass": "force marker"
+        },
+        "position": "suffix"
+      },
+      {
+        "role": "evidential",
+        "match": {
+          "entryKeyPrefix": "e_"
+        },
+        "position": "suffix"
+      },
+      {
+        "role": "evidential",
+        "match": {
+          "wordClass": "evidential"
+        },
+        "position": "suffix"
+      },
+      {
+        "role": "classifier",
+        "match": {
+          "entryKey": "q_class"
+        },
+        "position": "prefix"
+      },
+      {
+        "role": "classifier",
+        "match": {
+          "wordClass": "classifier"
+        },
+        "position": "prefix"
+      }
+    ],
+    "version": 1,
+    "entryKeyPos": {
+      "a": "adjective",
+      "n": "noun",
+      "v": "verb"
+    },
+    "inputVariants": {
+      "g": "ɡ",
+      "r": "ɾ",
+      "w": "ɰ",
+      "ng": "ŋ",
+      "ts": "t͡s"
+    }
+  },
+  "corpus": [
+    {
+      "kind": "utterance",
+      "conlang": "pode tuotuka tsinwusawu",
+      "english": "i like the library"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "selngom satyunwude puowu",
+      "english": "horses have long necks"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "pode sawu gawung kongom syika wowung koyawu",
+      "english": "the thing i'm doing is reading a book"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "pongom syika wone pi ga",
+      "english": "i should read a book"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "pongom syika wone ru ga",
+      "english": "i have to read a book"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "pongom syika wone ri ga",
+      "english": "i need to read a book"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "pongom syika wone ti ga",
+      "english": "i want to read a book"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "pium dulbi huide gawu",
+      "english": "a bird is above the tree"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "rahiu tisbi bakde gawu",
+      "english": "the bag is under the chair"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "koniang dultsonbi syide gawu",
+      "english": "there is a book on the table"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "ngopa tistsonbi muebyitsengde gawu",
+      "english": "there is a sticker on the underside of the desk"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "kopi galbi tuide gawu",
+      "english": "a person is in front of the shop"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "degal yapbi tumkyilde gawu",
+      "english": "there is a car behind the bus"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tuotu hikbi huptaktsade gawu",
+      "english": "the bank is next to the library"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "khuoba nihikpukbi nyihenuode gawu",
+      "english": "the school is to the right of the park"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "no nihikpukbi hangswulde gawu",
+      "english": "the pencil is to the right of the mango"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "wedop lusbi niuhianiuhiade gawu",
+      "english": "some pens are inside the box"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "kali bukbi huihuide gawu",
+      "english": "there are some birds outside my house"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "koniangyo kiga tsonbi rahiude gawu",
+      "english": "there is a chair between the table and the wall"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "potu wapkuo ngilbi littiekde gawu",
+      "english": "the belt is around my waist"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "wu bikbi pande gawu",
+      "english": "surrounding the fish is some rice"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "potu kali melbi kopide gawu",
+      "english": "the shop is nearby my house"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "megkusiu tiobi hapgkusyisyika woneng ye gawu",
+      "english": "i can read three books in one day"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tiakbalngom dyitualde gonpyi tsuawudo khuobabi yuneng kie gawu",
+      "english": "the weather is nice today so i might go to the park later"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "hangswulnu niuhiaka tseneng pi gawula",
+      "english": "should i use pen or pencil?"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "engtsikka munneng ri ganado kopibi yuna",
+      "english": "i went to the shop because i needed to buy food"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "engtsikka munneng tsek sanado kopibi yuneng ru ga",
+      "english": "i said i would buy food so i have to go to the shop"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "gukpika hiuneng ti gawudo kapebi yuse",
+      "english": "i'm going to go to a cafe because i want to eat something"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "kohika munneng ti gawudo kapebi yuse",
+      "english": "i want to get a coffee so i'm going to go to a cafe"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "gede tsanang ko pyilwu",
+      "english": "i think it rained"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "gede tsawung ko pyilwu",
+      "english": "i think it's raining"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "gede tsaneng ko pyilwu",
+      "english": "i think it's going to rain"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "niuhiaka tseneng pi ganeng ko pyilwu",
+      "english": "it seems i should use a pen"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "ti gama tse syika woyo khewu",
+      "english": "you can read this book if you want"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tasige yektsam sayo kheke",
+      "english": "is it okay if i ask you a question?"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "pongom syika wone ye ga",
+      "english": "i can read books"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "pongom syika wone gko ga",
+      "english": "i may read books"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "pongom satde tsuotsan gat",
+      "english": "i have a headache"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tse syingom pongo wona",
+      "english": "i read this book too"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "dungom hahiuwudi wudungom hiuwu",
+      "english": "i don't eat meat but i eat fish"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "pode guwu gawung rahiude gonpyide tiungwu",
+      "english": "the chair i'm sitting on is comfortable"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "potu nyihenuobi gawung rahiude gonpyide piewu",
+      "english": "the chairs at my school are uncomfortable"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "potu tsimdede gonpyide tsuawu",
+      "english": "my bed is so comfortable"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "pongom syika wone kie ga",
+      "english": "i might read a book"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "sode giakhyi ngopuoneng nagui gawu",
+      "english": "i'm worried they might be sad"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "gede tsaneng nagui gawu",
+      "english": "i'm worried it might rain"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "kapebi yuneng gke kohika tukhiwu",
+      "english": "i get coffee when i go to a cafe"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "duekkalsiu metsisnang gke satde tsuotsan ganat",
+      "english": "i had a headache when i got up yesterday"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "nginguingom dyitualde ra towukhena",
+      "english": "the weather got colder recently"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "kulyingom dyitualde ra towukhewu gawut",
+      "english": "the weather is getting colder these days"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "dyitualde ngingui ra towukhenang tsitsak sanan",
+      "english": "from what i've heard, the weather started to get colder recently"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "degal yapbi tumkyilde gawung ko pyilwu",
+      "english": "i think there is a car behind the bus"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tuotu hikbi huptaktsade gawun",
+      "english": "i heard that the bank is next to the library"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "wedop lusbi niuhianiuhiade gawun",
+      "english": "there are some pens inside the box, as far as i'm aware"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "kali bukbi huihuide gawut",
+      "english": "i know for a fact that there are some birds outside my house"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "pongom siutsitsak gkebi dongmu ngomo ngopuogawu",
+      "english": "i'm always sleepy at the top of the day"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "po nopengom pode nge syika woneng koka siana",
+      "english": "my friend made me read that book"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "nge syipade tsingwukhewu ganeng win gawut",
+      "english": "i can see that that light appears to be getting brighter"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tsesgo ngopuo tsuawu... po ngibede guewukhewu gawuket",
+      "english": "i'm so embarrased... is my face getting redder"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tiakbal dyitualde gonpyi gawukheneken",
+      "english": "as far as you're aware, is the weather today going to get nicer?"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "pianoka saneng ye gawung buka ngolwuke",
+      "english": "do you know someone who can play piano?"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "pianoka saneng ye gawung buka ngolwu?",
+      "english": "you know someone who can play piano?"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tade pianoka saneng ye gawung ko haya?",
+      "english": "can't you play piano?"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tse syide guewu",
+      "english": "this book is red"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tse syide guewut",
+      "english": "i know for a fact that this book is red"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tse syide guewun",
+      "english": "as far as i'm aware, this book is red"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "nge kapengom languide witwuke",
+      "english": "is this cafe inexpensive?"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "nge kapengom languide witwuket",
+      "english": "do you know for certain that this cafe is inexpensive?"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "nge kapengom languide witwuken",
+      "english": "to the best of your knowledge, is this cafe inexpensive?"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "posige swuriswurika yaknola",
+      "english": "bring me some fruit"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "posige swuriswurika yaknolat",
+      "english": "be sure to bring me some fruit"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "posige swuriswurika yaknolan",
+      "english": "bring me some fruit, if you get the chance"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tse khiasde nopkuiwu",
+      "english": "these flowers are pretty"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tse khiasde nopkuiwam",
+      "english": "wow, these flowers are pretty!"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tse khiasde nopkuili",
+      "english": "these flowers are pretty, don't you think so?"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tse khiasde nopkuiyo",
+      "english": "these flowers are pretty..."
+    },
+    {
+      "kind": "utterance",
+      "conlang": "pode khulituiya",
+      "english": "i am a student"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "pode khulitui haya",
+      "english": "i am not a student"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tade khulituiya hen?",
+      "english": "you are a student, aren't you?"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tade pianoka saneng ye gawu hen?",
+      "english": "you can play piano, can't you?"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "duekkalsiu diemekngom hangswulro piunat",
+      "english": "i wrote yesterday's test using a pencil"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tostobi kalro botoka muenuanat",
+      "english": "i buttered the toast with a knife"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "tostongom yonside kiosngonsosebi kiaritsanbi kalro botoka muenuanat",
+      "english": "jones buttered the toast at midnight in the bathroom with a knife"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "songom motobayikka miesaneng ye gawung tsek sanat",
+      "english": "they said they know how to ride a motorcycle"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "songom petuegika miesaneng ye gawulong sanat",
+      "english": "they said they know how to ride a bicycle"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "songom pode motobayikka miesaneng ye gawung mo sanat",
+      "english": "they asked if i know know how to ride a motorcycle"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "songom pode petuegika miesaneng ye gawukeng sanat",
+      "english": "they asked if i know know how to ride a bicycle"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "songom pode motobayikka miesawung tsang sanat",
+      "english": "they told me to ride a motorcycle"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "songom pode petuegika miesawulang sanat",
+      "english": "they told me to ride a bicycle"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "songom tsekode piumyang tsek sanat",
+      "english": "they told me it's a tree"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "songom tsekode lomeyalong sanat",
+      "english": "they told me it's a wolf"
+    },
+    {
+      "kind": "utterance",
+      "conlang": "pongom tuotude tsinwu",
+      "english": "as for me, i like the library"
+    }
+  ]
+}

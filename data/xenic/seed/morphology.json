@@ -8,7 +8,7 @@
     "harmony": { "enabled": false, "pairs": { "i": "u", "e": "o" }, "neutral": "a" },
     "elision": { "enabled": false },
     "lowering": { "enabled": false, "after": "w", "map": { "u": "o" } },
-    "gemination": { "enabled": true, "from": "ng", "to": "ngg", "positions": ["suffix"] }
+    "gemination": { "enabled": false, "from": "ng", "to": "ngg", "positions": ["suffix"] }
   },
   "inputVariants": { "ng": "ŋ", "ts": "t͡s", "g": "ɡ", "r": "ɾ", "w": "ɰ" },
   "entryKeyPos": { "n": "noun", "a": "adjective", "v": "verb" },
