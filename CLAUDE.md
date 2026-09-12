@@ -478,6 +478,19 @@ entry silently accepted an overwrite. `baseline` is now the **row**, not a secon
 different types cannot alias. Watch for this anywhere a store keeps "what I have" beside
 "what I started from".
 
+**And a refetch must judge dirtiness against the baseline too, not against what it just
+fetched.** `corpus.ts`'s `fetchFor` overwrote `byId` and *then* compared each draft to the
+new row, keeping the draft wherever the two differed — which is exactly what an import's
+own update looks like from this client: a clean draft holding the row's old text. So the
+grid went on showing the pre-import version, and the realtime echo of that same import
+then arrived as "changed by someone else" — the user's own import reported as a
+collaborator's. `fetchFor` now captures the previous `byId` map first, the way `upsert`
+already captured `previous`, and keeps a draft only when it differs from the row it was
+actually taken from. `src/stores/corpus.test.ts` pins it, and is the first test to
+exercise a store rather than the pure modules either side of one — it mocks
+`@/lib/supabase` and `subscribeToProjectTable`, capturing the latter's hooks so a test can
+deliver a realtime event the way the channel would.
+
 **The lexicon is the one section whose realtime patches the list.** A collaborator adding a
 word just appears — a dictionary you must reload is a worse dictionary. Only the entry open
 in the editor is held still, and only while it is dirty; a clean draft adopts theirs

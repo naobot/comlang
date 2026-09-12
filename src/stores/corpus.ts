@@ -182,14 +182,24 @@ export const useCorpusStore = defineStore("corpus", () => {
       }
 
       const rows = data ?? [];
+      // Captured before the map is overwritten, for the reason `upsert` captures it: the
+      // baseline a draft was taken from is the only thing that can say whether the draft
+      // holds an edit or just the version this client was last shown.
+      const previous = byId.value;
       byId.value = new Map(rows.map((row) => [row.id, row]));
 
-      // A refetch must not discard an edit in progress. Rows that are clean (or that this
-      // client has never touched) take the fetched value; dirty ones keep their draft.
+      // A refetch must not discard an edit in progress. Dirtiness is judged against the
+      // row the draft came from, never against the row just fetched: after an import, a
+      // clean draft holds exactly the *old* stored text, so comparing it to the new one
+      // would read the user's own import as an edit to protect it from — the row would
+      // keep showing the pre-import version and then banner as changed elsewhere when the
+      // realtime echo arrived.
       const next = new Map<string, CorpusDraft>();
       for (const row of rows) {
         const draft = drafts.value.get(row.id);
-        next.set(row.id, draft && !same(draft, draftOf(row)) ? draft : draftOf(row));
+        const was = previous.get(row.id);
+        const edited = draft && was && !same(draft, draftOf(was));
+        next.set(row.id, edited ? draft : draftOf(row));
       }
       drafts.value = next;
       // Held versions that no longer differ are stale.
